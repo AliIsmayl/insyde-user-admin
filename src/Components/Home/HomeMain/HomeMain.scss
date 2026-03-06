@@ -31,6 +31,7 @@
       margin: 0 15px 0 0;
       color: var(--text-primary);
     }
+
     .badge.premium {
       background: var(--badge-premium-bg);
       color: var(--text-on-gold);
@@ -44,6 +45,7 @@
       display: flex;
       align-items: center;
       gap: 15px;
+
       .time-left {
         font-size: 14px;
         color: var(--text-secondary);
@@ -107,9 +109,11 @@
         width: 80px;
         height: 80px;
         flex-shrink: 0;
+
         input {
           display: none;
         }
+
         label {
           width: 100%;
           height: 100%;
@@ -122,20 +126,24 @@
           justify-content: center;
           cursor: pointer;
           transition: all 0.3s;
+
           &:hover {
             border-color: var(--border-focus);
             background-color: var(--bg-hover);
           }
+
           .upload-icon {
             font-size: 24px;
             color: var(--text-secondary);
             margin-bottom: 5px;
           }
+
           span {
             font-size: 11px;
             font-weight: 600;
             color: var(--text-secondary);
           }
+
           .preview-img-small {
             width: 100%;
             height: 100%;
@@ -155,6 +163,7 @@
       .stats-boxes {
         display: flex;
         gap: 15px;
+
         .stat-box .val {
           height: 45px;
           padding: 0 20px;
@@ -164,11 +173,13 @@
           justify-content: center;
           font-weight: 700;
           font-size: 15px;
+
           &.green {
             background-color: var(--badge-success-bg);
             color: var(--badge-success-text);
             border: 1px solid rgba(46, 204, 113, 0.3);
           }
+
           &.code {
             background-color: var(--badge-bg);
             color: var(--badge-text);
@@ -182,9 +193,11 @@
       display: flex;
       gap: 20px;
       flex-wrap: wrap;
+
       .flex-1 {
         flex: 1;
       }
+
       .skills-group {
         flex: 2;
         .skills-inputs {
@@ -200,6 +213,7 @@
       display: flex;
       flex-direction: column;
       gap: 15px;
+
       .links-list {
         display: flex;
         flex-direction: column;
@@ -216,6 +230,7 @@
         border-radius: 15px;
         transition: all 0.3s;
         flex-wrap: wrap;
+
         &:hover {
           background-color: var(--bg-hover);
           border-color: var(--border-input-hover);
@@ -253,6 +268,7 @@
           cursor: pointer;
           transition: all 0.2s;
           flex-shrink: 0;
+
           &:hover {
             background: var(--btn-danger-hover);
             color: #fff;
@@ -330,6 +346,7 @@
         justify-content: center;
         gap: 10px;
         transition: all 0.3s;
+
         &:hover {
           border-color: var(--border-focus);
           color: var(--text-link-hover);
@@ -378,8 +395,8 @@
       transition: all 0.3s;
       flex: 1;
       font-family: "Poppins", sans-serif;
-
       min-width: 200px;
+
       &:hover {
         background-color: var(--btn-primary-hover);
         transform: translateY(-2px);
@@ -398,9 +415,9 @@
     position: sticky;
     top: 20px;
     display: flex;
-    flex-direction: column; /* Alt-alta düzmək üçün */
+    flex-direction: column;
     align-items: center;
-    gap: 20px; /* Telefon və rəng paleti arası məsafə */
+    gap: 20px;
   }
 
   .phone-mockup {
@@ -444,6 +461,7 @@
         border: 3px solid rgba(255, 255, 255, 0.8);
         margin-bottom: 15px;
       }
+
       .preview-avatar-placeholder {
         width: 80px;
         height: 80px;
@@ -452,6 +470,7 @@
         border: 3px solid rgba(255, 255, 255, 0.8);
         margin-bottom: 15px;
       }
+
       .preview-name {
         margin: 0 0 5px 0;
         font-size: 20px;
@@ -459,6 +478,7 @@
         text-align: center;
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       }
+
       .preview-profession {
         margin: 0;
         font-size: 13px;
@@ -476,6 +496,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+
       &::-webkit-scrollbar {
         display: none;
       }
@@ -498,6 +519,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+
         .skill-tag {
           padding: 5px 12px;
           border-radius: 20px;
@@ -512,6 +534,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
+
         .social-card {
           display: flex;
           align-items: center;
@@ -531,6 +554,7 @@
             align-items: center;
             flex-shrink: 0;
           }
+
           span:last-child {
             white-space: nowrap;
             overflow: hidden;
@@ -542,7 +566,6 @@
     }
   }
 
-  /* Rənglər bölməsi telefonun altında */
   .theme-color-section {
     width: 100%;
     background-color: var(--bg-panel);
@@ -578,9 +601,11 @@
           transform 0.2s,
           border 0.2s;
         border: 1px solid rgba(255, 255, 255, 0.1);
+
         &:hover {
           transform: translateY(-2px);
         }
+
         &.active {
           border: 2px solid var(--text-primary);
           transform: scale(1.1);
@@ -590,89 +615,188 @@
   }
 
   /* ================== MOBİL RESPONSİVLİK ================== */
-  @media screen and (max-width: 1100px) {
+
+  /* Laptops / Smaller Desktops */
+  @media screen and (max-width: 1200px) {
+    gap: 20px;
+
+    .preview-section {
+      width: 300px;
+    }
+  }
+
+  /* Tablets (iPad vb.) / Split layout-un qırılma nöqtəsi */
+  @media screen and (max-width: 992px) {
     flex-direction: column;
+    gap: 30px;
+
+    .form-section {
+      width: 100%;
+    }
+
     .preview-section {
       width: 100%;
       position: static;
-      align-items: center;
-      margin-top: 20px;
+      flex-direction: row;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 30px;
+      margin-top: 10px;
+
       .phone-mockup {
-        max-width: 350px;
+        width: 320px;
+        margin: 0;
       }
+
       .theme-color-section {
-        max-width: 350px;
+        width: 320px;
+        margin: 0;
       }
     }
   }
 
+  /* Large Mobile Phones / Small Tablets */
   @media screen and (max-width: 768px) {
     .modern-card {
       padding: 20px;
+      border-radius: 20px;
     }
+
     .modern-card .row-1,
     .modern-card .row-2 {
       flex-direction: column;
       align-items: stretch;
-    }
-    .modern-card .row-1 .inputs-grid,
-    .modern-card .row-2 .skills-group .skills-inputs {
-      grid-template-columns: 1fr;
-    }
-    .modern-card .row-1 .upload-box {
-      align-self: center;
-      margin-bottom: 10px;
-    }
-    .modern-card .row-1 .stats-boxes {
-      flex-direction: column;
+      gap: 15px;
     }
 
-    .links-wrapper .social-add-row {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 10px;
-
-      .row-top-mobile {
-        display: flex !important;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
+    .modern-card .row-1 {
+      .upload-box {
+        align-self: flex-start;
+        margin-bottom: 5px;
       }
-
-      .social-select {
-        width: 100% !important;
+      .inputs-grid {
+        grid-template-columns: 1fr;
       }
-      input {
+      .stats-boxes {
+        flex-direction: row;
+        .stat-box {
+          flex: 1;
+        }
+      }
+    }
+
+    .modern-card .row-2 {
+      .skills-group .skills-inputs {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .preview-section {
+      flex-direction: column;
+      align-items: center;
+
+      .phone-mockup,
+      .theme-color-section {
         width: 100%;
+        max-width: 350px;
+      }
+    }
+
+    .links-wrapper {
+      .social-add-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 15px;
+
+        .row-top-mobile {
+          display: flex !important;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+        }
+
+        .social-select {
+          width: 100% !important;
+        }
+
+        input {
+          width: 100%;
+          min-width: unset;
+          padding: 10px !important;
+          background-color: var(--bg-panel) !important;
+          border-radius: 8px;
+        }
       }
     }
 
     .bottom-actions {
       flex-direction: column;
       gap: 15px;
+
+      .status-badge,
+      .save-btn {
+        width: 100%;
+        min-width: 100%;
+      }
     }
   }
 
+  /* Small Mobile Phones */
   @media screen and (max-width: 480px) {
     .top-header {
       flex-direction: column;
       align-items: flex-start;
-    }
-    .top-header .header-actions {
-      width: 100%;
-      justify-content: space-between;
-    }
-    .preview-section .phone-mockup {
-      max-width: 300px;
-      height: 600px;
-      border-width: 6px;
-      &::before {
-        width: 100px;
-        height: 20px;
+      gap: 10px;
+
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 5px;
       }
     }
-    .preview-section .theme-color-section {
-      max-width: 300px;
+
+    .modern-card {
+      padding: 15px;
+    }
+
+    .modern-card .row-1 .stats-boxes {
+      flex-direction: column;
+    }
+
+    .modern-card .row-2 .skills-group .skills-inputs {
+      grid-template-columns: 1fr;
+    }
+
+    .preview-section {
+      .phone-mockup {
+        max-width: 300px;
+        height: 600px;
+        border-width: 6px;
+        border-radius: 35px;
+
+        &::before {
+          width: 100px;
+          height: 20px;
+        }
+
+        .phone-header {
+          padding-top: 40px;
+        }
+      }
+
+      .theme-color-section {
+        max-width: 300px;
+      }
+    }
+  }
+
+  /* Extra Small Devices */
+  @media screen and (max-width: 360px) {
+    .preview-section .phone-mockup {
+      max-width: 100%;
+      height: 550px;
+      border-radius: 30px;
     }
   }
 }

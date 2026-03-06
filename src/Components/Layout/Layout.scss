@@ -43,7 +43,9 @@
     padding: 15px;
   }
   .page-content {
-    padding: 0px;
+    padding: 20px 0px 0px 0px;
+    background-color: transparent !important;
+    border: none !important;
     border-radius: 20px;
   }
 }
