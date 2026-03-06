@@ -29,7 +29,12 @@ function LoginMain() {
     e.preventDefault();
     if (email === "admin" && password === "admin") {
       setErrorMsg("");
-      navigate("/");
+
+      // 1. İstifadəçinin daxil olduğunu lokal yaddaşa (localStorage) yazırıq
+      localStorage.setItem("isAuthenticated", "true");
+
+      // 2. Ana səhifəyə yönləndiririk (Əvvəlki addımda App.js-də yaratdığımız /home yolu)
+      navigate("/home");
     } else {
       setErrorMsg("E-poçt və ya şifrə yanlışdır! (Sınaq üçün: admin / admin)");
       setSuccessMsg("");
