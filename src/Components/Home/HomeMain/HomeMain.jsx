@@ -10,6 +10,8 @@ import {
   FaCheckCircle,
   FaSave,
   FaTrashAlt,
+  FaSun,
+  FaMoon,
 } from "react-icons/fa";
 import "./HomeMain.scss";
 
@@ -26,6 +28,9 @@ function HomeMain() {
   });
 
   const [profileImage, setProfileImage] = useState(null);
+
+  // YENİ STATE: Telefonun daxili görünüşü üçün (dark və ya light)
+  const [phoneMode, setPhoneMode] = useState("dark");
 
   const [links, setLinks] = useState([
     {
@@ -210,9 +215,7 @@ function HomeMain() {
             ></textarea>
           </div>
 
-          {/* ======================================= */}
           {/* DİNAMİK LİNKLƏR HİSSƏSİ */}
-          {/* ======================================= */}
           <div className="links-wrapper">
             <label>Sosial Şəbəkə / Əlaqə Linkləri</label>
 
@@ -277,7 +280,23 @@ function HomeMain() {
       {/* SAĞ TƏRƏF: TELEFON PREVIEW VƏ RƏNGLƏR */}
       {/* ======================================= */}
       <div className="preview-section">
-        <div className="phone-mockup">
+        {/* YENİ: Mockup Mode Switcher (Qaranlıq / Aydın) */}
+        <div className="mockup-mode-switcher">
+          <button
+            className={`mode-btn ${phoneMode === "light" ? "active" : ""}`}
+            onClick={() => setPhoneMode("light")}
+          >
+            <FaSun /> Light
+          </button>
+          <button
+            className={`mode-btn ${phoneMode === "dark" ? "active" : ""}`}
+            onClick={() => setPhoneMode("dark")}
+          >
+            <FaMoon /> Dark
+          </button>
+        </div>
+
+        <div className={`phone-mockup mode-${phoneMode}`}>
           <div
             className="phone-header"
             style={{ backgroundColor: formData.themeColor }}
@@ -313,6 +332,7 @@ function HomeMain() {
                   style={{
                     backgroundColor: `${formData.themeColor}20`,
                     color: formData.themeColor,
+                    border: `1px solid ${formData.themeColor}50`,
                   }}
                 >
                   {formData.skill1}
@@ -324,6 +344,7 @@ function HomeMain() {
                   style={{
                     backgroundColor: `${formData.themeColor}20`,
                     color: formData.themeColor,
+                    border: `1px solid ${formData.themeColor}50`,
                   }}
                 >
                   {formData.skill2}
@@ -335,6 +356,7 @@ function HomeMain() {
                   style={{
                     backgroundColor: `${formData.themeColor}20`,
                     color: formData.themeColor,
+                    border: `1px solid ${formData.themeColor}50`,
                   }}
                 >
                   {formData.skill3}
@@ -357,9 +379,7 @@ function HomeMain() {
           </div>
         </div>
 
-        {/* ======================================= */}
-        {/* RƏNGLƏR BÖLMƏSİ (TELEFONUN ALTINDA) */}
-        {/* ======================================= */}
+        {/* RƏNGLƏR BÖLMƏSİ */}
         <div className="theme-color-section">
           <label>Profil Rəngi / Tema Rəngi</label>
           <div className="color-palette">
