@@ -1,0 +1,356 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
+/* Sidebarın Əsas Kapsulu */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 96vh;
+  margin: 2vh 0 2vh 1vw;
+  background-color: #f7f3f0;
+  border-radius: 40px;
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 1000;
+  position: fixed;
+  left: 0;
+  top: 0;
+  font-family: "Poppins", sans-serif;
+  cursor: pointer;
+}
+
+/* Scrollbarı gizlədirik */
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+.sidebar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Qapalı və Açıq hal üçün ölçülər */
+.sidebar.closed {
+  width: 75px;
+}
+.sidebar.open {
+  width: 290px;
+  cursor: default;
+}
+
+/* ============================ */
+/* --- LOGO HİSSƏSİ (YENİ) --- */
+/* ============================ */
+
+.sidebar-logo {
+  padding: 30px 15px 20px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-text-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 45px;
+  position: relative;
+}
+
+/* Qapalı olanda görünən kiçik "insyde" */
+.logo-small {
+  position: absolute;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  opacity: 1;
+  visibility: visible;
+  transition: all 0.3s ease;
+  transform: scale(1) translateY(0);
+}
+
+/* Açıq olanda görünən böyük "INSYDE" */
+.logo-large {
+  position: absolute;
+  left: 10px; /* Bir az kənardan başlasın ki, ikonlarla eyni xətdə olsun */
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 1px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  transform: scale(0.8) translateX(-10px);
+  white-space: nowrap;
+}
+
+/* Sidebar açılanda animasiya dövrəyə girir */
+.sidebar.open .logo-small {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.5) translateY(-10px); /* Yuxarı doğru kiçilib yoxa çıxır */
+}
+
+.sidebar.open .logo-large {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1) translateX(0); /* Normal ölçüsünə gəlib yerinə oturur */
+}
+
+/* Mobildə görünən kiçik X düyməsi */
+.mobile-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: #555;
+  cursor: pointer;
+}
+
+/* ============================ */
+/* --- MENYU İKON VƏ LİNKLƏR -- */
+/* ============================ */
+
+.sidebar-menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 0 15px;
+}
+
+.menu-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #1a1a1a;
+  gap: 15px;
+  border-radius: 30px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+/* Yumru İkon Arxa Planı */
+.icon-container {
+  position: relative;
+  min-width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border-radius: 50%;
+  font-size: 20px;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+/* Aktiv Menyu Linki */
+.menu-item.active .icon-container {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+/* Hover effekti (Yalnız masaüstü cihazlar üçün) */
+@media (hover: hover) {
+  .menu-item:hover:not(.active) .icon-container {
+    background-color: #ebebeb;
+  }
+}
+
+/* MƏTNLƏR (YAZILAR) */
+.menu-text {
+  font-weight: 600;
+  font-size: 15px;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar.open .menu-text {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Submenu oxu (Aşağı baxan ox) */
+.submenu-arrow {
+  margin-right: 15px;
+  font-size: 18px;
+  color: #888;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s;
+  flex-shrink: 0;
+}
+
+.sidebar.open .submenu-arrow {
+  opacity: 1;
+  visibility: visible;
+}
+.submenu-toggle.open .submenu-arrow {
+  transform: rotate(180deg);
+}
+
+/* Submenu Siyahısı (Accordion) */
+.submenu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-left: 55px;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease,
+    margin-top 0.3s;
+}
+
+.submenu-list.expanded {
+  max-height: 400px;
+  opacity: 1;
+  margin-top: 10px;
+}
+
+/* Alt Menyu Elementi */
+.sub-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #555;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 0;
+  transition: color 0.2s;
+}
+
+.sub-menu-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-menu-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ccc;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.sub-menu-item.active {
+  color: #1a1a1a;
+  font-weight: 700;
+}
+.sub-menu-item.active .sub-menu-dot {
+  background-color: #1a1a1a;
+  transform: scale(1.5);
+}
+
+/* Qırmızı Bildiriş Nöqtəsi */
+.notification-dot {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 10px;
+  height: 10px;
+  background-color: #ff8b94;
+  border-radius: 50%;
+  border: 2px solid #f7f3f0;
+}
+
+/* ALT HİSSƏ (Footer) */
+.sidebar-footer {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+  margin-top: auto;
+}
+
+/* ========================================= */
+/* --- RESPONSİVLİK (MOBİL EKRANLAR) --- */
+/* ========================================= */
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 900;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.sidebar-overlay.active {
+  opacity: 1;
+}
+
+.mobile-hamburger {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 800;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+@media screen and (max-width: 768px) {
+  .sidebar {
+    left: -100%;
+    margin: 0;
+    height: 100vh;
+    border-radius: 0 30px 30px 0;
+    transition: left 0.4s ease;
+  }
+  .sidebar.open {
+    left: 0;
+    width: 290px;
+  }
+  .sidebar-overlay {
+    display: block;
+    pointer-events: none;
+  }
+  .sidebar-overlay.active {
+    pointer-events: auto;
+  }
+  .mobile-close-btn {
+    display: block;
+  }
+  .mobile-hamburger {
+    display: flex;
+  }
+  .sidebar.closed {
+    display: none;
+  }
+}

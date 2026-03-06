@@ -1,0 +1,67 @@
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  background-color: #fafafa; /* Səhifə ilə eyni ton (və ya ağ) */
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  color: #555;
+  font-size: 14px;
+}
+
+/* Sol tərəf: Yazılar */
+.footer-left {
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .company-link {
+    color: #1a1a1a;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #007bff; /* PM Systems yazısının üzərinə gələndə dəyişəcək rəng */
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Sağ tərəf: İkonlar */
+.footer-right {
+  display: flex;
+  gap: 15px;
+
+  .social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    background-color: #f0f0f0;
+    color: #555;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 16px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #1a1a1a;
+      color: #ffffff;
+      transform: translateY(-3px); /* Hover edəndə yüngülcə yuxarı qalxır */
+    }
+  }
+}
+
+/* Mobildə (Telefonlarda) yuxarıdan-aşağı diziliş */
+@media screen and (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    padding: 20px 15px;
+  }
+}
