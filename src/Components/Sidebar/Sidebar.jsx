@@ -12,7 +12,18 @@ function Sidebar({ isOpen, setIsOpen }) {
   const [openMenus, setOpenMenus] = useState({});
   const sidebarRef = useRef(null);
 
-  // Kənara klikləyəndə bağlansın
+  // Ekran ölçüsünü yoxlamaq üçün state (Masaüstü və ya Mobil)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Kənara klikləyəndə bağlansın (Xüsusilə mobil üçün faydalıdır)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -27,14 +38,22 @@ function Sidebar({ isOpen, setIsOpen }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, setIsOpen]);
 
+  // Hover funksiyaları (Yalnız masaüstü üçün)
+  const handleMouseEnter = () => {
+    if (!isMobile) setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      setIsOpen(false);
+      setOpenMenus({}); // Bağlananda alt menyuları da bağlasın
+    }
+  };
+
   const toggleSubmenu = (e, menuName) => {
     e.stopPropagation();
     if (!isOpen) setIsOpen(true);
     setOpenMenus((prev) => ({ ...prev, [menuName]: !prev[menuName] }));
-  };
-
-  const handleSidebarClick = () => {
-    if (!isOpen) setIsOpen(true);
   };
 
   const menuItems = [
@@ -62,7 +81,8 @@ function Sidebar({ isOpen, setIsOpen }) {
       <div
         className={`sidebar ${isOpen ? "open" : "closed"}`}
         ref={sidebarRef}
-        onClick={handleSidebarClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {/* LOGO HİSSƏSİ (DİNAMİK) */}
         <div className="sidebar-logo">
@@ -106,9 +126,7 @@ function Sidebar({ isOpen, setIsOpen }) {
                         className={({ isActive }) =>
                           `sub-menu-item ${isActive ? "active" : ""}`
                         }
-                        onClick={() =>
-                          window.innerWidth <= 768 && setIsOpen(false)
-                        }
+                        onClick={() => isMobile && setIsOpen(false)}
                       >
                         <span className="sub-menu-dot"></span>
                         <span className="sub-menu-text">{sub.name}</span>
@@ -122,7 +140,7 @@ function Sidebar({ isOpen, setIsOpen }) {
                   className={({ isActive }) =>
                     `menu-item ${isActive ? "active" : ""}`
                   }
-                  onClick={() => window.innerWidth <= 768 && setIsOpen(false)}
+                  onClick={() => isMobile && setIsOpen(false)}
                 >
                   <div className="icon-container">{item.icon}</div>
                   <span className="menu-text">{item.name}</span>
@@ -139,7 +157,7 @@ function Sidebar({ isOpen, setIsOpen }) {
             className={({ isActive }) =>
               `menu-item ${isActive ? "active" : ""}`
             }
-            onClick={() => window.innerWidth <= 768 && setIsOpen(false)}
+            onClick={() => isMobile && setIsOpen(false)}
           >
             <div className="icon-container">
               <FiSettings />
@@ -148,11 +166,11 @@ function Sidebar({ isOpen, setIsOpen }) {
           </NavLink>
 
           <NavLink
-            to="/logout"
+            to="/login"
             className={({ isActive }) =>
               `menu-item ${isActive ? "active" : ""}`
             }
-            onClick={() => window.innerWidth <= 768 && setIsOpen(false)}
+            onClick={() => isMobile && setIsOpen(false)}
           >
             <div className="icon-container">
               <LuSquareArrowOutDownLeft />
@@ -162,6 +180,7 @@ function Sidebar({ isOpen, setIsOpen }) {
         </div>
       </div>
 
+      {/* MOBİLDƏ GÖRÜNƏN HAMBURGER DÜYMƏSİ */}
       <button className="mobile-hamburger" onClick={() => setIsOpen(true)}>
         <FiMenu />
       </button>
