@@ -1,0 +1,584 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
+.package-main-modern {
+  font-family: "Poppins", sans-serif;
+  color: #1a1a1a;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+
+  .top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    .page-title {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0 0 5px 0;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: #888;
+      margin: 0;
+    }
+  }
+
+  .package-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+
+    /* DİQQƏT: DEKSTOP VƏ MOBİL MƏNTİQİ */
+    .mobile-only {
+      display: none;
+    } /* Masaüstündə gizlət */
+    .desktop-only {
+      display: block;
+    } /* Masaüstündə göstər */
+
+    /* ================================================== */
+    /* =========== MASAÜSTÜ TOOLTIP MƏNTİQİ ============= */
+    /* ================================================== */
+    .has-tooltip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      .info-icon {
+        color: #888;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        position: relative;
+        font-size: 16px;
+        transition: color 0.2s;
+        outline: none;
+        &:hover,
+        &:focus {
+          color: #10b981;
+          .tooltip-box {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+          }
+        }
+        .tooltip-box {
+          position: absolute;
+          bottom: 130%;
+          left: 50%;
+          transform: translateX(-50%) translateY(10px);
+          background-color: #1a1a1a;
+          color: #fff;
+          padding: 10px 14px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 400;
+          white-space: normal;
+          text-align: center;
+          width: max-content;
+          max-width: 220px;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          z-index: 100;
+          pointer-events: none;
+          line-height: 1.5;
+          &::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1a1a1a transparent transparent transparent;
+          }
+        }
+      }
+    }
+
+    /* ================================================== */
+    /* ============ MASAÜSTÜ CƏDVƏL DİZAYNI ============= */
+    /* ================================================== */
+    & > .pricing-card {
+      background-color: #ffffff;
+      border-radius: 30px;
+      padding: 30px;
+      width: 100%;
+    }
+
+    .pricing-table {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      .table-header-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+        align-items: end;
+        .empty-cell {
+           font-size: 20px;
+        font-weight: 500;
+          color: #1a1a1a;
+          padding-bottom: 15px;
+          border-bottom: 2px solid #1a1a1a;
+        }
+        .package-cell {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 25px 15px;
+          border-radius: 20px;
+          background-color: #f7f3f0;
+          position: relative;
+          transition: all 0.3s;
+          &.is-current {
+            border: 2px solid #10b981;
+            background-color: #f0fdf4;
+          }
+          h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #555;
+          }
+          .price {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+          }
+          .select-btn {
+            width: 100%;
+            padding: 10px 0;
+            border-radius: 12px;
+            border: 2px solid #1a1a1a;
+            background: transparent;
+            color: #1a1a1a;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            &:hover {
+              background: #1a1a1a;
+              color: #fff;
+            }
+            &.active {
+              background: #e1b12c;
+              border-color: #e1b12c;
+              color: #fff;
+            }
+          }
+          .current-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+            padding: 10px 0;
+            border-radius: 12px;
+            background-color: #10b981;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            justify-content: center;
+          }
+          &.pro {
+            background-color: #1a1a1a;
+            transform: translateY(-5px);
+            h3 {
+              color: #fff;
+            }
+            .price {
+              color: #e1b12c;
+            }
+            &.is-current {
+              background-color: #0d2818;
+              border-color: #10b981;
+            }
+            .popular-badge {
+              position: absolute;
+              top: -12px;
+              background-color: #e1b12c;
+              color: #fff;
+              font-size: 10px;
+              font-weight: 700;
+              padding: 4px 12px;
+              border-radius: 20px;
+              letter-spacing: 0.5px;
+              text-transform: uppercase;
+              white-space: nowrap;
+            }
+          }
+        }
+      }
+
+      .table-body {
+        display: flex;
+        flex-direction: column;
+        .table-row {
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1fr;
+          gap: 15px;
+          padding: 16px 0;
+          border-bottom: 1px solid #f0f0f0;
+          align-items: center;
+          transition: background-color 0.2s;
+          &:hover {
+            background-color: #fafafa;
+            border-radius: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+                    padding: 16px 0px 16px 10px;
+
+          }
+          &:last-child {
+            border-bottom: none;
+          }
+          .feature-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #444;
+          }
+          .feature-status {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            padding: 5px 0;
+            .icon-check {
+              color: #10b981;
+              font-size: 20px;
+              font-weight: bold;
+            }
+            .icon-cross {
+              color: #ccc;
+              font-size: 20px;
+            }
+            strong {
+              font-size: 15px;
+              color: #1a1a1a;
+            }
+            &.active-col {
+              background-color: #f0fdf4;
+              border: 1px dashed #d1fae5;
+            }
+          }
+          .feature-status.pro:not(.active-col) {
+            background-color: rgba(26, 26, 26, 0.02);
+          }
+        }
+        .highlight-row {
+          background-color: #fffbeb;
+          border-radius: 10px;
+          padding: 16px 10px;
+          margin: 10px -10px 0 -10px;
+          border-bottom: none;
+          .feature-name span {
+            font-weight: 700;
+            color: #f59e0b;
+          }
+          .feature-status strong {
+            color: #f59e0b;
+          }
+          &:hover {
+            background-color: #fef3c7;
+          }
+          .feature-status.pro {
+            background-color: transparent;
+          }
+          .feature-status.active-col {
+            background-color: #fef3c7;
+            border-color: #fde68a;
+          }
+        }
+      }
+    }
+
+    /* ================================================== */
+    /* ====== MOBİL KARTLAR VƏ FAQ ACCORDION DİZAYNI ==== */
+    /* ================================================== */
+    .mobile-cards-container {
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      display: none;
+
+      .mobile-package-card {
+        background-color: #ffffff;
+        border-radius: 25px;
+        padding: 30px 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: relative;
+        border: 2px solid transparent;
+
+        &.is-current {
+          border-color: #10b981;
+          background-color: #f0fdf4;
+        }
+
+        .card-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px dashed #eee;
+          padding-bottom: 15px;
+          h3 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+          }
+          .price {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1a1a1a;
+          }
+        }
+
+        .card-features {
+          display: flex;
+          flex-direction: column;
+          gap: 6px; /* Aralıqları azaltdıq, FAQ özü dolacaq */
+
+          .mobile-feat-group {
+            display: flex;
+            flex-direction: column;
+
+            .feat-item {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              cursor: pointer;
+              padding: 8px 0;
+              border-radius: 8px;
+              transition: 0.2s;
+              -webkit-tap-highlight-color: transparent; /* Mobildə toxunma rəngini silir */
+
+              .icon {
+                width: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .icon-check {
+                color: #10b981;
+                font-size: 18px;
+                font-weight: bold;
+              }
+              .icon-cross {
+                color: #ccc;
+                font-size: 18px;
+              }
+
+              .feat-text-wrapper {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex: 1;
+                padding-right: 5px;
+                span {
+                  font-size: 14px;
+                  font-weight: 500;
+                  color: #444;
+                  transition: color 0.2s;
+                }
+                .disabled-text {
+                  color: #aaa;
+                  text-decoration: line-through;
+                }
+
+                .mobile-info-icon {
+                  color: #ccc;
+                  font-size: 18px;
+                  transition:
+                    transform 0.3s,
+                    color 0.3s;
+                  &.active {
+                    color: #10b981;
+                    transform: rotate(180deg);
+                  }
+                }
+              }
+
+              /* Aylıq ödənişin dizaynı */
+              &.monthly-fee {
+                background-color: #fffbeb;
+                padding: 12px 15px;
+                border-radius: 12px;
+                margin-top: 10px;
+                .feat-text-wrapper span {
+                  color: #f59e0b;
+                }
+                .feat-text-wrapper strong {
+                  color: #f59e0b;
+                  font-weight: 700;
+                  font-size: 16px;
+                }
+                .mobile-info-icon.active {
+                  color: #f59e0b;
+                }
+              }
+            }
+
+            /* Aşağı açılan FAQ Qutusu (Smooth Animation) */
+            .mobile-faq-box {
+              display: grid;
+              grid-template-rows: 0fr;
+              transition: all 0.3s ease-in-out;
+
+              .faq-inner {
+                overflow: hidden;
+                font-size: 13px;
+                color: #666;
+                line-height: 1.5;
+                padding: 0 10px 0 36px;
+                opacity: 0;
+                transition: opacity 0.3s ease-in-out;
+              }
+
+              &.open {
+                grid-template-rows: 1fr;
+                .faq-inner {
+                  padding: 5px 10px 15px 36px;
+                  opacity: 1;
+                }
+              }
+            }
+          }
+        }
+
+        .card-bottom {
+          margin-top: 15px;
+          .select-btn {
+            width: 100%;
+            padding: 14px 0;
+            border-radius: 12px;
+            border: 2px solid #1a1a1a;
+            background: transparent;
+            color: #1a1a1a;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            &:hover {
+              background: #1a1a1a;
+              color: #fff;
+            }
+            &.active {
+              background: #e1b12c;
+              border-color: #e1b12c;
+              color: #fff;
+            }
+          }
+          .current-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px 0;
+            border-radius: 12px;
+            background-color: #10b981;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            justify-content: center;
+          }
+        }
+
+        /* PRO KART - XÜSUSİ DİZAYN */
+        &.pro {
+          background-color: #1a1a1a;
+          color: #fff;
+          &.is-current {
+            background-color: #0d2818;
+            border-color: #10b981;
+          }
+          .popular-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #e1b12c;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+          }
+          .card-top {
+            border-bottom-color: #333;
+            h3 {
+              color: #fff;
+            }
+            .price {
+              color: #e1b12c;
+            }
+          }
+
+          .card-features .mobile-feat-group {
+            .feat-item .feat-text-wrapper span {
+              color: #ddd;
+            }
+            .feat-item .feat-text-wrapper .disabled-text {
+              color: #555;
+            }
+            .feat-item .feat-text-wrapper .mobile-info-icon {
+              color: #555;
+            }
+            .feat-item .feat-text-wrapper .mobile-info-icon.active {
+              color: #e1b12c;
+            }
+
+            .mobile-faq-box .faq-inner {
+              color: #aaa;
+            }
+            .feat-item.monthly-fee {
+              background-color: rgba(225, 177, 44, 0.1);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .footer-logo-area {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 10px;
+    .logo-text {
+      font-size: 32px;
+      font-weight: 800;
+      color: #e1b12c;
+      letter-spacing: -1px;
+    }
+  }
+
+  /* ================================================== */
+  /* ================= RESPONSİVLİK ================== */
+  /* ================================================== */
+  @media screen and (max-width: 950px) {
+    .package-content {
+      .desktop-only {
+        display: none !important;
+      }
+      .mobile-only {
+        display: flex !important;
+      }
+    }
+    .top-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+  }
+}

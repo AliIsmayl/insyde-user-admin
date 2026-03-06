@@ -1,0 +1,246 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.settings-main-modern {
+  font-family: "Poppins", sans-serif;
+  color: #1a1a1a;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+
+  /* ================== BAŞLIQ ================== */
+  .top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    .page-title {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0 0 5px 0;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: #888;
+      margin: 0;
+    }
+  }
+
+  /* ================== MƏZMUN ================== */
+  .settings-content {
+    display: flex;
+    justify-content: flex-start; /* Mərkəzə istəsəniz 'center' edə bilərsiniz */
+  }
+
+  /* ================== KART DİZAYNI ================== */
+  .password-card {
+    background-color: #ffffff;
+    border-radius: 30px;
+    padding: 35px 40px;
+    width: 100%;
+    max-width: 600px; /* Parol forması çox genişlənməsin */
+    display: flex;
+    flex-direction: column;
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+
+      .header-icon {
+        width: 50px;
+        height: 50px;
+        background-color: #f7f3f0;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        color: #1a1a1a;
+        flex-shrink: 0;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 0 0 5px 0;
+        color: #1a1a1a;
+      }
+      p {
+        font-size: 13px;
+        color: #777;
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+
+    /* ================== FORMA ================== */
+    .password-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      .divider {
+        width: 100%;
+        height: 1px;
+        background-color: #f0f0f0;
+        margin: 5px 0;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        label {
+          font-size: 13px;
+          font-weight: 600;
+          color: #555;
+        }
+
+        .input-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+
+          input {
+            width: 100%;
+            height: 50px;
+            background-color: #f7f3f0;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 0 50px 0 15px;
+            font-family: "Poppins", sans-serif;
+            font-size: 14px;
+            color: #1a1a1a;
+            outline: none;
+            transition: all 0.3s;
+            &::placeholder {
+              color: #aaa;
+            }
+            &:focus {
+              border-color: #ccc;
+              background-color: #fff;
+            }
+          }
+
+          .eye-btn {
+            position: absolute;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            &:hover {
+              color: #1a1a1a;
+            }
+          }
+        }
+
+        .password-rules {
+          list-style: none;
+          padding: 0;
+          margin: 5px 0 0 0;
+          display: flex;
+          gap: 15px;
+          flex-wrap: wrap;
+          li {
+            font-size: 11px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+          li::before {
+            content: "•";
+            color: #ccc;
+          }
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        flex-wrap: wrap;
+        gap: 15px;
+
+        .success-msg {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #10b981;
+          background-color: #f0fdf4;
+          padding: 10px 15px;
+          border-radius: 10px;
+        }
+
+        .save-btn {
+          margin-left: auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #1a1a1a;
+          color: #fff;
+          border: none;
+          padding: 12px 35px;
+          border-radius: 12px;
+          font-weight: 600;
+          font-size: 15px;
+          font-family: "Poppins", sans-serif;
+          cursor: pointer;
+          transition: all 0.3s;
+          &:hover {
+            background-color: #333;
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+  }
+
+  /* ================== RESPONSİVLİK ================== */
+  @media screen and (max-width: 768px) {
+    .top-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+
+    .password-card {
+      padding: 25px 20px;
+
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        text-align: left;
+      }
+
+      .password-form .input-group .password-rules {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+        .save-btn {
+          margin-left: 0;
+          width: 100%;
+        }
+        .success-msg {
+          justify-content: center;
+        }
+      }
+    }
+  }
+}

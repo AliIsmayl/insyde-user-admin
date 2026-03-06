@@ -1,0 +1,341 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.applications-main-modern {
+  font-family: "Poppins", sans-serif;
+  color: #1a1a1a;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+
+  /* ================== BAŞLIQ ================== */
+  .top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    .page-title {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0 0 5px 0;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: #888;
+      margin: 0;
+    }
+  }
+
+  /* ================== ƏSAS GRİD (YAN-YANA) ================== */
+  .applications-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Ekranı yarı-yarıya bölür */
+    gap: 30px;
+    align-items: start;
+  }
+
+  /* ================== ÜMUMİ KART DİZAYNI ================== */
+  .modern-card {
+    background-color: #ffffff;
+    border-radius: 30px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+
+    .card-header {
+      margin-bottom: 25px;
+      h3 {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 0 0 8px 0;
+        color: #1a1a1a;
+      }
+      p {
+        font-size: 14px;
+        color: #777;
+        margin: 0;
+      }
+    }
+  }
+
+  /* ================== SOL TƏRƏF: FORM ================== */
+  .form-section {
+    .application-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      .form-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+        min-width: 150px;
+        &.flex-2 {
+          flex: 2;
+        }
+
+        label {
+          font-size: 13px;
+          font-weight: 600;
+          color: #555;
+        }
+
+        .select-wrapper {
+          position: relative;
+          select {
+            width: 100%;
+            height: 48px;
+            background-color: #f7f3f0;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 0 40px 0 15px;
+            font-family: "Poppins", sans-serif;
+            font-size: 14px;
+            color: #1a1a1a;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+            transition: all 0.3s;
+            &:focus {
+              border-color: #ccc;
+              background-color: #fff;
+            }
+          }
+          .select-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            pointer-events: none;
+          }
+        }
+
+        input[type="text"],
+        textarea {
+          width: 100%;
+          background-color: #f7f3f0;
+          border: 1px solid transparent;
+          border-radius: 12px;
+          padding: 12px 15px;
+          font-family: "Poppins", sans-serif;
+          font-size: 14px;
+          color: #1a1a1a;
+          outline: none;
+          transition: all 0.3s;
+          resize: none;
+          &::placeholder {
+            color: #aaa;
+          }
+          &:focus {
+            border-color: #ccc;
+            background-color: #fff;
+          }
+        }
+
+        textarea {
+          resize: none;
+          min-height: 120px;
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+        .submit-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background-color: #1a1a1a;
+          color: #fff;
+          border: none;
+          padding: 12px 30px;
+          border-radius: 12px;
+          font-weight: 600;
+          font-size: 15px;
+          font-family: "Poppins", sans-serif;
+          cursor: pointer;
+          transition: all 0.3s;
+          .btn-icon {
+            font-size: 18px;
+            transition: transform 0.3s;
+          }
+          &:hover {
+            background-color: #333;
+            transform: translateY(-1px);
+            .btn-icon {
+              transform: translateX(1px) translateY(-1px);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* ================== SAĞ TƏRƏF: ƏVVƏLKİ MÜRACİƏTLƏR ================== */
+  .history-section {
+    .accordion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      .accordion-item {
+        background-color: #f7f3f0;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s;
+        border: 1px solid transparent;
+
+        &.active {
+          background-color: #fff;
+          border-color: #eee;
+          .accordion-header {
+            border-bottom: 1px solid #f0f0f0;
+            .accordion-icon {
+              transform: rotate(180deg);
+            }
+          }
+          .accordion-body {
+            max-height: 500px;
+            padding: 20px;
+            opacity: 1;
+          }
+        }
+
+        .accordion-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 18px 20px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          &:hover {
+            background-color: #f0ebe8;
+          }
+
+          .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            .status-dot {
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              flex-shrink: 0;
+            }
+            .status-dot.green {
+              background-color: #10b981;
+            }
+            .status-dot.orange {
+              background-color: #f59e0b;
+            }
+            .app-title {
+              font-weight: 600;
+              font-size: 15px;
+              color: #1a1a1a;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 250px;
+            }
+          }
+
+          .header-right {
+            .accordion-icon {
+              color: #888;
+              font-size: 20px;
+              transition: transform 0.3s;
+            }
+          }
+        }
+
+        .accordion-body {
+          max-height: 0;
+          padding: 0 20px;
+          opacity: 0;
+          overflow: hidden;
+          transition: all 0.3s ease-in-out;
+          background-color: #fff;
+
+          .app-content,
+          .app-reply {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            strong {
+              font-size: 13px;
+              color: #888;
+              font-weight: 600;
+            }
+            p {
+              margin: 0;
+              font-size: 14px;
+              color: #333;
+              line-height: 1.5;
+            }
+          }
+
+          .app-content {
+            margin-bottom: 15px;
+            .app-date {
+              font-size: 12px;
+              color: #aaa;
+              margin-top: 5px;
+            }
+          }
+
+          .app-reply {
+            background-color: #f0fdf4;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #10b981;
+          }
+        }
+      }
+    }
+  }
+
+  /* ================== RESPONSİVLİK ================== */
+  @media screen and (max-width: 1024px) {
+    .applications-grid {
+      grid-template-columns: 1fr; /* Tabletdə alt-alta keçir */
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .top-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+    .modern-card {
+      padding: 20px;
+    }
+    .form-section .application-form .form-row {
+      flex-direction: column;
+      gap: 15px;
+    }
+    .form-section .application-form .form-actions {
+      justify-content: stretch;
+      .submit-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    .history-section
+      .accordion-list
+      .accordion-item
+      .accordion-header
+      .header-left
+      .app-title {
+      max-width: 180px;
+    }
+  }
+}

@@ -48,7 +48,7 @@ function Sidebar({ isOpen, setIsOpen }) {
       path: "/applications",
       icon: <FaRegMessage />,
     },
-    { name: "Paketlər", path: "/package", icon: <PiPackage /> },
+    { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
     { name: "Analitika", path: "/analys", icon: <TbBrandGoogleAnalytics /> },
   ];
 
