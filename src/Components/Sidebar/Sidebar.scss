@@ -10,7 +10,7 @@
   border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
   border-radius: 40px;
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* YENİLƏNDİ */
+     /* YENİLƏNDİ */
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 1000;
@@ -162,7 +162,7 @@
     background-color: var(--nav-item-active-bg); /* YENİLƏNDİ */
     border-color: var(--border-focus); /* YENİLƏNDİ */
     color: var(--nav-item-active-text); /* YENİLƏNDİ */
-    box-shadow: 0 0 15px rgba(200, 167, 94, 0.2); /* YENİLƏNDİ */
+     
   }
 }
 
@@ -280,7 +280,7 @@
 .sub-menu-item.active .sub-menu-dot {
   background-color: var(--text-link); /* YENİLƏNDİ */
   transform: scale(1.5);
-  box-shadow: 0 0 8px rgba(200, 167, 94, 0.6); /* YENİLƏNDİ */
+   
 }
 
 /* Qırmızı Bildiriş Nöqtəsi */
@@ -339,7 +339,7 @@
   border: none;
   border-radius: 50%;
   font-size: 24px;
-  box-shadow: var(--btn-primary-shadow); /* YENİLƏNDİ */
+     /* YENİLƏNDİ */
   z-index: 800;
   cursor: pointer;
   align-items: center;

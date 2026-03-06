@@ -85,7 +85,7 @@
           z-index: 100;
           pointer-events: none;
           line-height: 1.5;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* YENİLƏNDİ */
+             /* YENİLƏNDİ */
           &::after {
             content: "";
             position: absolute;
@@ -110,7 +110,7 @@
       border-radius: 30px;
       padding: 30px;
       width: 100%;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* YENİLƏNDİ */
+        /* YENİLƏNDİ */
     }
 
     .pricing-table {
@@ -208,7 +208,7 @@
             background: var(--bg-hover); /* YENİLƏNDİ */
             border: 1px solid var(--border-strong); /* YENİLƏNDİ */
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+       
 
             h3 {
               color: var(--text-primary);
@@ -234,7 +234,7 @@
               letter-spacing: 0.5px;
               text-transform: uppercase;
               white-space: nowrap;
-              box-shadow: 0 4px 10px rgba(200, 167, 94, 0.3);
+         
             }
           }
         }
@@ -507,7 +507,7 @@
               background: var(--btn-primary-bg); /* YENİLƏNDİ */
               border-color: var(--btn-primary-bg); /* YENİLƏNDİ */
               color: var(--text-on-gold); /* YENİLƏNDİ */
-              box-shadow: var(--btn-primary-shadow); /* YENİLƏNDİ */
+                 /* YENİLƏNDİ */
               &:hover {
                 background: var(--btn-primary-hover);
               }
@@ -533,7 +533,7 @@
         &.pro {
           background-color: var(--bg-hover); /* YENİLƏNDİ */
           border: 1px solid var(--border-focus); /* YENİLƏNDİ */
-          box-shadow: 0 5px 25px rgba(200, 167, 94, 0.1); /* YENİLƏNDİ */
+        /* YENİLƏNDİ */
 
           &.is-current {
             background-color: var(--bg-active); /* YENİLƏNDİ */
@@ -554,7 +554,7 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
             white-space: nowrap;
-            box-shadow: 0 4px 10px rgba(200, 167, 94, 0.3);
+       
           }
 
           .card-top {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./Components/Layout/Layout";
 import HomePage from "./Pages/HomePage";
@@ -10,6 +10,18 @@ import AnalysPage from "./Pages/AnalysPage";
 import LoginPage from "./Pages/LoginPage"; // İçində LoginMain olan fayl
 
 function App() {
+  // Bura əlavə edildi: Proqram yükləndiyində mövzunu oxu və tətbiq et
+  useEffect(() => {
+    // 1. Yaddaşda olan mövzunu al, yoxdursa "dark" olaraq təyin et
+    const savedTheme = localStorage.getItem("theme") || "dark";
+
+    // 2. İlk dəfə girən istifadəçi üçün ehtiyat olaraq yaddaşa yaz
+    localStorage.setItem("theme", savedTheme);
+
+    // 3. HTML-in ana teqinə (document.documentElement) "data-theme" atributunu əlavə et
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []); // Boş asılılıq massivi (dependency array) o deməkdir ki, yalnız ilk render-də işləyəcək
+
   return (
     <BrowserRouter>
       <Routes>

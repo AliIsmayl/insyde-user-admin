@@ -94,7 +94,6 @@ function HomeMain() {
       {/* SOL TƏRƏF: FORM VƏ MƏLUMAT GİRİŞİ */}
       {/* ======================================= */}
       <div className="form-section">
-        {/* Üst Başlıq (Çıxış düyməsi silindi) */}
         <div className="top-header">
           <div>
             <h2 className="page-title">İdarəetmə Sistemi</h2>
@@ -230,7 +229,6 @@ function HomeMain() {
                     </button>
                   </div>
 
-                  {/* Select */}
                   <div className="social-select">
                     <span className="select-icon">{link.icon}</span>
                     <select
@@ -247,7 +245,6 @@ function HomeMain() {
                     </select>
                   </div>
 
-                  {/* İnput */}
                   <input
                     type="text"
                     placeholder="Linkinizi bura yapışdırın"
@@ -264,25 +261,6 @@ function HomeMain() {
               <FaPlus /> Yeni Link Əlavə Et
             </button>
           </div>
-
-          {/* ======================================= */}
-          {/* RƏNGLƏR (ORTALANDI) */}
-          {/* ======================================= */}
-          <div className="theme-color-section">
-            <label>Profil Rəngi / Tema Rəngi</label>
-            <div className="color-palette">
-              {colors.map((color, index) => (
-                <div
-                  key={index}
-                  className={`color-box ${formData.themeColor === color ? "active" : ""}`}
-                  style={{ backgroundColor: color }}
-                  onClick={() =>
-                    setFormData({ ...formData, themeColor: color })
-                  }
-                ></div>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="bottom-actions">
@@ -296,7 +274,7 @@ function HomeMain() {
       </div>
 
       {/* ======================================= */}
-      {/* SAĞ TƏRƏF: TELEFON PREVIEW */}
+      {/* SAĞ TƏRƏF: TELEFON PREVIEW VƏ RƏNGLƏR */}
       {/* ======================================= */}
       <div className="preview-section">
         <div className="phone-mockup">
@@ -376,6 +354,25 @@ function HomeMain() {
                 ) : null,
               )}
             </div>
+          </div>
+        </div>
+
+        {/* ======================================= */}
+        {/* RƏNGLƏR BÖLMƏSİ (TELEFONUN ALTINDA) */}
+        {/* ======================================= */}
+        <div className="theme-color-section">
+          <label>Profil Rəngi / Tema Rəngi</label>
+          <div className="color-palette">
+            {colors.map((color, index) => (
+              <div
+                key={index}
+                className={`color-box ${
+                  formData.themeColor === color ? "active" : ""
+                }`}
+                style={{ backgroundColor: color }}
+                onClick={() => setFormData({ ...formData, themeColor: color })}
+              ></div>
+            ))}
           </div>
         </div>
       </div>

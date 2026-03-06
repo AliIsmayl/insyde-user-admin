@@ -8,7 +8,7 @@
   background-color: var(--bg-panel); /* YENİLƏNDİ */
   border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
   border-radius: 20px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* YENİLƏNDİ */
+    
   color: var(--text-secondary); /* YENİLƏNDİ */
   font-size: 14px;
   font-family: "Poppins", sans-serif;
@@ -58,7 +58,7 @@
       border-color: var(--border-focus); /* YENİLƏNDİ */
       color: var(--text-link); /* YENİLƏNDİ: Gold rəng */
       transform: translateY(-3px); 
-      box-shadow: 0 4px 10px rgba(200, 167, 94, 0.2); /* YENİLƏNDİ */
+       
     }
   }
 }

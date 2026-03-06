@@ -10,23 +10,23 @@ import {
 import "./SettingsMain.scss";
 
 function SettingsMain() {
-  // Mövzu dəyişdirmə (Dark / Light)
-  const [theme, setTheme] = useState("dark"); // Default olaraq dark qoyuruq
+  // STATE YARADARKƏN BİRBAŞA LOCALSTORAGE-DAN OXUYURUQ:
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "dark";
+  });
 
+  // Hər ehtimala qarşı qlobal HTML atributunu yeniləyirik
   useEffect(() => {
-    // Səhifə açılanda lokal yaddaşdan mövzunu oxu
-    const savedTheme = localStorage.getItem("theme") || "dark";
-    setTheme(savedTheme);
-    document.documentElement.setAttribute("data-theme", savedTheme);
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const handleThemeChange = (selectedTheme) => {
     setTheme(selectedTheme);
-    localStorage.setItem("theme", selectedTheme);
-    document.documentElement.setAttribute("data-theme", selectedTheme);
+    localStorage.setItem("theme", selectedTheme); // LocalStorage-a yaz
+    document.documentElement.setAttribute("data-theme", selectedTheme); // CSS-i dəyiş
   };
 
-  // Şifrə hissəsi üçün state-lər
+  // ... ŞİFRƏ HİSSƏSİNİN KODLARI (olduğu kimi qalır) ...
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",

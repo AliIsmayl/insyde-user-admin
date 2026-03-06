@@ -59,7 +59,7 @@
           background-color: var(--bg-active); /* YENİLƏNDİ */
           color: var(--text-link); /* YENİLƏNDİ */
           border-color: var(--border-strong); /* YENİLƏNDİ */
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+         
         }
       }
     }
@@ -87,12 +87,12 @@
       gap: 20px;
       transition:
         transform 0.3s ease,
-        box-shadow 0.3s ease;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* YENİLƏNDİ */
+          0.3s ease;
+         /* YENİLƏNDİ */
 
       &:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  
         border-color: var(--border-focus); /* YENİLƏNDİ */
       }
 
@@ -159,7 +159,7 @@
       padding: 25px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* YENİLƏNDİ */
+         /* YENİLƏNDİ */
 
       .card-header {
         margin-bottom: 25px;

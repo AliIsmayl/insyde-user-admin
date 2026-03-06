@@ -2,7 +2,7 @@
 
 .home-main-modern-split {
   font-family: "Poppins", sans-serif;
-  color: var(--text-primary); /* YENİLƏNDİ */
+  color: var(--text-primary);
   width: 100%;
   display: flex;
   gap: 30px;
@@ -29,15 +29,15 @@
       font-weight: 500;
       display: inline-block;
       margin: 0 15px 0 0;
-      color: var(--text-primary); /* YENİLƏNDİ */
+      color: var(--text-primary);
     }
     .badge.premium {
-      background: var(--badge-premium-bg); /* YENİLƏNDİ */
-      color: var(--text-on-gold); /* YENİLƏNDİ */
+      background: var(--badge-premium-bg);
+      color: var(--text-on-gold);
       padding: 5px 12px;
       border-radius: 20px;
       font-size: 12px;
-      font-weight: 600; /* YENİLƏNDİ: Tünd mətndə daha yaxşı oxunması üçün */
+      font-weight: 600;
     }
 
     .header-actions {
@@ -46,17 +46,16 @@
       gap: 15px;
       .time-left {
         font-size: 14px;
-        color: var(--text-secondary); /* YENİLƏNDİ */
+        color: var(--text-secondary);
         font-weight: 500;
       }
     }
   }
 
   .modern-card {
-    background-color: var(--bg-panel); /* YENİLƏNDİ */
-    border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
     border-radius: 30px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* YENİLƏNDİ: Tünd mövzu kölgəsi */
     padding: 30px;
     display: flex;
     flex-direction: column;
@@ -65,7 +64,7 @@
     label {
       font-size: 13px;
       font-weight: 600;
-      color: var(--text-secondary); /* YENİLƏNDİ */
+      color: var(--text-secondary);
       margin-bottom: 8px;
       display: block;
     }
@@ -73,28 +72,28 @@
     input[type="text"],
     textarea {
       width: 100%;
-      background-color: var(--bg-input); /* YENİLƏNDİ */
-      border: 1px solid var(--border-input); /* YENİLƏNDİ */
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
       border-radius: 12px;
       padding: 12px 15px;
       font-size: 14px;
       font-family: "Poppins", sans-serif;
-      color: var(--text-primary); /* YENİLƏNDİ */
+      color: var(--text-primary);
       transition: all 0.3s;
       outline: none;
       resize: none;
 
       &::placeholder {
-        color: var(--text-muted); /* YENİLƏNDİ */
+        color: var(--text-muted);
       }
 
       &:focus {
-        border-color: var(--border-focus); /* YENİLƏNDİ */
-        background-color: var(--bg-hover); /* YENİLƏNDİ */
+        border-color: var(--border-focus);
+        background-color: var(--bg-hover);
       }
 
       &:hover {
-        border-color: var(--border-input-hover); /* YENİLƏNDİ */
+        border-color: var(--border-input-hover);
       }
     }
 
@@ -114,8 +113,8 @@
         label {
           width: 100%;
           height: 100%;
-          border: 2px dashed var(--border-strong); /* YENİLƏNDİ */
-          background-color: var(--bg-input); /* YENİLƏNDİ */
+          border: 2px dashed var(--border-strong);
+          background-color: var(--bg-input);
           border-radius: 15px;
           display: flex;
           flex-direction: column;
@@ -124,18 +123,18 @@
           cursor: pointer;
           transition: all 0.3s;
           &:hover {
-            border-color: var(--border-focus); /* YENİLƏNDİ */
-            background-color: var(--bg-hover); /* YENİLƏNDİ */
+            border-color: var(--border-focus);
+            background-color: var(--bg-hover);
           }
           .upload-icon {
             font-size: 24px;
-            color: var(--text-secondary); /* YENİLƏNDİ */
+            color: var(--text-secondary);
             margin-bottom: 5px;
           }
           span {
             font-size: 11px;
             font-weight: 600;
-            color: var(--text-secondary); /* YENİLƏNDİ */
+            color: var(--text-secondary);
           }
           .preview-img-small {
             width: 100%;
@@ -166,14 +165,14 @@
           font-weight: 700;
           font-size: 15px;
           &.green {
-            background-color: var(--badge-success-bg); /* YENİLƏNDİ */
-            color: var(--badge-success-text); /* YENİLƏNDİ */
-            border: 1px solid rgba(46, 204, 113, 0.3); /* YENİLƏNDİ */
+            background-color: var(--badge-success-bg);
+            color: var(--badge-success-text);
+            border: 1px solid rgba(46, 204, 113, 0.3);
           }
           &.code {
-            background-color: var(--badge-bg); /* YENİLƏNDİ */
-            color: var(--badge-text); /* YENİLƏNDİ */
-            border: 1px solid var(--border-default); /* YENİLƏNDİ */
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+            border: 1px solid var(--border-default);
           }
         }
       }
@@ -211,15 +210,15 @@
         display: flex;
         gap: 15px;
         align-items: center;
-        background-color: var(--bg-input); /* YENİLƏNDİ */
-        border: 1px solid var(--border-input); /* YENİLƏNDİ */
+        background-color: var(--bg-input);
+        border: 1px solid var(--border-input);
         padding: 10px 15px;
         border-radius: 15px;
         transition: all 0.3s;
         flex-wrap: wrap;
         &:hover {
-          background-color: var(--bg-hover); /* YENİLƏNDİ */
-          border-color: var(--border-input-hover); /* YENİLƏNDİ */
+          background-color: var(--bg-hover);
+          border-color: var(--border-input-hover);
         }
 
         .row-top-mobile {
@@ -229,9 +228,9 @@
         .order-num {
           width: 40px;
           height: 40px;
-          background: var(--bg-panel); /* YENİLƏNDİ */
-          color: var(--text-primary); /* YENİLƏNDİ */
-          border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
+          background: var(--bg-panel);
+          color: var(--text-primary);
+          border: 1px solid var(--border-subtle);
           border-radius: 10px;
           display: flex;
           align-items: center;
@@ -243,9 +242,9 @@
         .remove-link-btn {
           width: 40px;
           height: 40px;
-          background: rgba(192, 57, 43, 0.1); /* YENİLƏNDİ */
-          color: var(--btn-danger-bg); /* YENİLƏNDİ */
-          border: 1px solid rgba(192, 57, 43, 0.2); /* YENİLƏNDİ */
+          background: rgba(192, 57, 43, 0.1);
+          color: var(--btn-danger-bg);
+          border: 1px solid rgba(192, 57, 43, 0.2);
           border-radius: 10px;
           display: flex;
           align-items: center;
@@ -255,7 +254,7 @@
           transition: all 0.2s;
           flex-shrink: 0;
           &:hover {
-            background: var(--btn-danger-hover); /* YENİLƏNDİ */
+            background: var(--btn-danger-hover);
             color: #fff;
           }
         }
@@ -263,10 +262,10 @@
         .social-select {
           display: flex;
           align-items: center;
-          background: var(--bg-panel); /* YENİLƏNDİ */
+          background: var(--bg-panel);
           height: 45px;
           border-radius: 10px;
-          border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
+          border: 1px solid var(--border-subtle);
           width: 150px;
           overflow: hidden;
           position: relative;
@@ -274,7 +273,7 @@
 
           .select-icon {
             padding-left: 15px;
-            color: var(--text-primary); /* YENİLƏNDİ */
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             font-size: 16px;
@@ -289,14 +288,12 @@
             font-family: "Poppins", sans-serif;
             font-size: 14px;
             font-weight: 500;
-            color: var(--text-primary); /* YENİLƏNDİ */
+            color: var(--text-primary);
             cursor: pointer;
             appearance: none;
 
             option {
-              background-color: var(
-                --bg-panel
-              ); /* YENİLƏNDİ: Açılan menü fonu */
+              background-color: var(--bg-panel);
               color: var(--text-primary);
             }
           }
@@ -305,7 +302,7 @@
         input {
           flex: 1;
           min-width: 150px;
-          background-color: transparent !important; /* YENİLƏNDİ: Alt fondan seçilməməsi üçün */
+          background-color: transparent !important;
           border: none !important;
           padding: 0 10px !important;
 
@@ -321,9 +318,9 @@
         width: 100%;
         height: 45px;
         background: transparent;
-        border: 2px dashed var(--border-strong); /* YENİLƏNDİ */
+        border: 2px dashed var(--border-strong);
         border-radius: 12px;
-        color: var(--text-secondary); /* YENİLƏNDİ */
+        color: var(--text-secondary);
         font-size: 15px;
         font-weight: 600;
         cursor: pointer;
@@ -334,49 +331,9 @@
         gap: 10px;
         transition: all 0.3s;
         &:hover {
-          border-color: var(--border-focus); /* YENİLƏNDİ */
-          color: var(--text-link-hover); /* YENİLƏNDİ */
-          background-color: var(--bg-hover); /* YENİLƏNDİ */
-        }
-      }
-    }
-
-    /* === RƏNGLƏR (ORTALANDI) === */
-    .theme-color-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      margin-top: 10px;
-
-      label {
-        margin-bottom: 12px;
-      }
-
-      .color-palette {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-        flex-wrap: wrap;
-        width: 100%;
-
-        .color-box {
-          width: 50px;
-          height: 30px;
-          border-radius: 8px;
-          cursor: pointer;
-          transition:
-            transform 0.2s,
-            box-shadow 0.2s;
-          border: 1px solid rgba(255, 255, 255, 0.1); /* YENİLƏNDİ: Tünd mövzu üçün yüngül kənar */
-          &:hover {
-            transform: translateY(-2px);
-          }
-          &.active {
-            border: 2px solid var(--text-primary); /* YENİLƏNDİ */
-            transform: scale(1.1);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-          }
+          border-color: var(--border-focus);
+          color: var(--text-link-hover);
+          background-color: var(--bg-hover);
         }
       }
     }
@@ -394,9 +351,9 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      background-color: var(--badge-success-bg); /* YENİLƏNDİ */
-      color: var(--badge-success-text); /* YENİLƏNDİ */
-      border: 1px solid rgba(46, 204, 113, 0.2); /* YENİLƏNDİ */
+      background-color: var(--badge-success-bg);
+      color: var(--badge-success-text);
+      border: 1px solid rgba(46, 204, 113, 0.2);
       padding: 10px 20px;
       border-radius: 12px;
       font-weight: 600;
@@ -410,48 +367,48 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      background-color: var(--btn-primary-bg); /* YENİLƏNDİ */
-      color: var(--text-on-gold); /* YENİLƏNDİ */
+      background-color: var(--btn-primary-bg);
+      color: var(--text-on-gold);
       border: none;
       padding: 12px 30px;
       border-radius: 12px;
-      font-weight: 600; /* YENİLƏNDİ */
+      font-weight: 600;
       font-size: 15px;
       cursor: pointer;
       transition: all 0.3s;
       flex: 1;
       font-family: "Poppins", sans-serif;
-      box-shadow: var(--btn-primary-shadow); /* YENİLƏNDİ */
 
       min-width: 200px;
       &:hover {
-        background-color: var(--btn-primary-hover); /* YENİLƏNDİ */
+        background-color: var(--btn-primary-hover);
         transform: translateY(-2px);
       }
       &:active {
-        background-color: var(--btn-primary-active); /* YENİLƏNDİ */
+        background-color: var(--btn-primary-active);
         transform: translateY(0);
       }
     }
   }
 
-  /* ================== SAĞ TƏRƏF (LIVE PREVIEW) ================== */
+  /* ================== SAĞ TƏRƏF (LIVE PREVIEW & COLORS) ================== */
   .preview-section {
     width: 320px;
     flex-shrink: 0;
     position: sticky;
     top: 20px;
     display: flex;
-    justify-content: center;
+    flex-direction: column; /* Alt-alta düzmək üçün */
+    align-items: center;
+    gap: 20px; /* Telefon və rəng paleti arası məsafə */
   }
 
   .phone-mockup {
     width: 100%;
     height: 650px;
-    background-color: var(--bg-app); /* YENİLƏNDİ: Telefon fonu tünd */
-    border: 10px solid #000; /* YENİLƏNDİ: Telefon kənarı qara */
+    background-color: var(--bg-app);
+    border: 10px solid #000;
     border-radius: 40px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); /* YENİLƏNDİ */
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -465,7 +422,7 @@
       transform: translateX(-50%);
       width: 120px;
       height: 25px;
-      background-color: #000; /* YENİLƏNDİ: Çərtik qara */
+      background-color: #000;
       border-bottom-left-radius: 15px;
       border-bottom-right-radius: 15px;
       z-index: 10;
@@ -476,7 +433,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      color: #fff; /* Tünd və ya qızılı fonda ağ mətn hər zaman yaxşıdır */
+      color: #fff;
       transition: background-color 0.3s ease;
 
       .preview-avatar {
@@ -500,20 +457,20 @@
         font-size: 20px;
         font-weight: 700;
         text-align: center;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* YENİLƏNDİ: Oxunaqlılıq üçün */
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       }
       .preview-profession {
         margin: 0;
         font-size: 13px;
         opacity: 0.9;
         text-align: center;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* YENİLƏNDİ */
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       }
     }
 
     .phone-body {
       flex: 1;
-      background-color: var(--bg-panel); /* YENİLƏNDİ: Telefon içi tünd */
+      background-color: var(--bg-panel);
       padding: 20px;
       overflow-y: auto;
       display: flex;
@@ -526,13 +483,13 @@
       h4 {
         margin: 0 0 10px 0;
         font-size: 14px;
-        color: var(--text-primary); /* YENİLƏNDİ */
+        color: var(--text-primary);
       }
 
       .preview-about p {
         margin: 0;
         font-size: 12px;
-        color: var(--text-secondary); /* YENİLƏNDİ */
+        color: var(--text-secondary);
         line-height: 1.6;
         word-wrap: break-word;
       }
@@ -547,7 +504,6 @@
           font-size: 11px;
           font-weight: 600;
           transition: all 0.3s;
-          /* Rəng JS tərəfindən idarə olunur, amma border əlavə edirik */
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
       }
@@ -560,13 +516,13 @@
           display: flex;
           align-items: center;
           gap: 12px;
-          background: var(--bg-input); /* YENİLƏNDİ */
-          border: 1px solid var(--border-input); /* YENİLƏNDİ */
+          background: var(--bg-input);
+          border: 1px solid var(--border-input);
           padding: 12px 15px;
           border-radius: 15px;
           font-size: 13px;
           font-weight: 500;
-          color: var(--text-primary); /* YENİLƏNDİ */
+          color: var(--text-primary);
           transition: all 0.3s;
 
           span:first-child {
@@ -586,6 +542,53 @@
     }
   }
 
+  /* Rənglər bölməsi telefonun altında */
+  .theme-color-section {
+    width: 100%;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+
+      .color-box {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          border 0.2s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        &:hover {
+          transform: translateY(-2px);
+        }
+        &.active {
+          border: 2px solid var(--text-primary);
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+
   /* ================== MOBİL RESPONSİVLİK ================== */
   @media screen and (max-width: 1100px) {
     flex-direction: column;
@@ -595,6 +598,9 @@
       align-items: center;
       margin-top: 20px;
       .phone-mockup {
+        max-width: 350px;
+      }
+      .theme-color-section {
         max-width: 350px;
       }
     }
@@ -621,7 +627,6 @@
       flex-direction: column;
     }
 
-    /* LİNK BOX MOBİL GÖRÜNÜŞÜ */
     .links-wrapper .social-add-row {
       flex-direction: column;
       align-items: stretch;
@@ -665,6 +670,9 @@
         width: 100px;
         height: 20px;
       }
+    }
+    .preview-section .theme-color-section {
+      max-width: 300px;
     }
   }
 }
