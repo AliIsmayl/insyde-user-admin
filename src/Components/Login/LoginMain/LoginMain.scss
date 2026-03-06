@@ -7,20 +7,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f7f3f0;
+  background-color: var(--bg-app); /* YENİLƏNDİ */
   padding: 20px;
 
   .login-card {
-    background-color: #ffffff;
+    background-color: var(--bg-panel); /* YENİLƏNDİ */
     width: 100%;
     max-width: 450px;
     border-radius: 30px;
-     
+    border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
+    box-shadow: var(--card-shadow); /* YENİLƏNDİ */
     padding: 40px 40px;
     display: flex;
     flex-direction: column;
     gap: 30px;
-    position: relative; /* Geri düyməsi üçün */
+    position: relative;
 
     /* Mesaj qutuları (Xəta və Uğur) */
     .message {
@@ -30,30 +31,32 @@
       text-align: center;
       font-weight: 500;
       &.error-msg {
-        background-color: #fee2e2;
-        color: #ef4444;
+        background-color: var(--btn-danger-bg); /* YENİLƏNDİ */
+        color: #ffffff;
+        border: 1px solid rgba(231, 76, 60, 0.3);
       }
       &.success-msg {
-        background-color: #d1fae5;
-        color: #10b981;
+        background-color: var(--badge-success-bg); /* YENİLƏNDİ */
+        color: var(--badge-success-text); /* YENİLƏNDİ */
+        border: 1px solid rgba(46, 204, 113, 0.3);
       }
     }
 
-    /* Geri qayıt düyməsi (Forgot password formunda) */
+    /* Geri qayıt düyməsi */
     .back-btn {
       display: flex;
       align-items: center;
       gap: 5px;
       font-size: 14px;
       font-weight: 600;
-      color: #888;
+      color: var(--text-secondary); /* YENİLƏNDİ */
       cursor: pointer;
       width: max-content;
       transition: color 0.2s;
       margin-bottom: -10px;
 
       &:hover {
-        color: #1a1a1a;
+        color: var(--text-link); /* YENİLƏNDİ */
       }
     }
 
@@ -66,7 +69,7 @@
       .logo-text {
         font-size: 28px;
         font-weight: 800;
-        color: #e1b12c;
+        color: var(--text-link); /* YENİLƏNDİ */
         letter-spacing: -1px;
         margin-bottom: 5px;
       }
@@ -75,13 +78,13 @@
         margin: 0;
         font-size: 24px;
         font-weight: 700;
-        color: #1a1a1a;
+        color: var(--text-primary); /* YENİLƏNDİ */
       }
 
       p {
         margin: 0;
         font-size: 14px;
-        color: #888;
+        color: var(--text-secondary); /* YENİLƏNDİ */
       }
     }
 
@@ -98,7 +101,7 @@
         label {
           font-size: 13px;
           font-weight: 600;
-          color: #444;
+          color: var(--text-secondary); /* YENİLƏNDİ */
           margin-left: 5px;
         }
 
@@ -110,7 +113,7 @@
           .input-icon {
             position: absolute;
             left: 18px;
-            color: #888;
+            color: var(--text-muted); /* YENİLƏNDİ */
             font-size: 18px;
             transition: color 0.3s;
           }
@@ -119,26 +122,30 @@
             width: 100%;
             padding: 16px 20px 16px 45px;
             border-radius: 15px;
-            border: 2px solid #f0f0f0;
-            background-color: #fcfcfc;
+            border: 2px solid var(--border-input); /* YENİLƏNDİ */
+            background-color: var(--bg-input); /* YENİLƏNDİ */
             font-family: "Poppins", sans-serif;
             font-size: 14px;
-            color: #1a1a1a;
+            color: var(--text-primary); /* YENİLƏNDİ */
             outline: none;
             transition: all 0.3s ease;
 
             &::placeholder {
-              color: #bbb;
+              color: var(--text-muted); /* YENİLƏNDİ */
+            }
+
+            &:hover {
+              border-color: var(--border-input-hover); /* YENİLƏNDİ */
             }
 
             &:focus {
-              border-color: #10b981;
-              background-color: #ffffff;
-         
+              border-color: var(--border-focus); /* YENİLƏNDİ */
+              background-color: var(--bg-hover); /* YENİLƏNDİ */
+              box-shadow: 0 0 10px rgba(200, 167, 94, 0.1);
 
               & ~ .input-icon,
               .input-icon {
-                color: #10b981;
+                color: var(--border-focus); /* YENİLƏNDİ */
               }
             }
           }
@@ -148,7 +155,7 @@
             right: 15px;
             background: transparent;
             border: none;
-            color: #888;
+            color: var(--text-muted); /* YENİLƏNDİ */
             font-size: 18px;
             cursor: pointer;
             display: flex;
@@ -158,7 +165,7 @@
             transition: color 0.2s;
 
             &:hover {
-              color: #1a1a1a;
+              color: var(--text-primary); /* YENİLƏNDİ */
             }
           }
         }
@@ -176,13 +183,13 @@
           gap: 8px;
           cursor: pointer;
           font-size: 13px;
-          color: #555;
+          color: var(--text-secondary); /* YENİLƏNDİ */
           font-weight: 500;
 
           input[type="checkbox"] {
             width: 16px;
             height: 16px;
-            accent-color: #10b981;
+            accent-color: var(--text-link); /* YENİLƏNDİ */
             cursor: pointer;
           }
         }
@@ -190,12 +197,12 @@
         .forgot-password {
           font-size: 13px;
           font-weight: 600;
-          color: #e1b12c;
+          color: var(--text-link); /* YENİLƏNDİ */
           cursor: pointer;
           transition: color 0.2s;
 
           &:hover {
-            color: #c99e23;
+            color: var(--text-link-hover); /* YENİLƏNDİ */
             text-decoration: underline;
           }
         }
@@ -206,41 +213,46 @@
         padding: 16px 0;
         border-radius: 15px;
         border: none;
-        background-color: #1a1a1a;
-        color: #ffffff;
+        background-color: var(--btn-primary-bg); /* YENİLƏNDİ */
+        color: var(--text-on-gold); /* YENİLƏNDİ */
         font-family: "Poppins", sans-serif;
         font-size: 16px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
         margin-top: 10px;
+        box-shadow: var(--btn-primary-shadow); /* YENİLƏNDİ */
 
         &:hover {
-          background-color: #e1b12c;
-    
+          background-color: var(--btn-primary-hover); /* YENİLƏNDİ */
           transform: translateY(-2px);
+        }
+
+        &:active {
+          background-color: var(--btn-primary-active); /* YENİLƏNDİ */
+          transform: translateY(0);
         }
       }
     }
 
     .login-footer {
       text-align: center;
-      border-top: 1px dashed #eee;
+      border-top: 1px dashed var(--border-subtle); /* YENİLƏNDİ */
       padding-top: 20px;
 
       p {
         margin: 0;
         font-size: 14px;
-        color: #666;
+        color: var(--text-secondary); /* YENİLƏNDİ */
 
         .link-text {
-          color: #10b981;
+          color: var(--text-link); /* YENİLƏNDİ */
           font-weight: 700;
           cursor: pointer;
           transition: color 0.2s;
 
           &:hover {
-            color: #059669;
+            color: var(--text-link-hover); /* YENİLƏNDİ */
             text-decoration: underline;
           }
         }
