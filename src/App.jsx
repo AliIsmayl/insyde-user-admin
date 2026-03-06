@@ -18,7 +18,6 @@ function App() {
 
         {/* LAYOUT-LU SƏHİFƏLƏR (Dashboard, Sidebar və Navbar olacaq) */}
         <Route path="/" element={<Layout />}>
-          {/* Əgər birbaşa "/" yazılarsa, hələlik ev səhifəsini açsın */}
           <Route index element={<HomePage />} />
           <Route path="applications" element={<ApplicationsPage />} />
           <Route path="settings" element={<SettingPage />} />

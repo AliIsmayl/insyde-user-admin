@@ -2,7 +2,7 @@
 
 .applications-main-modern {
   font-family: "Poppins", sans-serif;
-  color: #1a1a1a;
+  color: var(--text-primary); /* YENİLƏNDİ */
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -17,10 +17,11 @@
       font-size: 24px;
       font-weight: 500;
       margin: 0 0 5px 0;
+      color: var(--text-primary); /* YENİLƏNDİ */
     }
     .page-subtitle {
       font-size: 14px;
-      color: #888;
+      color: var(--text-secondary); /* YENİLƏNDİ */
       margin: 0;
     }
   }
@@ -28,18 +29,20 @@
   /* ================== ƏSAS GRİD (YAN-YANA) ================== */
   .applications-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Ekranı yarı-yarıya bölür */
+    grid-template-columns: 1fr 1fr;
     gap: 30px;
     align-items: start;
   }
 
   /* ================== ÜMUMİ KART DİZAYNI ================== */
   .modern-card {
-    background-color: #ffffff;
+    background-color: var(--bg-panel); /* YENİLƏNDİ */
+    border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
     border-radius: 30px;
     padding: 30px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* YENİLƏNDİ: Tünd mövzu kölgəsi */
 
     .card-header {
       margin-bottom: 25px;
@@ -47,11 +50,11 @@
         font-size: 20px;
         font-weight: 500;
         margin: 0 0 8px 0;
-        color: #1a1a1a;
+        color: var(--text-primary); /* YENİLƏNDİ */
       }
       p {
         font-size: 14px;
-        color: #777;
+        color: var(--text-secondary); /* YENİLƏNDİ */
         margin: 0;
       }
     }
@@ -83,7 +86,7 @@
         label {
           font-size: 13px;
           font-weight: 600;
-          color: #555;
+          color: var(--text-secondary); /* YENİLƏNDİ */
         }
 
         .select-wrapper {
@@ -91,20 +94,29 @@
           select {
             width: 100%;
             height: 48px;
-            background-color: #f7f3f0;
-            border: 1px solid transparent;
+            background-color: var(--bg-input); /* YENİLƏNDİ */
+            border: 1px solid var(--border-input); /* YENİLƏNDİ */
             border-radius: 12px;
             padding: 0 40px 0 15px;
             font-family: "Poppins", sans-serif;
             font-size: 14px;
-            color: #1a1a1a;
+            color: var(--text-primary); /* YENİLƏNDİ */
             cursor: pointer;
             appearance: none;
             outline: none;
             transition: all 0.3s;
+
+            option {
+              background-color: var(--bg-panel); /* YENİLƏNDİ */
+              color: var(--text-primary);
+            }
+
             &:focus {
-              border-color: #ccc;
-              background-color: #fff;
+              border-color: var(--border-focus); /* YENİLƏNDİ */
+              background-color: var(--bg-hover); /* YENİLƏNDİ */
+            }
+            &:hover {
+              border-color: var(--border-input-hover); /* YENİLƏNDİ */
             }
           }
           .select-icon {
@@ -112,7 +124,7 @@
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #888;
+            color: var(--text-muted); /* YENİLƏNDİ */
             pointer-events: none;
           }
         }
@@ -120,27 +132,29 @@
         input[type="text"],
         textarea {
           width: 100%;
-          background-color: #f7f3f0;
-          border: 1px solid transparent;
+          background-color: var(--bg-input); /* YENİLƏNDİ */
+          border: 1px solid var(--border-input); /* YENİLƏNDİ */
           border-radius: 12px;
           padding: 12px 15px;
           font-family: "Poppins", sans-serif;
           font-size: 14px;
-          color: #1a1a1a;
+          color: var(--text-primary); /* YENİLƏNDİ */
           outline: none;
           transition: all 0.3s;
           resize: none;
           &::placeholder {
-            color: #aaa;
+            color: var(--text-muted); /* YENİLƏNDİ */
           }
           &:focus {
-            border-color: #ccc;
-            background-color: #fff;
+            border-color: var(--border-focus); /* YENİLƏNDİ */
+            background-color: var(--bg-hover); /* YENİLƏNDİ */
+          }
+          &:hover {
+            border-color: var(--border-input-hover); /* YENİLƏNDİ */
           }
         }
 
         textarea {
-          resize: none;
           min-height: 120px;
         }
       }
@@ -153,26 +167,31 @@
           display: flex;
           align-items: center;
           gap: 8px;
-          background-color: #1a1a1a;
-          color: #fff;
+          background-color: var(--btn-primary-bg); /* YENİLƏNDİ */
+          color: var(--text-on-gold); /* YENİLƏNDİ */
           border: none;
           padding: 12px 30px;
           border-radius: 12px;
-          font-weight: 600;
+          font-weight: 600; /* YENİLƏNDİ */
           font-size: 15px;
           font-family: "Poppins", sans-serif;
           cursor: pointer;
           transition: all 0.3s;
+          box-shadow: var(--btn-primary-shadow); /* YENİLƏNDİ */
           .btn-icon {
             font-size: 18px;
             transition: transform 0.3s;
           }
           &:hover {
-            background-color: #333;
-            transform: translateY(-1px);
+            background-color: var(--btn-primary-hover); /* YENİLƏNDİ */
+            transform: translateY(-2px);
             .btn-icon {
-              transform: translateX(1px) translateY(-1px);
+              transform: translateX(2px) translateY(-2px);
             }
+          }
+          &:active {
+            background-color: var(--btn-primary-active); /* YENİLƏNDİ */
+            transform: translateY(0);
           }
         }
       }
@@ -187,19 +206,22 @@
       gap: 15px;
 
       .accordion-item {
-        background-color: #f7f3f0;
+        background-color: var(--bg-input); /* YENİLƏNDİ */
         border-radius: 16px;
         overflow: hidden;
         transition: all 0.3s;
-        border: 1px solid transparent;
+        border: 1px solid var(--border-input); /* YENİLƏNDİ */
 
         &.active {
-          background-color: #fff;
-          border-color: #eee;
+          background-color: var(--bg-active); /* YENİLƏNDİ */
+          border-color: var(--border-strong); /* YENİLƏNDİ */
           .accordion-header {
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-subtle); /* YENİLƏNDİ */
             .accordion-icon {
               transform: rotate(180deg);
+              color: var(
+                --text-link
+              ); /* YENİLƏNDİ: Açılanda ox işarəsi gold olsun */
             }
           }
           .accordion-body {
@@ -217,7 +239,7 @@
           cursor: pointer;
           transition: background-color 0.2s;
           &:hover {
-            background-color: #f0ebe8;
+            background-color: var(--bg-hover); /* YENİLƏNDİ */
           }
 
           .header-left {
@@ -231,15 +253,17 @@
               flex-shrink: 0;
             }
             .status-dot.green {
-              background-color: #10b981;
+              background-color: #2ecc71; /* YENİLƏNDİ: Tünd mövzuda parlaq yaşıl */
+              box-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
             }
             .status-dot.orange {
-              background-color: #f59e0b;
+              background-color: #f39c12; /* YENİLƏNDİ: Tünd mövzuda parlaq narıncı */
+              box-shadow: 0 0 8px rgba(243, 156, 18, 0.4);
             }
             .app-title {
               font-weight: 600;
               font-size: 15px;
-              color: #1a1a1a;
+              color: var(--text-primary); /* YENİLƏNDİ */
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
@@ -249,9 +273,9 @@
 
           .header-right {
             .accordion-icon {
-              color: #888;
+              color: var(--text-secondary); /* YENİLƏNDİ */
               font-size: 20px;
-              transition: transform 0.3s;
+              transition: all 0.3s;
             }
           }
         }
@@ -262,7 +286,7 @@
           opacity: 0;
           overflow: hidden;
           transition: all 0.3s ease-in-out;
-          background-color: #fff;
+          background-color: transparent; /* YENİLƏNDİ: Üst elementdən fonu alır */
 
           .app-content,
           .app-reply {
@@ -271,13 +295,13 @@
             gap: 5px;
             strong {
               font-size: 13px;
-              color: #888;
+              color: var(--text-muted); /* YENİLƏNDİ */
               font-weight: 600;
             }
             p {
               margin: 0;
               font-size: 14px;
-              color: #333;
+              color: var(--text-primary); /* YENİLƏNDİ */
               line-height: 1.5;
             }
           }
@@ -286,16 +310,22 @@
             margin-bottom: 15px;
             .app-date {
               font-size: 12px;
-              color: #aaa;
+              color: var(--text-muted); /* YENİLƏNDİ */
               margin-top: 5px;
             }
           }
 
           .app-reply {
-            background-color: #f0fdf4;
+            background-color: var(--badge-success-bg); /* YENİLƏNDİ */
             padding: 15px;
             border-radius: 12px;
-            border: 1px solid #10b981;
+            border: 1px solid rgba(46, 204, 113, 0.3); /* YENİLƏNDİ */
+            p {
+              color: #2ecc71; /* YENİLƏNDİ: Yaşıl fonda açıq yaşıl mətn */
+            }
+            strong {
+              color: #27ae60;
+            }
           }
         }
       }
@@ -305,7 +335,7 @@
   /* ================== RESPONSİVLİK ================== */
   @media screen and (max-width: 1024px) {
     .applications-grid {
-      grid-template-columns: 1fr; /* Tabletdə alt-alta keçir */
+      grid-template-columns: 1fr;
     }
   }
 

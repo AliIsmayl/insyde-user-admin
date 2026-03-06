@@ -3,3 +3,190 @@
   margin: 0;
   box-sizing: border-box;
 }
+
+/* ========================================================== */
+/* ================ DEFAULT: DARK THEME (TÜND) ================ */
+/* ========================================================== */
+:root,
+[data-theme="dark"] {
+  /* Arxa fonlar */
+  --bg-app: #0b0b0b;
+  --bg-sidebar: #141414;
+  --bg-panel: #1c1c1c;
+  --bg-input: #252525;
+  --bg-hover: #2e2e2e;
+  --bg-active: #3a3a3a;
+  --bg-overlay: rgba(11, 11, 11, 0.72);
+
+  /* Mətn rəngləri */
+  --text-primary: #f5f4f0;
+  --text-secondary: rgba(245, 244, 240, 0.6);
+  --text-muted: rgba(245, 244, 240, 0.36);
+  --text-disabled: rgba(245, 244, 240, 0.22);
+  --text-on-gold: #0b0b0b;
+  --text-link: #c8a75e;
+  --text-link-hover: #dfc58a;
+
+  /* Sərhəd və kənarlar (Borders) */
+  --border-subtle: rgba(200, 167, 94, 0.12);
+  --border-default: rgba(200, 167, 94, 0.25);
+  --border-strong: rgba(200, 167, 94, 0.5);
+  --border-focus: #c8a75e;
+  --border-input: rgba(245, 244, 240, 0.1);
+  --border-input-hover: rgba(200, 167, 94, 0.35);
+
+  /* Düymələr */
+  --btn-primary-bg: #c8a75e;
+  --btn-primary-hover: #d4b672;
+  --btn-primary-active: #a6893c;
+  --btn-primary-shadow: 0 4px 20px rgba(200, 167, 94, 0.3);
+  --btn-secondary-border: #c8a75e;
+  --btn-secondary-hover-bg: rgba(200, 167, 94, 0.1);
+  --btn-secondary-text: #c8a75e; /* Tünd rejimdə aydınlıq üçün */
+  --btn-danger-bg: #c0392b;
+  --btn-danger-hover: #e74c3c;
+  --btn-disabled-bg: #2e2e2e; /* Tünd rejimdə deaktiv düymə */
+
+  /* Naviqasiya və Menyu */
+  --nav-item-active-bg: rgba(200, 167, 94, 0.14);
+  --nav-item-active-text: #c8a75e;
+  --nav-item-active-bar: #c8a75e;
+
+  /* Etiketlər (Badges) */
+  --badge-bg: rgba(200, 167, 94, 0.14);
+  --badge-text: #d4b672;
+  --badge-premium-bg: linear-gradient(135deg, #c8a75e, #a6893c);
+  --badge-success-bg: rgba(39, 174, 96, 0.15);
+  --badge-success-text: #2ecc71;
+
+  /* Kölgələr */
+  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  /* Scrollbar rəngləri (Tünd üçün) */
+  --scrollbar-track: #1c1c1c;
+  --scrollbar-thumb: #3a3a3a;
+  --scrollbar-thumb-hover: #555555;
+  --scrollbar-border: #0b0b0b;
+}
+
+/* ========================================================== */
+/* ================== LIGHT THEME (AÇIQ) ================== */
+/* ========================================================== */
+[data-theme="light"] {
+  /* Arxa fonlar */
+  --bg-app: #f5f4f0;
+  --bg-sidebar: #efeee9;
+  --bg-panel: #ffffff;
+  --bg-input: #f8f7f4;
+  --bg-hover: #ede9df;
+  --bg-active: #e4dfcf;
+  --bg-overlay: rgba(11, 11, 11, 0.72); /* Overlay həmişə qaranlıq olsun */
+
+  /* Mətn rəngləri */
+  --text-primary: #0b0b0b;
+  --text-secondary: rgba(11, 11, 11, 0.65);
+  --text-muted: rgba(11, 11, 11, 0.4);
+  --text-disabled: rgba(11, 11, 11, 0.22);
+  --text-on-gold: #0b0b0b;
+  --text-link: #a6893c; /* Açıq fonda kontrast üçün tünd gold */
+  --text-link-hover: #c8a75e;
+
+  /* Sərhəd və kənarlar (Borders) */
+  --border-subtle: rgba(11, 11, 11, 0.07);
+  --border-default: rgba(11, 11, 11, 0.13);
+  --border-strong: rgba(11, 11, 11, 0.25);
+  --border-focus: #c8a75e;
+  --border-input: rgba(11, 11, 11, 0.1);
+  --border-input-hover: rgba(200, 167, 94, 0.5);
+
+  /* Düymələr */
+  --btn-primary-bg: #c8a75e;
+  --btn-primary-hover: #b5964d;
+  --btn-primary-active: #a6893c;
+  --btn-primary-shadow: 0 4px 20px rgba(200, 167, 94, 0.3);
+  --btn-secondary-border: #a6893c;
+  --btn-secondary-hover-bg: rgba(200, 167, 94, 0.1);
+  --btn-secondary-text: #a6893c;
+  --btn-danger-bg: #c0392b;
+  --btn-danger-hover: #e74c3c;
+  --btn-disabled-bg: #e8e6e0;
+
+  /* Naviqasiya və Menyu */
+  --nav-item-active-bg: rgba(200, 167, 94, 0.16);
+  --nav-item-active-text: #a6893c;
+  --nav-item-active-bar: #a6893c;
+
+  /* Etiketlər (Badges) */
+  --badge-bg: rgba(200, 167, 94, 0.14);
+  --badge-text: #8c6f2e; /* Tünd gold */
+  --badge-premium-bg: linear-gradient(135deg, #c8a75e, #a6893c);
+  --badge-success-bg: rgba(39, 174, 96, 0.15);
+  --badge-success-text: #27ae60;
+
+  /* Kölgələr */
+  --card-shadow: 0 2px 12px rgba(11, 11, 11, 0.08);
+  --card-shadow-hover:
+    0 8px 32px rgba(11, 11, 11, 0.14), 0 0 0 1px rgba(200, 167, 94, 0.22);
+
+  /* Scrollbar rəngləri (Açıq üçün) */
+  --scrollbar-track: #e8e6e0;
+  --scrollbar-thumb: #c2c0ba;
+  --scrollbar-thumb-hover: #a09e98;
+  --scrollbar-border: #f5f4f0;
+}
+
+/* ========================================================== */
+/* ================== QLOBAL ELEMENTLƏR =================== */
+/* ========================================================== */
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+::selection {
+  background-color: var(--border-focus);
+  color: #ffffff;
+}
+
+/* ========================================================== */
+/* ======================== SCROLLBAR ======================= */
+/* ========================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+  /* Scrollbar kənarına "border" verərək sanki yerdən ayrılmış effekti yaradırıq */
+  border: 2px solid var(--scrollbar-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--border-focus);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}

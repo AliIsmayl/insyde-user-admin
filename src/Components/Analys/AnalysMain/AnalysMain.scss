@@ -2,7 +2,7 @@
 
 .analys-main-modern {
   font-family: "Poppins", sans-serif;
-  color: #1a1a1a;
+  color: var(--text-primary); /* YENİLƏNDİ */
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -19,42 +19,47 @@
     .title-area {
       .page-title {
         font-size: 24px;
-      font-weight: 500;
+        font-weight: 500;
         margin: 0 0 5px 0;
+        color: var(--text-primary); /* YENİLƏNDİ */
       }
       .page-subtitle {
         font-size: 14px;
-        color: #888;
+        color: var(--text-secondary); /* YENİLƏNDİ */
         margin: 0;
       }
     }
 
     .period-filters {
       display: flex;
-      background-color: #f7f3f0;
+      background-color: var(--bg-panel); /* YENİLƏNDİ */
+      border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
       padding: 5px;
       border-radius: 15px;
       gap: 5px;
 
       button {
-        border: none;
+        border: 1px solid transparent;
         background: transparent;
         padding: 8px 16px;
         border-radius: 10px;
         font-family: "Poppins", sans-serif;
         font-size: 13px;
         font-weight: 600;
-        color: #555;
+        color: var(--text-secondary); /* YENİLƏNDİ */
         cursor: pointer;
         transition: all 0.3s ease;
 
         &:hover {
-          color: #1a1a1a;
+          color: var(--text-primary); /* YENİLƏNDİ */
+          background-color: var(--bg-hover); /* YENİLƏNDİ */
         }
 
         &.active {
-          background-color: #ffffff;
-          color: #1a1a1a;
+          background-color: var(--bg-active); /* YENİLƏNDİ */
+          color: var(--text-link); /* YENİLƏNDİ */
+          border-color: var(--border-strong); /* YENİLƏNDİ */
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
       }
     }
@@ -73,16 +78,22 @@
     gap: 20px;
 
     .stat-card {
-      background-color: #ffffff;
+      background-color: var(--bg-panel); /* YENİLƏNDİ */
+      border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
       border-radius: 20px;
       padding: 25px;
       display: flex;
       align-items: center;
       gap: 20px;
-      transition: transform 0.3s ease;
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* YENİLƏNDİ */
 
       &:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        border-color: var(--border-focus); /* YENİLƏNDİ */
       }
 
       .stat-icon {
@@ -93,6 +104,7 @@
         align-items: center;
         justify-content: center;
         font-size: 26px;
+        /* Rəng və fon React daxilindən (inline) gəlir */
       }
 
       .stat-info {
@@ -103,7 +115,7 @@
         h4 {
           margin: 0;
           font-size: 13px;
-          color: #888;
+          color: var(--text-secondary); /* YENİLƏNDİ */
           font-weight: 500;
         }
 
@@ -115,7 +127,7 @@
           .value {
             font-size: 24px;
             font-weight: 800;
-            color: #1a1a1a;
+            color: var(--text-primary); /* YENİLƏNDİ */
             line-height: 1;
           }
           .trend {
@@ -124,8 +136,9 @@
             padding: 3px 8px;
             border-radius: 20px;
             &.positive {
-              background-color: #e6f8f1;
-              color: #10b981;
+              background-color: var(--badge-success-bg); /* YENİLƏNDİ */
+              color: var(--badge-success-text); /* YENİLƏNDİ */
+              border: 1px solid rgba(46, 204, 113, 0.3); /* YENİLƏNDİ */
             }
           }
         }
@@ -140,28 +153,30 @@
     gap: 20px;
 
     .dashboard-card {
-      background-color: #ffffff;
+      background-color: var(--bg-panel); /* YENİLƏNDİ */
+      border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
       border-radius: 25px;
       padding: 25px;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* YENİLƏNDİ */
 
       .card-header {
         margin-bottom: 25px;
-        border-bottom: 1px dashed #eee;
+        border-bottom: 1px dashed var(--border-strong); /* YENİLƏNDİ */
         padding-bottom: 15px;
 
         h3 {
           margin: 0;
           font-size: 16px;
           font-weight: 700;
-          color: #1a1a1a;
+          color: var(--text-primary); /* YENİLƏNDİ */
           display: flex;
           align-items: center;
           gap: 10px;
 
           .head-icon {
-            color: #e1b12c;
+            color: var(--text-link); /* YENİLƏNDİ */
             font-size: 18px;
           }
         }
@@ -191,24 +206,26 @@
               .item-icon {
                 font-size: 16px;
                 display: flex;
+                /* İkonlar üçün yüngül kölgə əlavə edirik ki, tünd fonda fərqlənsinlər */
+                filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
               }
               .item-name {
                 font-size: 14px;
                 font-weight: 600;
-                color: #444;
+                color: var(--text-primary); /* YENİLƏNDİ */
               }
             }
             .item-count {
               font-size: 13px;
               font-weight: 600;
-              color: #888;
+              color: var(--text-secondary); /* YENİLƏNDİ */
             }
           }
 
           .progress-bar-bg {
             width: 100%;
             height: 8px;
-            background-color: #f0f0f0;
+            background-color: var(--bg-input); /* YENİLƏNDİ */
             border-radius: 10px;
             overflow: hidden;
 
@@ -226,12 +243,16 @@
           justify-content: space-between;
           align-items: center;
           padding: 12px 15px;
-          background-color: #f9f9f9;
+          background-color: var(--bg-input); /* YENİLƏNDİ */
+          border: 1px solid var(--border-input); /* YENİLƏNDİ */
           border-radius: 15px;
-          transition: background 0.3s;
+          transition:
+            background 0.3s,
+            border-color 0.3s;
 
           &:hover {
-            background-color: #f0f0f0;
+            background-color: var(--bg-hover); /* YENİLƏNDİ */
+            border-color: var(--border-input-hover); /* YENİLƏNDİ */
           }
 
           .loc-left {
@@ -243,11 +264,12 @@
               width: 36px;
               height: 36px;
               border-radius: 10px;
-              background-color: #ffffff;
+              background-color: var(--bg-panel); /* YENİLƏNDİ */
+              border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
               display: flex;
               align-items: center;
               justify-content: center;
-              color: #e1b12c;
+              color: var(--text-link); /* YENİLƏNDİ */
             }
 
             .loc-texts {
@@ -257,12 +279,12 @@
               .city {
                 font-size: 14px;
                 font-weight: 700;
-                color: #1a1a1a;
+                color: var(--text-primary); /* YENİLƏNDİ */
                 line-height: 1.2;
               }
               .country {
                 font-size: 12px;
-                color: #888;
+                color: var(--text-secondary); /* YENİLƏNDİ */
               }
             }
           }
@@ -275,12 +297,12 @@
             .loc-count {
               font-size: 15px;
               font-weight: 800;
-              color: #1a1a1a;
+              color: var(--text-primary); /* YENİLƏNDİ */
             }
             .loc-percent {
               font-size: 12px;
               font-weight: 600;
-              color: #10b981;
+              color: var(--badge-success-text); /* YENİLƏNDİ */
             }
           }
         }
@@ -322,7 +344,7 @@
     }
 
     .summary-cards-row {
-      grid-template-columns: 1fr; /* Mobildə stat kartları alt-alta */
+      grid-template-columns: 1fr;
       gap: 15px;
 
       .stat-card {
@@ -339,7 +361,7 @@
     }
 
     .dashboard-grid {
-      grid-template-columns: 1fr; /* Bütün analitik kartlar alt-alta */
+      grid-template-columns: 1fr;
 
       .location-card {
         grid-column: span 1;

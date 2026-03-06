@@ -6,10 +6,11 @@
   flex-direction: column;
   height: 96vh;
   margin: 2vh 0 2vh 1vw;
-  background-color: #f7f3f0;
+  background-color: var(--bg-sidebar); /* YENİLƏNDİ */
+  border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
   border-radius: 40px;
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* YENİLƏNDİ */
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 1000;
@@ -39,7 +40,7 @@
 }
 
 /* ============================ */
-/* --- LOGO HİSSƏSİ (YENİ) --- */
+/* --- LOGO HİSSƏSİ --- */
 /* ============================ */
 
 .sidebar-logo {
@@ -63,7 +64,7 @@
   position: absolute;
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-link); /* YENİLƏNDİ: Logo rəngi gold */
   opacity: 1;
   visibility: visible;
   transition: all 0.3s ease;
@@ -73,10 +74,10 @@
 /* Açıq olanda görünən böyük "INSYDE" */
 .logo-large {
   position: absolute;
-  left: 10px; /* Bir az kənardan başlasın ki, ikonlarla eyni xətdə olsun */
+  left: 10px;
   font-size: 24px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--text-link); /* YENİLƏNDİ */
   letter-spacing: 1px;
   opacity: 0;
   visibility: hidden;
@@ -89,13 +90,13 @@
 .sidebar.open .logo-small {
   opacity: 0;
   visibility: hidden;
-  transform: scale(0.5) translateY(-10px); /* Yuxarı doğru kiçilib yoxa çıxır */
+  transform: scale(0.5) translateY(-10px);
 }
 
 .sidebar.open .logo-large {
   opacity: 1;
   visibility: visible;
-  transform: scale(1) translateX(0); /* Normal ölçüsünə gəlib yerinə oturur */
+  transform: scale(1) translateX(0);
 }
 
 /* Mobildə görünən kiçik X düyməsi */
@@ -104,7 +105,7 @@
   background: transparent;
   border: none;
   font-size: 16px;
-  color: #555;
+  color: var(--text-secondary); /* YENİLƏNDİ */
   cursor: pointer;
 }
 
@@ -129,12 +130,12 @@
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #1a1a1a;
+  color: var(--text-secondary); /* YENİLƏNDİ */
   gap: 15px;
   border-radius: 30px;
   cursor: pointer;
   position: relative;
-  transition: background-color 0.2s;
+  transition: color 0.2s;
 }
 
 /* Yumru İkon Arxa Planı */
@@ -145,23 +146,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
+  background-color: var(--bg-input); /* YENİLƏNDİ */
+  border: 1px solid var(--border-input); /* YENİLƏNDİ */
   border-radius: 50%;
   font-size: 20px;
+  color: var(--text-primary); /* YENİLƏNDİ */
   transition: all 0.3s;
   flex-shrink: 0;
 }
 
 /* Aktiv Menyu Linki */
-.menu-item.active .icon-container {
-  background-color: #1a1a1a;
-  color: #ffffff;
+.menu-item.active {
+  color: var(--nav-item-active-text); /* YENİLƏNDİ */
+  .icon-container {
+    background-color: var(--nav-item-active-bg); /* YENİLƏNDİ */
+    border-color: var(--border-focus); /* YENİLƏNDİ */
+    color: var(--nav-item-active-text); /* YENİLƏNDİ */
+    box-shadow: 0 0 15px rgba(200, 167, 94, 0.2); /* YENİLƏNDİ */
+  }
 }
 
 /* Hover effekti (Yalnız masaüstü cihazlar üçün) */
 @media (hover: hover) {
-  .menu-item:hover:not(.active) .icon-container {
-    background-color: #ebebeb;
+  .menu-item:hover:not(.active) {
+    color: var(--text-primary); /* YENİLƏNDİ */
+    .icon-container {
+      background-color: var(--bg-hover); /* YENİLƏNDİ */
+      border-color: var(--border-subtle); /* YENİLƏNDİ */
+      color: var(--text-link-hover); /* YENİLƏNDİ */
+    }
   }
 }
 
@@ -189,7 +202,7 @@
 .submenu-arrow {
   margin-right: 15px;
   font-size: 18px;
-  color: #888;
+  color: var(--text-muted); /* YENİLƏNDİ */
   opacity: 0;
   visibility: hidden;
   transition:
@@ -204,6 +217,7 @@
 }
 .submenu-toggle.open .submenu-arrow {
   transform: rotate(180deg);
+  color: var(--text-link); /* YENİLƏNDİ */
 }
 
 /* Submenu Siyahısı (Accordion) */
@@ -233,11 +247,15 @@
   align-items: center;
   gap: 12px;
   text-decoration: none;
-  color: #555;
+  color: var(--text-secondary); /* YENİLƏNDİ */
   font-size: 14px;
   font-weight: 500;
   padding: 8px 0;
   transition: color 0.2s;
+
+  &:hover {
+    color: var(--text-link-hover); /* YENİLƏNDİ */
+  }
 }
 
 .sub-menu-text {
@@ -250,18 +268,19 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #ccc;
+  background-color: var(--text-muted); /* YENİLƏNDİ */
   transition: all 0.3s;
   flex-shrink: 0;
 }
 
 .sub-menu-item.active {
-  color: #1a1a1a;
+  color: var(--text-link); /* YENİLƏNDİ */
   font-weight: 700;
 }
 .sub-menu-item.active .sub-menu-dot {
-  background-color: #1a1a1a;
+  background-color: var(--text-link); /* YENİLƏNDİ */
   transform: scale(1.5);
+  box-shadow: 0 0 8px rgba(200, 167, 94, 0.6); /* YENİLƏNDİ */
 }
 
 /* Qırmızı Bildiriş Nöqtəsi */
@@ -271,9 +290,9 @@
   right: 0px;
   width: 10px;
   height: 10px;
-  background-color: #ff8b94;
+  background-color: var(--btn-danger-bg); /* YENİLƏNDİ */
   border-radius: 50%;
-  border: 2px solid #f7f3f0;
+  border: 2px solid var(--bg-sidebar); /* YENİLƏNDİ */
 }
 
 /* ALT HİSSƏ (Footer) */
@@ -284,6 +303,8 @@
   gap: 15px;
   margin-bottom: 15px;
   margin-top: auto;
+  border-top: 1px dashed var(--border-subtle); /* YENİLƏNDİ: Alt hissəni ayırmaq üçün xətt əlavə etdim */
+  padding-top: 20px;
 }
 
 /* ========================================= */
@@ -297,7 +318,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--bg-overlay); /* YENİLƏNDİ */
   z-index: 900;
   opacity: 0;
   transition: opacity 0.3s;
@@ -313,16 +334,24 @@
   right: 20px;
   width: 60px;
   height: 60px;
-  background-color: #1a1a1a;
-  color: #fff;
+  background-color: var(--btn-primary-bg); /* YENİLƏNDİ */
+  color: var(--text-on-gold); /* YENİLƏNDİ */
   border: none;
   border-radius: 50%;
   font-size: 24px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--btn-primary-shadow); /* YENİLƏNDİ */
   z-index: 800;
   cursor: pointer;
   align-items: center;
   justify-content: center;
+  transition:
+    background-color 0.3s,
+    transform 0.3s;
+
+  &:active {
+    background-color: var(--btn-primary-active);
+    transform: scale(0.95);
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -331,6 +360,7 @@
     margin: 0;
     height: 100vh;
     border-radius: 0 30px 30px 0;
+    border-left: none;
     transition: left 0.4s ease;
   }
   .sidebar.open {
@@ -346,6 +376,8 @@
   }
   .mobile-close-btn {
     display: block;
+    color: var(--text-secondary);
+    font-size: 20px;
   }
   .mobile-hamburger {
     display: flex;
