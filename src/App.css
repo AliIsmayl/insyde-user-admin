@@ -24,38 +24,38 @@
   --text-muted: rgba(245, 244, 240, 0.36);
   --text-disabled: rgba(245, 244, 240, 0.22);
   --text-on-gold: #0b0b0b;
-  --text-link: #c8a75e;
+  --text-link: #FFC200;
   --text-link-hover: #dfc58a;
 
   /* Sərhəd və kənarlar (Borders) */
   --border-subtle: rgba(200, 167, 94, 0.12);
   --border-default: rgba(200, 167, 94, 0.25);
   --border-strong: rgba(200, 167, 94, 0.5);
-  --border-focus: #c8a75e;
+  --border-focus: #FFC200;
   --border-input: rgba(245, 244, 240, 0.1);
   --border-input-hover: rgba(200, 167, 94, 0.35);
 
   /* Düymələr */
-  --btn-primary-bg: #c8a75e;
+  --btn-primary-bg: #FFC200;
   --btn-primary-hover: #d4b672;
   --btn-primary-active: #a6893c;
   --btn-primary-shadow: 0 4px 20px rgba(200, 167, 94, 0.3);
-  --btn-secondary-border: #c8a75e;
+  --btn-secondary-border: #FFC200;
   --btn-secondary-hover-bg: rgba(200, 167, 94, 0.1);
-  --btn-secondary-text: #c8a75e; /* Tünd rejimdə aydınlıq üçün */
+  --btn-secondary-text: #FFC200; /* Tünd rejimdə aydınlıq üçün */
   --btn-danger-bg: #c0392b;
   --btn-danger-hover: #e74c3c;
   --btn-disabled-bg: #2e2e2e; /* Tünd rejimdə deaktiv düymə */
 
   /* Naviqasiya və Menyu */
   --nav-item-active-bg: rgba(200, 167, 94, 0.14);
-  --nav-item-active-text: #c8a75e;
-  --nav-item-active-bar: #c8a75e;
+  --nav-item-active-text: #FFC200;
+  --nav-item-active-bar: #FFC200;
 
   /* Etiketlər (Badges) */
   --badge-bg: rgba(200, 167, 94, 0.14);
   --badge-text: #d4b672;
-  --badge-premium-bg: linear-gradient(135deg, #c8a75e, #a6893c);
+  --badge-premium-bg: linear-gradient(135deg, #FFC200, #a6893c);
   --badge-success-bg: rgba(39, 174, 96, 0.15);
   --badge-success-text: #2ecc71;
 
@@ -90,18 +90,18 @@
   --text-disabled: rgba(11, 11, 11, 0.22);
   --text-on-gold: #0b0b0b;
   --text-link: #a6893c; /* Açıq fonda kontrast üçün tünd gold */
-  --text-link-hover: #c8a75e;
+  --text-link-hover: #FFC200;
 
   /* Sərhəd və kənarlar (Borders) */
   --border-subtle: rgba(11, 11, 11, 0.07);
   --border-default: rgba(11, 11, 11, 0.13);
   --border-strong: rgba(11, 11, 11, 0.25);
-  --border-focus: #c8a75e;
+  --border-focus: #FFC200;
   --border-input: rgba(11, 11, 11, 0.1);
   --border-input-hover: rgba(200, 167, 94, 0.5);
 
   /* Düymələr */
-  --btn-primary-bg: #c8a75e;
+  --btn-primary-bg: #FFC200;
   --btn-primary-hover: #b5964d;
   --btn-primary-active: #a6893c;
   --btn-primary-shadow: 0 4px 20px rgba(200, 167, 94, 0.3);
@@ -120,7 +120,7 @@
   /* Etiketlər (Badges) */
   --badge-bg: rgba(200, 167, 94, 0.14);
   --badge-text: #8c6f2e; /* Tünd gold */
-  --badge-premium-bg: linear-gradient(135deg, #c8a75e, #a6893c);
+  --badge-premium-bg: linear-gradient(135deg, #FFC200, #a6893c);
   --badge-success-bg: rgba(39, 174, 96, 0.15);
   --badge-success-text: #27ae60;
 
