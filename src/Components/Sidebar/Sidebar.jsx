@@ -59,12 +59,12 @@ function Sidebar({ isOpen, setIsOpen }) {
   const menuItems = [
     {
       name: "Ana səhifə",
-      path: "/",
+      path: "/home",
       icon: <HiOutlineHome />,
     },
 
-    { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
     { name: "Analitika", path: "/analys", icon: <TbBrandGoogleAnalytics /> },
+    { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
     {
       name: "Müraciətlər",
       path: "/applications",
