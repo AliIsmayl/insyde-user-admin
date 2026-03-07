@@ -62,13 +62,14 @@ function Sidebar({ isOpen, setIsOpen }) {
       path: "/",
       icon: <HiOutlineHome />,
     },
+
+    { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
+    { name: "Analitika", path: "/analys", icon: <TbBrandGoogleAnalytics /> },
     {
       name: "Müraciətlər",
       path: "/applications",
       icon: <FaRegMessage />,
     },
-    { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
-    { name: "Analitika", path: "/analys", icon: <TbBrandGoogleAnalytics /> },
   ];
 
   return (
