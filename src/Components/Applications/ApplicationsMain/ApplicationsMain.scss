@@ -2,13 +2,13 @@
 
 .applications-main-modern {
   font-family: "Poppins", sans-serif;
-  color: var(--text-primary); /* YENİLƏNDİ */
+  color: var(--text-primary);
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 25px;
 
-  /* ================== BAŞLIQ ================== */
+  /* ===== BAŞLIQ ===== */
   .top-header {
     display: flex;
     justify-content: space-between;
@@ -17,16 +17,69 @@
       font-size: 24px;
       font-weight: 500;
       margin: 0 0 5px 0;
-      color: var(--text-primary); /* YENİLƏNDİ */
+      color: var(--text-primary);
     }
     .page-subtitle {
       font-size: 14px;
-      color: var(--text-secondary); /* YENİLƏNDİ */
+      color: var(--text-secondary);
       margin: 0;
     }
   }
 
-  /* ================== ƏSAS GRİD (YAN-YANA) ================== */
+  /* ===== ANA TABLAR ===== */
+  .main-tabs {
+    display: flex;
+    gap: 8px;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 6px;
+    width: fit-content;
+
+    .main-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 11px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: "Poppins", sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+
+      svg {
+        font-size: 16px;
+      }
+
+      &:hover {
+        color: var(--text-primary);
+        background-color: var(--bg-hover);
+      }
+
+      &.active {
+        background-color: var(--btn-primary-bg);
+        color: var(--text-on-gold);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .unread-badge {
+        background-color: #e74c3c;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 20px;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  /* ===== ƏSAS GRİD ===== */
   .applications-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -34,10 +87,15 @@
     align-items: start;
   }
 
-  /* ================== ÜMUMİ KART DİZAYNI ================== */
+  /* ===== ADMİN MESAJLARI SECTION ===== */
+  .admin-messages-section {
+    width: 100%;
+  }
+
+  /* ===== ÜMUMİ KART ===== */
   .modern-card {
-    background-color: var(--bg-panel); /* YENİLƏNDİ */
-    border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
     border-radius: 30px;
     padding: 30px;
     display: flex;
@@ -49,17 +107,17 @@
         font-size: 20px;
         font-weight: 500;
         margin: 0 0 8px 0;
-        color: var(--text-primary); /* YENİLƏNDİ */
+        color: var(--text-primary);
       }
       p {
         font-size: 14px;
-        color: var(--text-secondary); /* YENİLƏNDİ */
+        color: var(--text-secondary);
         margin: 0;
       }
     }
   }
 
-  /* ================== SOL TƏRƏF: FORM ================== */
+  /* ===== FORM ===== */
   .form-section {
     .application-form {
       display: flex;
@@ -85,7 +143,7 @@
         label {
           font-size: 13px;
           font-weight: 600;
-          color: var(--text-secondary); /* YENİLƏNDİ */
+          color: var(--text-secondary);
         }
 
         .select-wrapper {
@@ -93,29 +151,27 @@
           select {
             width: 100%;
             height: 48px;
-            background-color: var(--bg-input); /* YENİLƏNDİ */
-            border: 1px solid var(--border-input); /* YENİLƏNDİ */
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-input);
             border-radius: 12px;
             padding: 0 40px 0 15px;
             font-family: "Poppins", sans-serif;
             font-size: 14px;
-            color: var(--text-primary); /* YENİLƏNDİ */
+            color: var(--text-primary);
             cursor: pointer;
             appearance: none;
             outline: none;
             transition: all 0.3s;
-
             option {
-              background-color: var(--bg-panel); /* YENİLƏNDİ */
+              background-color: var(--bg-panel);
               color: var(--text-primary);
             }
-
             &:focus {
-              border-color: var(--border-focus); /* YENİLƏNDİ */
-              background-color: var(--bg-hover); /* YENİLƏNDİ */
+              border-color: var(--border-focus);
+              background-color: var(--bg-hover);
             }
             &:hover {
-              border-color: var(--border-input-hover); /* YENİLƏNDİ */
+              border-color: var(--border-input-hover);
             }
           }
           .select-icon {
@@ -123,7 +179,7 @@
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-muted); /* YENİLƏNDİ */
+            color: var(--text-muted);
             pointer-events: none;
           }
         }
@@ -131,28 +187,27 @@
         input[type="text"],
         textarea {
           width: 100%;
-          background-color: var(--bg-input); /* YENİLƏNDİ */
-          border: 1px solid var(--border-input); /* YENİLƏNDİ */
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-input);
           border-radius: 12px;
           padding: 12px 15px;
           font-family: "Poppins", sans-serif;
           font-size: 14px;
-          color: var(--text-primary); /* YENİLƏNDİ */
+          color: var(--text-primary);
           outline: none;
           transition: all 0.3s;
           resize: none;
           &::placeholder {
-            color: var(--text-muted); /* YENİLƏNDİ */
+            color: var(--text-muted);
           }
           &:focus {
-            border-color: var(--border-focus); /* YENİLƏNDİ */
-            background-color: var(--bg-hover); /* YENİLƏNDİ */
+            border-color: var(--border-focus);
+            background-color: var(--bg-hover);
           }
           &:hover {
-            border-color: var(--border-input-hover); /* YENİLƏNDİ */
+            border-color: var(--border-input-hover);
           }
         }
-
         textarea {
           min-height: 120px;
         }
@@ -166,12 +221,12 @@
           display: flex;
           align-items: center;
           gap: 8px;
-          background-color: var(--btn-primary-bg); /* YENİLƏNDİ */
-          color: var(--text-on-gold); /* YENİLƏNDİ */
+          background-color: var(--btn-primary-bg);
+          color: var(--text-on-gold);
           border: none;
           padding: 12px 30px;
           border-radius: 12px;
-          font-weight: 600; /* YENİLƏNDİ */
+          font-weight: 600;
           font-size: 15px;
           font-family: "Poppins", sans-serif;
           cursor: pointer;
@@ -181,14 +236,14 @@
             transition: transform 0.3s;
           }
           &:hover {
-            background-color: var(--btn-primary-hover); /* YENİLƏNDİ */
+            background-color: var(--btn-primary-hover);
             transform: translateY(-2px);
             .btn-icon {
               transform: translateX(2px) translateY(-2px);
             }
           }
           &:active {
-            background-color: var(--btn-primary-active); /* YENİLƏNDİ */
+            background-color: var(--btn-primary-active);
             transform: translateY(0);
           }
         }
@@ -196,139 +251,318 @@
     }
   }
 
-  /* ================== SAĞ TƏRƏF: ƏVVƏLKİ MÜRACİƏTLƏR ================== */
-  .history-section {
-    .accordion-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+  /* ===== ACCORDION (HƏR İKİ TAB ÜÇÜN ÜMUMİ) ===== */
+  .accordion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 
-      .accordion-item {
-        background-color: var(--bg-input); /* YENİLƏNDİ */
-        border-radius: 16px;
-        overflow: hidden;
-        transition: all 0.3s;
-        border: 1px solid var(--border-input); /* YENİLƏNDİ */
+    .accordion-item {
+      background-color: var(--bg-input);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+      border: 1px solid var(--border-input);
 
-        &.active {
-          background-color: var(--bg-active); /* YENİLƏNDİ */
-          border-color: var(--border-strong); /* YENİLƏNDİ */
-          .accordion-header {
-            border-bottom: 1px solid var(--border-subtle); /* YENİLƏNDİ */
-            .accordion-icon {
-              transform: rotate(180deg);
-              color: var(
-                --text-link
-              ); /* YENİLƏNDİ: Açılanda ox işarəsi gold olsun */
-            }
-          }
-          .accordion-body {
-            max-height: 500px;
-            padding: 20px;
-            opacity: 1;
-          }
-        }
+      /* Oxunmamış admin mesajı xüsusi stil */
+      &.unread {
+        border-color: var(--border-strong);
+        background-color: var(--bg-hover);
+      }
 
+      &.active {
+        background-color: var(--bg-active);
+        border-color: var(--border-strong);
         .accordion-header {
+          border-bottom: 1px solid var(--border-subtle);
+          .accordion-icon {
+            transform: rotate(180deg);
+            color: var(--text-link);
+          }
+        }
+        .accordion-body {
+          max-height: 700px;
+          padding: 20px;
+          opacity: 1;
+        }
+      }
+
+      .accordion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 20px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        gap: 10px;
+        &:hover {
+          background-color: var(--bg-hover);
+        }
+
+        .header-left {
           display: flex;
-          justify-content: space-between;
           align-items: center;
-          padding: 18px 20px;
-          cursor: pointer;
-          transition: background-color 0.2s;
-          &:hover {
-            background-color: var(--bg-hover); /* YENİLƏNDİ */
+          gap: 12px;
+          flex: 1;
+          min-width: 0;
+
+          .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            &.green {
+              background-color: #2ecc71;
+            }
+            &.orange {
+              background-color: #f39c12;
+            }
           }
 
-          .header-left {
+          /* Oxunmamış mesaj nöqtəsi */
+          .unread-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #e74c3c;
+            flex-shrink: 0;
+            box-shadow: 0 0 6px rgba(231, 76, 60, 0.5);
+          }
+
+          .app-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .header-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-shrink: 0;
+
+          .msg-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+          }
+
+          .accordion-icon {
+            color: var(--text-secondary);
+            font-size: 20px;
+            transition: all 0.3s;
+          }
+        }
+      }
+
+      .accordion-body {
+        max-height: 0;
+        padding: 0 20px;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 0.35s ease-in-out;
+
+        /* Müraciət body */
+        .app-content,
+        .app-reply {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          strong {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+          }
+          p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.5;
+          }
+        }
+        .app-content {
+          margin-bottom: 15px;
+          .app-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+          }
+        }
+        .app-reply {
+          background-color: var(--badge-success-bg);
+          padding: 15px;
+          border-radius: 12px;
+          border: 1px solid rgba(46, 204, 113, 0.3);
+          p {
+            color: #2ecc71;
+          }
+          strong {
+            color: #27ae60;
+          }
+        }
+
+        /* Admin mesaj balonu */
+        .admin-msg-bubble {
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-subtle);
+          border-radius: 14px 14px 14px 4px;
+          padding: 15px 18px;
+          margin-bottom: 15px;
+
+          .bubble-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-link);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+          }
+          p {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.6;
+          }
+          .app-date {
+            font-size: 11px;
+            color: var(--text-muted);
+          }
+        }
+
+        /* İstifadəçi cavab balonu */
+        .user-reply-bubble {
+          background-color: rgba(200, 167, 94, 0.08);
+          border: 1px solid var(--border-strong);
+          border-radius: 14px 14px 4px 14px;
+          padding: 15px 18px;
+          margin-bottom: 15px;
+          align-self: flex-end;
+
+          .bubble-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-link);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-align: right;
+          }
+          p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            text-align: right;
+          }
+        }
+
+        /* Cavab yazma sahəsi */
+        .reply-input-area {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 5px;
+
+          textarea {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-input);
+            border-radius: 12px;
+            padding: 12px 15px;
+            font-family: "Poppins", sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            resize: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+            &::placeholder {
+              color: var(--text-muted);
+            }
+            &:focus {
+              border-color: var(--border-focus);
+              background-color: var(--bg-hover);
+            }
+          }
+
+          .reply-actions {
             display: flex;
-            align-items: center;
-            gap: 12px;
-            .status-dot {
-              width: 10px;
-              height: 10px;
-              border-radius: 50%;
-              flex-shrink: 0;
-            }
-            .status-dot.green {
-              background-color: #2ecc71; /* YENİLƏNDİ: Tünd mövzuda parlaq yaşıl */
-            }
-            .status-dot.orange {
-              background-color: #f39c12; /* YENİLƏNDİ: Tünd mövzuda parlaq narıncı */
-            }
-            .app-title {
-              font-weight: 600;
-              font-size: 15px;
-              color: var(--text-primary); /* YENİLƏNDİ */
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              max-width: 250px;
-            }
-          }
+            gap: 10px;
+            justify-content: flex-end;
 
-          .header-right {
-            .accordion-icon {
-              color: var(--text-secondary); /* YENİLƏNDİ */
-              font-size: 20px;
-              transition: all 0.3s;
+            .cancel-btn {
+              padding: 9px 20px;
+              border-radius: 10px;
+              border: 1px solid var(--border-strong);
+              background: transparent;
+              color: var(--text-secondary);
+              font-family: "Poppins", sans-serif;
+              font-size: 13px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.2s;
+              &:hover {
+                background: var(--bg-hover);
+                color: var(--text-primary);
+              }
+            }
+
+            .send-reply-btn {
+              display: flex;
+              align-items: center;
+              gap: 7px;
+              padding: 9px 22px;
+              border-radius: 10px;
+              border: none;
+              background-color: var(--btn-primary-bg);
+              color: var(--text-on-gold);
+              font-family: "Poppins", sans-serif;
+              font-size: 13px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.2s;
+              &:hover {
+                background-color: var(--btn-primary-hover);
+                transform: translateY(-1px);
+              }
             }
           }
         }
 
-        .accordion-body {
-          max-height: 0;
-          padding: 0 20px;
-          opacity: 0;
-          overflow: hidden;
-          transition: all 0.3s ease-in-out;
-          background-color: transparent; /* YENİLƏNDİ: Üst elementdən fonu alır */
-
-          .app-content,
-          .app-reply {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            strong {
-              font-size: 13px;
-              color: var(--text-muted); /* YENİLƏNDİ */
-              font-weight: 600;
-            }
-            p {
-              margin: 0;
-              font-size: 14px;
-              color: var(--text-primary); /* YENİLƏNDİ */
-              line-height: 1.5;
-            }
+        /* Cavabla düyməsi */
+        .open-reply-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 5px;
+          padding: 9px 18px;
+          border-radius: 10px;
+          border: 1px dashed var(--border-strong);
+          background: transparent;
+          color: var(--text-secondary);
+          font-family: "Poppins", sans-serif;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.25s;
+          svg {
+            font-size: 15px;
           }
-
-          .app-content {
-            margin-bottom: 15px;
-            .app-date {
-              font-size: 12px;
-              color: var(--text-muted); /* YENİLƏNDİ */
-              margin-top: 5px;
-            }
-          }
-
-          .app-reply {
-            background-color: var(--badge-success-bg); /* YENİLƏNDİ */
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(46, 204, 113, 0.3); /* YENİLƏNDİ */
-            p {
-              color: #2ecc71; /* YENİLƏNDİ: Yaşıl fonda açıq yaşıl mətn */
-            }
-            strong {
-              color: #27ae60;
-            }
+          &:hover {
+            border-color: var(--border-focus);
+            color: var(--text-link-hover);
+            background-color: var(--bg-hover);
           }
         }
       }
     }
   }
 
-  /* ================== RESPONSİVLİK ================== */
+  /* ===== RESPONSİVLİK ===== */
   @media screen and (max-width: 1024px) {
     .applications-grid {
       grid-template-columns: 1fr;
@@ -341,9 +575,21 @@
       align-items: flex-start;
       gap: 5px;
     }
+
+    .main-tabs {
+      width: 100%;
+      .main-tab {
+        flex: 1;
+        justify-content: center;
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+    }
+
     .modern-card {
       padding: 20px;
     }
+
     .form-section .application-form .form-row {
       flex-direction: column;
       gap: 15px;
@@ -355,13 +601,20 @@
         justify-content: center;
       }
     }
-    .history-section
-      .accordion-list
-      .accordion-item
-      .accordion-header
-      .header-left
-      .app-title {
-      max-width: 180px;
+
+    .accordion-list .accordion-item .accordion-header .header-left .app-title {
+      max-width: 160px;
+    }
+
+    .accordion-list .accordion-item .accordion-body {
+      .reply-actions {
+        flex-direction: column;
+        .cancel-btn,
+        .send-reply-btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
     }
   }
 }

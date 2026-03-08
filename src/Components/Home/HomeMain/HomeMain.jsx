@@ -12,8 +12,27 @@ import {
   FaTrashAlt,
   FaSun,
   FaMoon,
+  FaExternalLinkAlt,
+  FaPhone,
+  FaEnvelope,
+  FaCommentDots,
 } from "react-icons/fa";
 import "./HomeMain.scss";
+
+const platformIconMap = {
+  Instagram: <FaInstagram />,
+  Facebook: <FaFacebook />,
+  LinkedIn: <FaLinkedin />,
+  WhatsApp: <FaWhatsapp />,
+  "Web Sayt": <FaGlobe />,
+};
+
+const hexToRgb = (hex) => {
+  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r
+    ? `${parseInt(r[1], 16)}, ${parseInt(r[2], 16)}, ${parseInt(r[3], 16)}`
+    : "184, 134, 11";
+};
 
 function HomeMain() {
   const [formData, setFormData] = useState({
@@ -24,12 +43,10 @@ function HomeMain() {
     skill2: "CSS",
     skill3: "UI/UX",
     about: "Minimalist və müasir interfeyslər qurmağı sevirəm.",
-    themeColor: "#ff8b94",
+    themeColor: "#b8860b",
   });
 
   const [profileImage, setProfileImage] = useState(null);
-
-  // YENİ STATE: Telefonun daxili görünüşü üçün (dark və ya light)
   const [phoneMode, setPhoneMode] = useState("dark");
 
   const [links, setLinks] = useState([
@@ -49,7 +66,7 @@ function HomeMain() {
   ];
 
   const colors = [
-    "#e1b12c",
+    "#b8860b",
     "#1a1a1a",
     "#ff8b94",
     "#10b981",
@@ -60,44 +77,41 @@ function HomeMain() {
     "#f1c40f",
   ];
 
-  const handleChange = (e) => {
+  const userCode = "SYD4568";
+  const profileUrl = `/profile/${userCode}`;
+  const themeRgb = hexToRgb(formData.themeColor);
+
+  const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) setProfileImage(URL.createObjectURL(file));
   };
 
-  const addNewLink = () => {
+  const addNewLink = () =>
     setLinks([
       ...links,
       { platform: "Instagram", url: "", icon: <FaInstagram /> },
     ]);
-  };
 
   const handleLinkChange = (index, field, value) => {
-    const updatedLinks = [...links];
+    const updated = [...links];
     if (field === "platform") {
-      const selectedPlatform = platformOptions.find((p) => p.name === value);
-      updatedLinks[index].platform = value;
-      updatedLinks[index].icon = selectedPlatform.icon;
+      const p = platformOptions.find((p) => p.name === value);
+      updated[index].platform = value;
+      updated[index].icon = p.icon;
     } else {
-      updatedLinks[index].url = value;
+      updated[index].url = value;
     }
-    setLinks(updatedLinks);
+    setLinks(updated);
   };
 
-  const removeLink = (index) => {
-    const updatedLinks = links.filter((_, i) => i !== index);
-    setLinks(updatedLinks);
-  };
+  const removeLink = (index) => setLinks(links.filter((_, i) => i !== index));
 
   return (
     <div className="home-main-modern-split">
-      {/* ======================================= */}
-      {/* SOL TƏRƏF: FORM VƏ MƏLUMAT GİRİŞİ */}
-      {/* ======================================= */}
+      {/* ========== SOL TƏRƏF ========== */}
       <div className="form-section">
         <div className="top-header">
           <div>
@@ -215,10 +229,8 @@ function HomeMain() {
             ></textarea>
           </div>
 
-          {/* DİNAMİK LİNKLƏR HİSSƏSİ */}
           <div className="links-wrapper">
             <label>Sosial Şəbəkə / Əlaqə Linkləri</label>
-
             <div className="links-list">
               {links.map((link, index) => (
                 <div className="social-add-row" key={index}>
@@ -231,7 +243,6 @@ function HomeMain() {
                       <FaTrashAlt />
                     </button>
                   </div>
-
                   <div className="social-select">
                     <span className="select-icon">{link.icon}</span>
                     <select
@@ -247,7 +258,6 @@ function HomeMain() {
                       ))}
                     </select>
                   </div>
-
                   <input
                     type="text"
                     placeholder="Linkinizi bura yapışdırın"
@@ -259,7 +269,6 @@ function HomeMain() {
                 </div>
               ))}
             </div>
-
             <button className="add-new-btn" onClick={addNewLink}>
               <FaPlus /> Yeni Link Əlavə Et
             </button>
@@ -270,17 +279,22 @@ function HomeMain() {
           <div className="status-badge">
             <FaCheckCircle /> Məlumatlar işlək vəziyyətdədir
           </div>
+          <a
+            href={profileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="view-profile-btn"
+          >
+            <FaExternalLinkAlt /> Səhifəmə Keçid
+          </a>
           <button className="save-btn">
             <FaSave /> Yadda Saxla
           </button>
         </div>
       </div>
 
-      {/* ======================================= */}
-      {/* SAĞ TƏRƏF: TELEFON PREVIEW VƏ RƏNGLƏR */}
-      {/* ======================================= */}
+      {/* ========== SAĞ TƏRƏF: PREVIEW ========== */}
       <div className="preview-section">
-        {/* YENİ: Mockup Mode Switcher (Qaranlıq / Aydın) */}
         <div className="mockup-mode-switcher">
           <button
             className={`mode-btn ${phoneMode === "light" ? "active" : ""}`}
@@ -296,102 +310,211 @@ function HomeMain() {
           </button>
         </div>
 
+        {/* TELEFON */}
         <div className={`phone-mockup mode-${phoneMode}`}>
-          <div
-            className="phone-header"
-            style={{ backgroundColor: formData.themeColor }}
-          >
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Preview"
-                className="preview-avatar"
-              />
-            ) : (
-              <div className="preview-avatar-placeholder"></div>
-            )}
-            <h3 className="preview-name">{formData.name || "Ad Soyad"}</h3>
-            <p className="preview-profession">
-              {formData.profession || "Peşə"}
-            </p>
-          </div>
+          <div className="phone-notch" />
 
-          <div className="phone-body">
-            <div className="preview-about">
-              <h4>Haqqında</h4>
-              <p>
-                {formData.about ||
-                  "Sizin haqqınızda məlumat burda görünəcək..."}
-              </p>
+          <div className="phone-scroll-area">
+            {/* ── HEADER BÖLMƏSİ ── */}
+            <div className="profile-header">
+              {/* Geri oxu */}
+              <div className="ph-back-btn">‹</div>
+
+              {/* Stats sırası */}
+              <div className="ph-stats-row">
+                <div className="ph-stat">
+                  <span className="ph-stat-num">1.2 K</span>
+                  <span className="ph-stat-label">İzləyici</span>
+                </div>
+                {/* Avatar mərkəzdə */}
+                <div className="ph-avatar-wrap">
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="avatar"
+                      className="ph-avatar"
+                    />
+                  ) : (
+                    <div
+                      className="ph-avatar-placeholder"
+                      style={{
+                        background: `linear-gradient(135deg, rgba(${themeRgb},0.6), rgba(${themeRgb},0.2))`,
+                      }}
+                    />
+                  )}
+                  {/* Aktiv göstərici */}
+                  <span
+                    className="ph-online-dot"
+                    style={{ backgroundColor: formData.themeColor }}
+                  />
+                </div>
+                <div className="ph-stat ph-stat-right">
+                  <span className="ph-stat-num">4.5 K</span>
+                  <span className="ph-stat-label">İzlənilən</span>
+                </div>
+              </div>
+
+              {/* Ad + peşə */}
+              <div className="ph-name-block">
+                <span className="ph-name">
+                  {formData.name || "Ad Soyad"}
+                  <span
+                    className="ph-verified"
+                    style={{ color: formData.themeColor }}
+                  >
+                    ✦
+                  </span>
+                </span>
+                <span className="ph-profession">
+                  {formData.profession || "Peşə"}
+                </span>
+              </div>
+
+              {/* 2 düymə */}
+              <div className="ph-action-btns">
+                <button
+                  className="ph-btn ph-btn-primary"
+                  style={{ borderColor: `rgba(${themeRgb},0.6)` }}
+                >
+                  Əlaqə
+                </button>
+                <button
+                  className="ph-btn ph-btn-fill"
+                  style={{ backgroundColor: formData.themeColor }}
+                >
+                  Mesaj
+                </button>
+              </div>
             </div>
 
-            <div className="preview-skills">
-              {formData.skill1 && (
-                <span
-                  className="skill-tag"
-                  style={{
-                    backgroundColor: `${formData.themeColor}20`,
-                    color: formData.themeColor,
-                    border: `1px solid ${formData.themeColor}50`,
-                  }}
+            {/* ── SOSİAL LİNKLƏR ── */}
+            <div className="preview-links-list">
+              {/* Sabit linkler */}
+              <div className="preview-link-card">
+                <div
+                  className="link-icon-wrap"
+                  style={{ backgroundColor: formData.themeColor }}
                 >
-                  {formData.skill1}
-                </span>
-              )}
-              {formData.skill2 && (
-                <span
-                  className="skill-tag"
-                  style={{
-                    backgroundColor: `${formData.themeColor}20`,
-                    color: formData.themeColor,
-                    border: `1px solid ${formData.themeColor}50`,
-                  }}
-                >
-                  {formData.skill2}
-                </span>
-              )}
-              {formData.skill3 && (
-                <span
-                  className="skill-tag"
-                  style={{
-                    backgroundColor: `${formData.themeColor}20`,
-                    color: formData.themeColor,
-                    border: `1px solid ${formData.themeColor}50`,
-                  }}
-                >
-                  {formData.skill3}
-                </span>
-              )}
-            </div>
+                  <FaPhone />
+                </div>
+                <div className="link-text">
+                  <span className="link-label">Call</span>
+                  {formData.email && (
+                    <span className="link-sub">{formData.email}</span>
+                  )}
+                </div>
+                <span className="link-arrow">↗</span>
+              </div>
 
-            <div className="preview-socials">
-              {links.map((link, index) =>
+              <div className="preview-link-card">
+                <div
+                  className="link-icon-wrap"
+                  style={{ backgroundColor: formData.themeColor }}
+                >
+                  <FaCommentDots />
+                </div>
+                <div className="link-text">
+                  <span className="link-label">Message</span>
+                </div>
+                <span className="link-arrow">↗</span>
+              </div>
+
+              <div className="preview-link-card">
+                <div
+                  className="link-icon-wrap"
+                  style={{ backgroundColor: formData.themeColor }}
+                >
+                  <FaEnvelope />
+                </div>
+                <div className="link-text">
+                  <span className="link-label">E-mail</span>
+                  {formData.email && (
+                    <span className="link-sub">{formData.email}</span>
+                  )}
+                </div>
+                <span className="link-arrow">↗</span>
+              </div>
+
+              {/* Dinamik linklər */}
+              {links.map((link, i) =>
                 link.url ? (
-                  <div className="social-card" key={index}>
-                    <span style={{ color: formData.themeColor }}>
-                      {link.icon}
-                    </span>
-                    <span>{link.url}</span>
+                  <div className="preview-link-card" key={i}>
+                    <div
+                      className="link-icon-wrap"
+                      style={{ backgroundColor: formData.themeColor }}
+                    >
+                      {platformIconMap[link.platform] || <FaGlobe />}
+                    </div>
+                    <div className="link-text">
+                      <span className="link-label">{link.platform}</span>
+                      <span className="link-sub">{link.url}</span>
+                    </div>
+                    <span className="link-arrow">↗</span>
                   </div>
                 ) : null,
               )}
             </div>
+
+            {/* Bacarıqlar */}
+            {(formData.skill1 || formData.skill2 || formData.skill3) && (
+              <div className="preview-skills-section">
+                {formData.skill1 && (
+                  <span
+                    className="skill-chip"
+                    style={{
+                      borderColor: `rgba(${themeRgb},0.5)`,
+                      color: formData.themeColor,
+                    }}
+                  >
+                    {formData.skill1}
+                  </span>
+                )}
+                {formData.skill2 && (
+                  <span
+                    className="skill-chip"
+                    style={{
+                      borderColor: `rgba(${themeRgb},0.5)`,
+                      color: formData.themeColor,
+                    }}
+                  >
+                    {formData.skill2}
+                  </span>
+                )}
+                {formData.skill3 && (
+                  <span
+                    className="skill-chip"
+                    style={{
+                      borderColor: `rgba(${themeRgb},0.5)`,
+                      color: formData.themeColor,
+                    }}
+                  >
+                    {formData.skill3}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Footer nav bar */}
+            <div className="phone-nav-bar">
+              <span>✉</span>
+              <span>⌕</span>
+              <span>♡</span>
+              <span>≡</span>
+            </div>
           </div>
         </div>
 
-        {/* RƏNGLƏR BÖLMƏSİ */}
+        {/* Rənglər */}
         <div className="theme-color-section">
           <label>Profil Rəngi / Tema Rəngi</label>
           <div className="color-palette">
             {colors.map((color, index) => (
               <div
                 key={index}
-                className={`color-box ${
-                  formData.themeColor === color ? "active" : ""
-                }`}
+                className={`color-box ${formData.themeColor === color ? "active" : ""}`}
                 style={{ backgroundColor: color }}
                 onClick={() => setFormData({ ...formData, themeColor: color })}
-              ></div>
+              />
             ))}
           </div>
         </div>

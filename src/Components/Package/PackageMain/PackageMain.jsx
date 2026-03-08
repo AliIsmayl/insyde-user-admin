@@ -1,8 +1,13 @@
 import React, { useState } from "react";
-import { FiCheck, FiX, FiCheckCircle, FiInfo } from "react-icons/fi";
+import {
+  FiCheck,
+  FiX,
+  FiCheckCircle,
+  FiInfo,
+  FiCalendar,
+} from "react-icons/fi";
 import "./PackageMain.scss";
 
-// Mobildə hər sətrin FAQ (Accordion) kimi açılıb-bağlanması üçün kiçik komponent
 const MobileFeatureRow = ({ title, info, isAvailable, isMonthly, price }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -52,8 +57,19 @@ const MobileFeatureRow = ({ title, info, isAvailable, isMonthly, price }) => {
   );
 };
 
+const packageMonthlyPrice = { basic: 1.5, pro: 2.0, premium: 2.0 };
+const packageCardPrice = { basic: "12.90₼", pro: "27.90₼", premium: "36.90₼" };
+const packageNames = { basic: "Sadə", pro: "Pro", premium: "Premium" };
+
+const billingOptions = [
+  { key: "monthly", label: "1 Aylıq", months: 1 },
+  { key: "biannual", label: "6 Aylıq", months: 6 },
+  { key: "annual", label: "12 Aylıq", months: 12 },
+];
+
 function PackageMain() {
   const [currentPackage, setCurrentPackage] = useState("pro");
+  const [selectedBilling, setSelectedBilling] = useState("monthly");
 
   const features = [
     {
@@ -121,9 +137,12 @@ function PackageMain() {
     },
   ];
 
+  const monthlyRate = packageMonthlyPrice[currentPackage];
+  const activeBilling = billingOptions.find((b) => b.key === selectedBilling);
+  const totalPrice = +(monthlyRate * activeBilling.months).toFixed(2);
+
   return (
     <div className="package-main-modern">
-      {/* BAŞLIQ */}
       <div className="top-header">
         <div>
           <h2 className="page-title">Ödəniş Planı</h2>
@@ -134,75 +153,34 @@ function PackageMain() {
       </div>
 
       <div className="package-content">
-        {/* ========================================================= */}
-        {/* ================ 1. MASAÜSTÜ ÜÇÜN CƏDVƏL (Tooltip) ====== */}
-        {/* ========================================================= */}
+        {/* ===== MASAÜSTÜ CƏDVƏL ===== */}
         <div className="desktop-only pricing-card">
           <div className="pricing-table">
-            {/* BAŞLIQLAR */}
             <div className="table-header-row">
               <div className="feature-cell empty-cell">Özəlliklər</div>
-
-              <div
-                className={`package-cell basic ${currentPackage === "basic" ? "is-current" : ""}`}
-              >
-                <h3>Sadə</h3>
-                <div className="price">12.90₼</div>
-                {currentPackage === "basic" ? (
-                  <div className="current-badge">
-                    <FiCheckCircle /> Hazırkı Paket
-                  </div>
-                ) : (
-                  <button
-                    className="select-btn"
-                    onClick={() => setCurrentPackage("basic")}
-                  >
-                    Seç
-                  </button>
-                )}
-              </div>
-
-              <div
-                className={`package-cell pro ${currentPackage === "pro" ? "is-current" : ""}`}
-              >
-                <div className="popular-badge">Ən Çox Seçilən</div>
-                <h3>Pro</h3>
-                <div className="price">26.90₼</div>
-                {currentPackage === "pro" ? (
-                  <div className="current-badge">
-                    <FiCheckCircle /> Hazırkı Paket
-                  </div>
-                ) : (
-                  <button
-                    className="select-btn active"
-                    onClick={() => setCurrentPackage("pro")}
-                  >
-                    Seç
-                  </button>
-                )}
-              </div>
-
-              <div
-                className={`package-cell premium ${currentPackage === "premium" ? "is-current" : ""}`}
-              >
-                <h3>Premium</h3>
-                <div className="price">32.90₼</div>
-                {currentPackage === "premium" ? (
-                  <div className="current-badge">
-                    <FiCheckCircle /> Hazırkı Paket
-                  </div>
-                ) : (
-                  <button
-                    className="select-btn"
-                    onClick={() => setCurrentPackage("premium")}
-                  >
-                    Seç
-                  </button>
-                )}
-              </div>
+              {["basic", "pro", "premium"].map((pkg) => (
+                <div
+                  key={pkg}
+                  className={`package-cell ${pkg} ${currentPackage === pkg ? "is-current" : ""}`}
+                >
+                  <h3>{packageNames[pkg]}</h3>
+                  <div className="price">{packageCardPrice[pkg]}</div>
+                  {currentPackage === pkg ? (
+                    <div className="current-badge">
+                      <FiCheckCircle /> Hazırkı Paket
+                    </div>
+                  ) : (
+                    <button
+                      className="select-btn"
+                      onClick={() => setCurrentPackage(pkg)}
+                    >
+                      Seç
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* CƏDVƏL BƏDƏNİ */}
             <div className="table-body">
               {features.map((feat, index) => (
                 <div className="table-row" key={index}>
@@ -213,36 +191,18 @@ function PackageMain() {
                       <div className="tooltip-box">{feat.info}</div>
                     </div>
                   </div>
-
-                  <div
-                    className={`feature-status basic ${currentPackage === "basic" ? "active-col" : ""}`}
-                  >
-                    {feat.basic ? (
-                      <FiCheck className="icon-check" />
-                    ) : (
-                      <FiX className="icon-cross" />
-                    )}
-                  </div>
-
-                  <div
-                    className={`feature-status pro ${currentPackage === "pro" ? "active-col" : ""}`}
-                  >
-                    {feat.pro ? (
-                      <FiCheck className="icon-check" />
-                    ) : (
-                      <FiX className="icon-cross" />
-                    )}
-                  </div>
-
-                  <div
-                    className={`feature-status premium ${currentPackage === "premium" ? "active-col" : ""}`}
-                  >
-                    {feat.premium ? (
-                      <FiCheck className="icon-check" />
-                    ) : (
-                      <FiX className="icon-cross" />
-                    )}
-                  </div>
+                  {["basic", "pro", "premium"].map((pkg) => (
+                    <div
+                      key={pkg}
+                      className={`feature-status ${pkg} ${currentPackage === pkg ? "active-col" : ""}`}
+                    >
+                      {feat[pkg] ? (
+                        <FiCheck className="icon-check" />
+                      ) : (
+                        <FiX className="icon-cross" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               ))}
 
@@ -252,8 +212,7 @@ function PackageMain() {
                   <div className="info-icon" tabIndex="0">
                     <FiInfo />
                     <div className="tooltip-box">
-                      Sistemdə qeydiyyatda qalmaq və xidmətlərdən fasiləsiz
-                      istifadə üçün aylıq ödəniş.
+                      Sistemdə qeydiyyatda qalmaq üçün aylıq ödəniş.
                     </div>
                   </div>
                 </div>
@@ -277,136 +236,115 @@ function PackageMain() {
           </div>
         </div>
 
-        {/* ========================================================= */}
-        {/* ================ 2. MOBİL ÜÇÜN KARTLAR (FAQ) ============ */}
-        {/* ========================================================= */}
+        {/* ===== MOBİL KARTLAR ===== */}
         <div className="mobile-only mobile-cards-container">
-          {/* SADƏ KART */}
-          <div
-            className={`mobile-package-card basic ${currentPackage === "basic" ? "is-current" : ""}`}
-          >
-            <div className="card-top">
-              <h3>Sadə</h3>
-              <div className="price">12.90₼</div>
-            </div>
-
-            <div className="card-features">
-              {features.map((feat, index) => (
+          {["basic", "pro", "premium"].map((pkg) => (
+            <div
+              key={pkg}
+              className={`mobile-package-card ${pkg} ${currentPackage === pkg ? "is-current" : ""}`}
+            >
+              <div className="card-top">
+                <h3>{packageNames[pkg]}</h3>
+                <div className="price">{packageCardPrice[pkg]}</div>
+              </div>
+              <div className="card-features">
+                {features.map((feat, i) => (
+                  <MobileFeatureRow
+                    key={i}
+                    title={feat.name}
+                    info={feat.info}
+                    isAvailable={feat[pkg]}
+                  />
+                ))}
                 <MobileFeatureRow
-                  key={index}
-                  title={feat.name}
-                  info={feat.info}
-                  isAvailable={feat.basic}
+                  isMonthly={true}
+                  price={pkg === "basic" ? "1.50₼" : "2.00₼"}
+                  info="Xidmətdən fasiləsiz istifadə üçün aylıq abunəlik."
                 />
-              ))}
-              <MobileFeatureRow
-                isMonthly={true}
-                price="1.50₼"
-                info="Xidmətdən fasiləsiz istifadə üçün aylıq abunəlik."
-              />
+              </div>
+              <div className="card-bottom">
+                {currentPackage === pkg ? (
+                  <div className="current-badge">
+                    <FiCheckCircle /> Hazırkı Paket
+                  </div>
+                ) : (
+                  <button
+                    className="select-btn"
+                    onClick={() => setCurrentPackage(pkg)}
+                  >
+                    Seç
+                  </button>
+                )}
+              </div>
             </div>
-
-            <div className="card-bottom">
-              {currentPackage === "basic" ? (
-                <div className="current-badge">
-                  <FiCheckCircle /> Hazırkı Paket
-                </div>
-              ) : (
-                <button
-                  className="select-btn"
-                  onClick={() => setCurrentPackage("basic")}
-                >
-                  Seç
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* PRO KART */}
-          <div
-            className={`mobile-package-card pro ${currentPackage === "pro" ? "is-current" : ""}`}
-          >
-            <div className="popular-badge">Ən Çox Seçilən</div>
-            <div className="card-top">
-              <h3>Pro</h3>
-              <div className="price">26.90₼</div>
-            </div>
-
-            <div className="card-features">
-              {features.map((feat, index) => (
-                <MobileFeatureRow
-                  key={index}
-                  title={feat.name}
-                  info={feat.info}
-                  isAvailable={feat.pro}
-                />
-              ))}
-              <MobileFeatureRow
-                isMonthly={true}
-                price="2.00₼"
-                info="Xidmətdən fasiləsiz istifadə üçün aylıq abunəlik."
-              />
-            </div>
-
-            <div className="card-bottom">
-              {currentPackage === "pro" ? (
-                <div className="current-badge">
-                  <FiCheckCircle /> Hazırkı Paket
-                </div>
-              ) : (
-                <button
-                  className="select-btn active"
-                  onClick={() => setCurrentPackage("pro")}
-                >
-                  Seç
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* PREMİUM KART */}
-          <div
-            className={`mobile-package-card premium ${currentPackage === "premium" ? "is-current" : ""}`}
-          >
-            <div className="card-top">
-              <h3>Premium</h3>
-              <div className="price">32.90₼</div>
-            </div>
-
-            <div className="card-features">
-              {features.map((feat, index) => (
-                <MobileFeatureRow
-                  key={index}
-                  title={feat.name}
-                  info={feat.info}
-                  isAvailable={feat.premium}
-                />
-              ))}
-              <MobileFeatureRow
-                isMonthly={true}
-                price="2.00₼"
-                info="Xidmətdən fasiləsiz istifadə üçün aylıq abunəlik."
-              />
-            </div>
-
-            <div className="card-bottom">
-              {currentPackage === "premium" ? (
-                <div className="current-badge">
-                  <FiCheckCircle /> Hazırkı Paket
-                </div>
-              ) : (
-                <button
-                  className="select-btn"
-                  onClick={() => setCurrentPackage("premium")}
-                >
-                  Seç
-                </button>
-              )}
-            </div>
-          </div>
+          ))}
         </div>
 
-     
+        {/* ===== AYLIQ AKTİVLİK BÖLMƏSİ ===== */}
+        <div className="billing-section">
+          <div className="billing-header">
+            <div>
+              <h3 className="billing-title">Aylıq Aktivlik Ödənişi</h3>
+              <p className="billing-subtitle">
+                <strong>{packageNames[currentPackage]}</strong> paketi — aylıq{" "}
+                <strong className="rate-highlight">
+                  {monthlyRate.toFixed(2).replace(".00", "")}₼
+                </strong>
+              </p>
+            </div>
+            <div className="billing-rate-badge">
+              <FiCalendar />
+              <span>{monthlyRate.toFixed(2).replace(".00", "")}₼ / ay</span>
+            </div>
+          </div>
+
+          {/* Müddət tabları — hər birinin qiyməti avtomatik hesablanır */}
+          <div className="billing-tabs">
+            {billingOptions.map((opt) => {
+              const price = +(monthlyRate * opt.months).toFixed(2);
+              return (
+                <button
+                  key={opt.key}
+                  className={`billing-tab ${selectedBilling === opt.key ? "active" : ""}`}
+                  onClick={() => setSelectedBilling(opt.key)}
+                >
+                  <span className="tab-label">{opt.label}</span>
+                  <span className="tab-price">{price}₼</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Yekun məbləğ */}
+          <div className="billing-summary">
+            <div className="summary-item">
+              <span className="summary-label">Paket</span>
+              <span className="summary-value">
+                {packageNames[currentPackage]}
+              </span>
+            </div>
+            <div className="summary-divider" />
+            <div className="summary-item">
+              <span className="summary-label">Müddət</span>
+              <span className="summary-value">{activeBilling.label}</span>
+            </div>
+            <div className="summary-divider" />
+            <div className="summary-item">
+              <span className="summary-label">Aylıq qiymət</span>
+              <span className="summary-value">
+                {monthlyRate.toFixed(2).replace(".00", "")}₼
+              </span>
+            </div>
+            <div className="summary-divider" />
+            <div className="summary-item total-item">
+              <span className="summary-label">Ümumi məbləğ</span>
+              <span className="summary-total">{totalPrice}₼</span>
+            </div>
+            <button className="pay-btn">
+              <FiCheckCircle /> Ödənişi Tamamla
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
