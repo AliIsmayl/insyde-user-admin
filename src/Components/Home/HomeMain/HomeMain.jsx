@@ -11,10 +11,19 @@ import {
   FaSave,
   FaTrashAlt,
   FaExternalLinkAlt,
+  FaMoon,
+  FaSun,
 } from "react-icons/fa";
 import "./HomeMain.scss";
 
 function HomeMain() {
+  // Yalnız telefonun öz dark/light state-i
+  const [phoneTheme, setPhoneTheme] = useState("dark");
+
+  const togglePhoneTheme = () => {
+    setPhoneTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   const [formData, setFormData] = useState({
     name: "Elçin",
     email: "elcin@example.com",
@@ -23,11 +32,13 @@ function HomeMain() {
     skill2: "CSS",
     skill3: "UI/UX",
     about: "Minimalist və müasir interfeyslər qurmağı sevirəm.",
-    themeColor: "#ff8b94",
   });
-   const userCode = "SYD4568";
-const profileUrl = `/profile/${userCode}`;
+
+  const [phoneColor, setPhoneColor] = useState("#ff8b94");
   const [profileImage, setProfileImage] = useState(null);
+
+  const userCode = "SYD4568";
+  const profileUrl = `/profile/${userCode}`;
 
   const [links, setLinks] = useState([
     {
@@ -76,9 +87,9 @@ const profileUrl = `/profile/${userCode}`;
   const handleLinkChange = (index, field, value) => {
     const updatedLinks = [...links];
     if (field === "platform") {
-      const selectedPlatform = platformOptions.find((p) => p.name === value);
+      const selected = platformOptions.find((p) => p.name === value);
       updatedLinks[index].platform = value;
-      updatedLinks[index].icon = selectedPlatform.icon;
+      updatedLinks[index].icon = selected.icon;
     } else {
       updatedLinks[index].url = value;
     }
@@ -86,15 +97,12 @@ const profileUrl = `/profile/${userCode}`;
   };
 
   const removeLink = (index) => {
-    const updatedLinks = links.filter((_, i) => i !== index);
-    setLinks(updatedLinks);
+    setLinks(links.filter((_, i) => i !== index));
   };
 
   return (
     <div className="home-main-modern-split">
-      {/* ======================================= */}
-      {/* SOL TƏRƏF: FORM VƏ MƏLUMAT GİRİŞİ */}
-      {/* ======================================= */}
+      {/* SOL TƏRƏF: FORM */}
       <div className="form-section">
         <div className="top-header">
           <div>
@@ -212,12 +220,8 @@ const profileUrl = `/profile/${userCode}`;
             ></textarea>
           </div>
 
-          {/* ======================================= */}
-          {/* DİNAMİK LİNKLƏR HİSSƏSİ */}
-          {/* ======================================= */}
           <div className="links-wrapper">
             <label>Sosial Şəbəkə / Əlaqə Linkləri</label>
-
             <div className="links-list">
               {links.map((link, index) => (
                 <div className="social-add-row" key={index}>
@@ -230,7 +234,6 @@ const profileUrl = `/profile/${userCode}`;
                       <FaTrashAlt />
                     </button>
                   </div>
-
                   <div className="social-select">
                     <span className="select-icon">{link.icon}</span>
                     <select
@@ -246,7 +249,6 @@ const profileUrl = `/profile/${userCode}`;
                       ))}
                     </select>
                   </div>
-
                   <input
                     type="text"
                     placeholder="Linkinizi bura yapışdırın"
@@ -258,7 +260,6 @@ const profileUrl = `/profile/${userCode}`;
                 </div>
               ))}
             </div>
-
             <button className="add-new-btn" onClick={addNewLink}>
               <FaPlus /> Yeni Link Əlavə Et
             </button>
@@ -269,7 +270,7 @@ const profileUrl = `/profile/${userCode}`;
           <div className="status-badge">
             <FaCheckCircle /> Məlumatlar işlək vəziyyətdədir
           </div>
-            <a
+          <a
             href={profileUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -283,15 +284,34 @@ const profileUrl = `/profile/${userCode}`;
         </div>
       </div>
 
-      {/* ======================================= */}
-      {/* SAĞ TƏRƏF: TELEFON PREVIEW VƏ RƏNGLƏR */}
-      {/* ======================================= */}
+      {/* SAĞ TƏRƏF: TELEFON PREVIEW */}
       <div className="preview-section">
-        <div className="phone-mockup">
-          <div
-            className="phone-header"
-            style={{ backgroundColor: formData.themeColor }}
-          >
+        {/* Telefonun öz toggle-u */}
+        <button
+          className="phone-theme-toggle"
+          onClick={togglePhoneTheme}
+          aria-label="Telefon temasını dəyiş"
+        >
+          <div className="toggle-track">
+            <span
+              className={`toggle-label left ${phoneTheme === "light" ? "active" : ""}`}
+            >
+              <FaSun /> <span>Light</span>
+            </span>
+            <span
+              className={`toggle-label right ${phoneTheme === "dark" ? "active" : ""}`}
+            >
+              <FaMoon /> <span>Dark</span>
+            </span>
+            <div
+              className={`toggle-thumb ${phoneTheme === "dark" ? "thumb-right" : "thumb-left"}`}
+            ></div>
+          </div>
+        </button>
+
+        {/* phone-dark veya phone-light class-ı alır */}
+        <div className={`phone-mockup phone-${phoneTheme}`}>
+          <div className="phone-header" style={{ backgroundColor: phoneColor }}>
             {profileImage ? (
               <img
                 src={profileImage}
@@ -317,48 +337,27 @@ const profileUrl = `/profile/${userCode}`;
             </div>
 
             <div className="preview-skills">
-              {formData.skill1 && (
-                <span
-                  className="skill-tag"
-                  style={{
-                    backgroundColor: `${formData.themeColor}20`,
-                    color: formData.themeColor,
-                  }}
-                >
-                  {formData.skill1}
-                </span>
-              )}
-              {formData.skill2 && (
-                <span
-                  className="skill-tag"
-                  style={{
-                    backgroundColor: `${formData.themeColor}20`,
-                    color: formData.themeColor,
-                  }}
-                >
-                  {formData.skill2}
-                </span>
-              )}
-              {formData.skill3 && (
-                <span
-                  className="skill-tag"
-                  style={{
-                    backgroundColor: `${formData.themeColor}20`,
-                    color: formData.themeColor,
-                  }}
-                >
-                  {formData.skill3}
-                </span>
-              )}
+              {[formData.skill1, formData.skill2, formData.skill3]
+                .filter(Boolean)
+                .map((skill, i) => (
+                  <span
+                    key={i}
+                    className="skill-tag"
+                    style={{
+                      backgroundColor: `${phoneColor}25`,
+                      color: phoneColor,
+                    }}
+                  >
+                    {skill}
+                  </span>
+                ))}
             </div>
 
             <div className="preview-socials">
               {links.map((link, index) =>
                 link.url ? (
                   <div className="social-card" key={index}>
-                    <span style={{ color: formData.themeColor }}>
-                      {link.icon}
-                    </span>
+                    <span style={{ color: phoneColor }}>{link.icon}</span>
                     <span>{link.url}</span>
                   </div>
                 ) : null,
@@ -367,20 +366,15 @@ const profileUrl = `/profile/${userCode}`;
           </div>
         </div>
 
-        {/* ======================================= */}
-        {/* RƏNGLƏR BÖLMƏSİ (TELEFONUN ALTINDA) */}
-        {/* ======================================= */}
         <div className="theme-color-section">
           <label>Profil Rəngi / Tema Rəngi</label>
           <div className="color-palette">
             {colors.map((color, index) => (
               <div
                 key={index}
-                className={`color-box ${
-                  formData.themeColor === color ? "active" : ""
-                }`}
+                className={`color-box ${phoneColor === color ? "active" : ""}`}
                 style={{ backgroundColor: color }}
-                onClick={() => setFormData({ ...formData, themeColor: color })}
+                onClick={() => setPhoneColor(color)}
               ></div>
             ))}
           </div>
