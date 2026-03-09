@@ -8,7 +8,8 @@ import {
 } from "react-router-dom";
 import Layout from "./Components/Layout/Layout";
 import HomePage from "./Pages/HomePage";
-import "./app.css";
+import './App.css'
+
 import ApplicationsPage from "./Pages/ApplicationsPage";
 import SettingPage from "./Pages/SettingPage";
 import PackagePage from "./Pages/PackagePage";
