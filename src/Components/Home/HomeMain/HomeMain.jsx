@@ -15,10 +15,12 @@ import {
   FaSun,
 } from "react-icons/fa";
 import "./HomeMain.scss";
-
+import Popup from "../../Popup/Popup";
 function HomeMain() {
   // Yalnız telefonun öz dark/light state-i
   const [phoneTheme, setPhoneTheme] = useState("dark");
+  const [popup, setPopup] = useState({ isOpen: false, type: "success" });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
   const togglePhoneTheme = () => {
     setPhoneTheme((prev) => (prev === "dark" ? "light" : "dark"));
@@ -102,15 +104,27 @@ function HomeMain() {
 
   return (
     <div className="home-main-modern-split">
-      {/* SOL TƏRƏF: FORM */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          popup.onConfirm?.();
+          closePopup();
+        }}
+        onCancel={closePopup}
+      />
       <div className="form-section">
         <div className="top-header">
           <div>
             <h2 className="page-title">İdarəetmə Sistemi</h2>
-            <span className="badge premium">Premium Paket</span>
+            <span className="badge premium">... Paket</span>
           </div>
           <div className="header-actions">
-            <span className="time-left">3 gün qalıb</span>
+            <span className="time-left">... ... qalıb</span>
           </div>
         </div>
 
@@ -278,7 +292,19 @@ function HomeMain() {
           >
             <FaExternalLinkAlt /> Səhifəmə Keçid
           </a>
-          <button className="save-btn">
+          <button
+            className="save-btn"
+            onClick={() =>
+              setPopup({
+                isOpen: true,
+                type: "update",
+                title: "Məlumat yadda saxlanılsın?",
+                message: "Məlumatları sistemə əlavə et.",
+                confirmText: "Saxla",
+                onConfirm: null,
+              })
+            }
+          >
             <FaSave /> Yadda Saxla
           </button>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiSend, FiChevronDown, FiBell, FiMessageSquare } from "react-icons/fi";
 import "./ApplicationsMain.scss";
+import Popup from "../../Popup/Popup";
 
 function ApplicationsMain() {
   const [formData, setFormData] = useState({
@@ -8,7 +9,8 @@ function ApplicationsMain() {
     title: "",
     message: "",
   });
-
+  const [popup, setPopup] = useState({ isOpen: false, type: "success" });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
   const [activeAccordion, setActiveAccordion] = useState(null);
   const [activeTab, setActiveTab] = useState("applications"); // "applications" | "admin"
   const [replyText, setReplyText] = useState({});
@@ -94,6 +96,19 @@ function ApplicationsMain() {
 
   return (
     <div className="applications-main-modern">
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          popup.onConfirm?.();
+          closePopup();
+        }}
+        onCancel={closePopup}
+      />
       <div className="top-header">
         <div>
           <h2 className="page-title">Müraciətlər</h2>
@@ -176,7 +191,20 @@ function ApplicationsMain() {
               </div>
 
               <div className="form-actions">
-                <button type="submit" className="submit-btn">
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  onClick={() =>
+                    setPopup({
+                      isOpen: true,
+                      type: "success",
+                      title: "Uğurlu!",
+                      message: "Sorğu uğurla göndərildi",
+                      confirmText: "Tamam",
+                      onConfirm: null,
+                    })
+                  }
+                >
                   <FiSend className="btn-icon" /> Göndər
                 </button>
               </div>
@@ -296,7 +324,17 @@ function ApplicationsMain() {
                           </button>
                           <button
                             className="send-reply-btn"
-                            onClick={() => handleReplySend(msg.id)}
+                            onClick={() => {
+                              handleReplySend(msg.id);
+                              setPopup({
+                                isOpen: true,
+                                type: "success",
+                                title: "Uğurlu!",
+                                message: "Sorğu uğurla göndərildi.",
+                                confirmText: "Tamam",
+                                onConfirm: null,
+                              });
+                            }}
                           >
                             <FiSend /> Göndər
                           </button>

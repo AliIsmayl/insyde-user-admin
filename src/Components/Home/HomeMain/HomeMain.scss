@@ -70,12 +70,9 @@
     display: flex;
     flex-direction: column;
     gap: 25px;
-    box-shadow: var(--card-shadow);
     transition:
       background-color 0.3s ease,
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
-
+      border-color 0.3s ease;
     label {
       font-size: 13px;
       font-weight: 600;
@@ -407,9 +404,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      background-color: var(--badge-success-bg);
       color: var(--badge-success-text);
-      border: 1px solid rgba(39, 174, 96, 0.2);
       padding: 10px 20px;
       border-radius: 12px;
       font-weight: 600;
@@ -465,7 +460,6 @@
       flex: 1;
       font-family: "Poppins", sans-serif;
       min-width: 200px;
-      box-shadow: var(--btn-primary-shadow);
 
       &:hover {
         background-color: var(--btn-primary-hover);
@@ -660,7 +654,6 @@
         font-size: 20px;
         font-weight: 700;
         text-align: center;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       }
 
       .preview-profession {
@@ -668,7 +661,6 @@
         font-size: 13px;
         opacity: 0.9;
         text-align: center;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       }
     }
 
@@ -759,11 +751,9 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    box-shadow: var(--card-shadow);
     transition:
       background-color 0.3s ease,
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
+      border-color 0.3s ease;
 
     label {
       font-size: 13px;

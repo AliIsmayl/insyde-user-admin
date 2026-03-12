@@ -1,0 +1,354 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+/* ─── Rəng dəyişənləri (type-a görə) ─────────────────────── */
+.popup--success {
+  --pop-color: #22c55e;
+  --pop-color-soft: rgba(34, 197, 94, 0.1);
+  --pop-color-ring: rgba(34, 197, 94, 0.25);
+}
+.popup--delete {
+  --pop-color: #ef4444;
+  --pop-color-soft: rgba(239, 68, 68, 0.1);
+  --pop-color-ring: rgba(239, 68, 68, 0.25);
+}
+.popup--error {
+  --pop-color: #f59e0b;
+  --pop-color-soft: rgba(245, 158, 11, 0.1);
+  --pop-color-ring: rgba(245, 158, 11, 0.25);
+}
+.popup--block {
+  --pop-color: #8b5cf6;
+  --pop-color-soft: rgba(139, 92, 246, 0.1);
+  --pop-color-ring: rgba(139, 92, 246, 0.25);
+}
+
+/* ─── YENİ: Update tipi — göy/mavi ───────────────────────── */
+.popup--update {
+  --pop-color: #3b82f6;
+  --pop-color-soft: rgba(59, 130, 246, 0.1);
+  --pop-color-ring: rgba(59, 130, 246, 0.25);
+}
+
+/* ─── Overlay ────────────────────────────────────────────── */
+.popup__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  animation: popOverlayIn 0.22s ease both;
+}
+
+@keyframes popOverlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Popup qutusu ───────────────────────────────────────── */
+.popup {
+  position: fixed;
+  z-index: 9100;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: calc(100% - 40px);
+  max-width: 420px;
+
+  background: var(--bg-panel, #1a1a1a);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 24px;
+  padding: 36px 30px 30px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  font-family: "Poppins", sans-serif;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    border-radius: 0 0 4px 4px;
+    background: var(--pop-color);
+    opacity: 0.7;
+  }
+
+  animation: popIn 0.32s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.92);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* ─── Bağla düyməsi ──────────────────────────────────────── */
+.popup__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.12));
+  background: transparent;
+  color: var(--text-muted, rgba(255, 255, 255, 0.4));
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.22s ease;
+
+  &:hover {
+    background: var(--bg-hover, rgba(255, 255, 255, 0.07));
+    color: var(--text-primary, #fff);
+    border-color: var(--border-strong, rgba(255, 255, 255, 0.2));
+    transform: rotate(90deg);
+  }
+}
+
+/* ─── İkon ───────────────────────────────────────────────── */
+.popup__icon-wrap {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: var(--pop-color-soft);
+  border: 1.5px solid var(--pop-color-ring);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      var(--pop-color-soft) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  animation: popIconIn 0.4s cubic-bezier(0.34, 1.5, 0.64, 1) 0.1s both;
+}
+
+.popup__icon {
+  font-size: 26px;
+  color: var(--pop-color);
+}
+
+/* update ikonunu fırlatmaq üçün xüsusi animasiya */
+.popup--update .popup__icon {
+  animation: spinOnce 0.6s cubic-bezier(0.34, 1.5, 0.64, 1) 0.2s both;
+}
+
+@keyframes spinOnce {
+  from {
+    transform: rotate(-180deg) scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes popIconIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ─── Mətn ───────────────────────────────────────────────── */
+.popup__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  animation: popTextIn 0.35s ease 0.15s both;
+}
+
+.popup__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary, #f0ede6);
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.popup__message {
+  font-size: 13.5px;
+  color: var(--text-secondary, rgba(240, 237, 230, 0.65));
+  margin: 0;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+@keyframes popTextIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Düymələr ───────────────────────────────────────────── */
+.popup__actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+  animation: popTextIn 0.35s ease 0.22s both;
+}
+
+.popup__btn {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 13px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &--cancel {
+    background: transparent;
+    color: var(--text-secondary, rgba(240, 237, 230, 0.6));
+    border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.12));
+    &:hover {
+      background: var(--bg-hover, rgba(255, 255, 255, 0.06));
+      color: var(--text-primary, #f0ede6);
+    }
+  }
+
+  &--success {
+    background: #22c55e;
+    color: #fff;
+    &:hover {
+      background: #16a34a;
+      transform: translateY(-1px);
+    }
+  }
+
+  &--delete {
+    background: #ef4444;
+    color: #fff;
+    &:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+  }
+
+  &--error {
+    background: #f59e0b;
+    color: #000;
+    font-weight: 700;
+    &:hover {
+      background: #d97706;
+      transform: translateY(-1px);
+    }
+  }
+
+  &--block {
+    background: #8b5cf6;
+    color: #fff;
+    &:hover {
+      background: #7c3aed;
+      transform: translateY(-1px);
+    }
+  }
+
+  /* ─── YENİ: Update düyməsi ─── */
+  &--update {
+    background: #3b82f6;
+    color: #fff;
+    &:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media screen and (max-width: 480px) {
+  .popup {
+    padding: 30px 20px 24px;
+    border-radius: 20px;
+    max-width: calc(100% - 28px);
+  }
+  .popup__icon-wrap {
+    width: 54px;
+    height: 54px;
+  }
+  .popup__icon {
+    font-size: 22px;
+  }
+  .popup__title {
+    font-size: 16px;
+  }
+  .popup__message {
+    font-size: 13px;
+  }
+  .popup__actions {
+    flex-direction: column;
+  }
+  .popup__btn {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  .popup__btn--cancel {
+    order: 2;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .popup {
+    padding: 26px 16px 20px;
+  }
+  .popup__title {
+    font-size: 15px;
+  }
+}

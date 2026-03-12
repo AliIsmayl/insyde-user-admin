@@ -8,12 +8,15 @@ import {
   FiMoon,
 } from "react-icons/fi";
 import "./SettingsMain.scss";
+import Popup from "../../Popup/Popup";
 
 function SettingsMain() {
   // STATE YARADARKƏN BİRBAŞA LOCALSTORAGE-DAN OXUYURUQ:
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "dark";
   });
+  const [popup, setPopup] = useState({ isOpen: false, type: "success" });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
   // Hər ehtimala qarşı qlobal HTML atributunu yeniləyirik
   useEffect(() => {
@@ -67,7 +70,20 @@ function SettingsMain() {
 
   return (
     <div className="settings-main-modern">
-      {/* BAŞLIQ */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          popup.onConfirm?.();
+          closePopup();
+        }}
+        onCancel={closePopup}
+      />
+
       <div className="top-header">
         <div>
           <h2 className="page-title">Ayarlar</h2>
@@ -222,7 +238,20 @@ function SettingsMain() {
                   <FiCheckCircle /> Şifrəniz uğurla yeniləndi!
                 </div>
               )}
-              <button type="submit" className="save-btn">
+              <button
+                type="submit"
+                className="save-btn"
+                onClick={() =>
+                  setPopup({
+                    isOpen: true,
+                    type: "success",
+                    title: "Uğurlu!",
+                    message: "Məlumatlarınız yeniləndi.",
+                    confirmText: "Əla",
+                    onConfirm: null,
+                  })
+                }
+              >
                 Yadda Saxla
               </button>
             </div>
