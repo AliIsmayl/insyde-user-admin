@@ -8,7 +8,6 @@
   margin: 2vh 0 2vh 1vw;
   background-color: var(--bg-sidebar);
   border: 1px solid var(--border-subtle);
-  border-radius: 40px;
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 
   /* Sidebar-ın özü scroll etməsin — daxili menu scroll edəcək */
@@ -23,10 +22,12 @@
 }
 
 .sidebar.closed {
+  border-radius: 20px;
   width: 75px;
 }
 .sidebar.open {
   width: 290px;
+  border-radius: 40px;
   cursor: default;
 }
 
