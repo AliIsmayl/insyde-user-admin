@@ -13,6 +13,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+
     .page-title {
       font-size: 24px;
       font-weight: 500;
@@ -26,25 +27,37 @@
     }
   }
 
-  /* ================== MƏZMUN (YAN-YANA DİZİLİŞ) ================== */
-  .settings-content {
-    display: flex;
-    flex-direction: row; /* DƏYİŞİKLİK: Kartları yan-yana düzür */
+  /* ==========================================
+     GRID LAYOUT
+     Sol sütun  → Mövzu (yuxarı) + Dil (aşağı)
+     Sağ sütun  → Parol (tam hündürlük)
+  ========================================== */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 30px;
-    align-items: flex-start;
-    flex-wrap: wrap; /* Ekrana sığmayanda alt-alta keçməsi üçün */
+    align-items: stretch; /* hər iki sütun eyni hündürlük */
   }
 
-  /* ÜMUMİ KART DİZAYNI */
+  .settings-col {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+    /* Sağ sütun: parol kartı sütunun tam hündürlüyünü tutsun */
+    &:last-child {
+      .modern-card {
+        // flex: 1;
+      }
+    }
+  }
+
+  /* ÜMUMİ KART */
   .modern-card {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: 30px;
     padding: 35px 40px;
-    /* DƏYİŞİKLİK: flex: 1 veririk ki, yan-yana olanda yeri bərabər bölsünlər */
-    flex: 1;
-    min-width: 350px; /* Kartın çox kiçilməsinin qarşısını alır */
-    max-width: 100%; /* Əvvəlki 600px limitini qaldırırıq ki, yan-yana sərbəst yayılsınlar */
     display: flex;
     flex-direction: column;
     transition: 0.3s ease;
@@ -84,16 +97,29 @@
     }
   }
 
-  /* ================== THEME BOX (MÖVZU SEÇİMİ) ================== */
+  /* Parol kartı — sütunun bütün boş yerini doldurur */
+  .password-card--full {
+    height: 100%;
+    box-sizing: border-box;
+
+    .password-form {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+  }
+
+  /* ================== MÖVZU KARTI ================== */
   .theme-card {
     .theme-options {
       display: flex;
       gap: 20px;
       width: 100%;
-
+      @media screen and (max-width: 768px) {
+        flex-direction: column;
+      }
       .theme-box {
         flex: 1;
-        width: 50%;
         background-color: var(--bg-input);
         border: 2px solid transparent;
         border-radius: 20px;
@@ -106,15 +132,13 @@
 
         &:hover {
           background-color: var(--bg-hover);
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
-
         &.active {
           border-color: var(--border-focus);
           background-color: var(--nav-item-active-bg);
         }
 
-        /* Kiçik illüstrasiya dizaynı */
         .theme-preview {
           height: 100px;
           border-radius: 12px;
@@ -140,7 +164,6 @@
           }
         }
 
-        /* Qaranlıq mövzu mock-up rəngləri */
         .dark-preview {
           background-color: #0b0b0b;
           border: 1px solid #2e2e2e;
@@ -152,7 +175,6 @@
           }
         }
 
-        /* Açıq mövzu mock-up rəngləri */
         .light-preview {
           background-color: #f5f4f0;
           border: 1px solid #e8e6e0;
@@ -172,7 +194,6 @@
           font-weight: 600;
           font-size: 14px;
           color: var(--text-primary);
-          text-align: center;
 
           .theme-icon {
             font-size: 18px;
@@ -184,10 +205,120 @@
     }
   }
 
+  /* ================== DİL KARTI ================== */
+  .language-card {
+    .language-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .language-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background-color: var(--bg-input);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+
+      &:hover {
+        background-color: var(--bg-hover);
+        transform: translateX(1px);
+      }
+
+      &.active {
+        border-color: var(--btn-primary-bg);
+        background-color: var(--nav-item-active-bg);
+
+        .lang-label {
+          color: var(--btn-primary-bg);
+        }
+      }
+
+      .lang-flag {
+        font-size: 28px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .lang-texts {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+
+        .lang-label {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text-primary);
+          transition: color 0.25s ease;
+        }
+        .lang-short {
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-muted);
+          letter-spacing: 0.08em;
+        }
+      }
+
+      .lang-radio {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--border-default);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: border-color 0.25s ease;
+
+        .lang-radio-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: var(--btn-primary-bg);
+          animation: dotPop 0.2s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+        }
+      }
+      &.active .lang-radio {
+        border-color: var(--btn-primary-bg);
+      }
+    }
+
+    .language-actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: flex-end;
+
+      .lang-save-btn {
+        color: var(--text-on-gold);
+        background-color: var(--btn-primary-bg);
+
+        &:hover {
+          background-color: var(--btn-primary-hover);
+        }
+        &:active {
+          background-color: var(--btn-primary-active);
+        }
+      }
+    }
+  }
+
+  @keyframes dotPop {
+    from {
+      transform: scale(0);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
   /* ================== ŞİFRƏ FORMASI ================== */
   .password-form {
-    display: flex;
-    flex-direction: column;
     gap: 20px;
 
     .divider {
@@ -262,6 +393,7 @@
         display: flex;
         gap: 15px;
         flex-wrap: wrap;
+
         li {
           font-size: 11px;
           color: var(--text-secondary);
@@ -280,7 +412,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 15px;
+      margin-top: auto;
+      padding-top: 15px;
       flex-wrap: wrap;
       gap: 15px;
 
@@ -296,43 +429,44 @@
         padding: 10px 15px;
         border-radius: 10px;
       }
+    }
+  }
 
-      .save-btn {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: var(--btn-primary-bg);
-        color: var(--text-on-gold);
-        border: none;
-        padding: 12px 35px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 15px;
-        font-family: "Poppins", sans-serif;
-        cursor: pointer;
-        transition: all 0.3s;
+  /* ÜMUMİ SAVE DÜYMƏSİ */
+  .save-btn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--btn-primary-bg);
+    color: var(--text-on-gold);
+    border: none;
+    padding: 12px 35px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    font-family: "Poppins", sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
 
-        &:hover {
-          background-color: var(--btn-primary-hover);
-          transform: translateY(-2px);
-        }
-        &:active {
-          background-color: var(--btn-primary-active);
-          transform: translateY(0);
-        }
-      }
+    &:hover {
+      background-color: var(--btn-primary-hover);
+      transform: translateY(-1px);
+    }
+    &:active {
+      background-color: var(--btn-primary-active);
+      transform: translateY(0);
     }
   }
 
   /* ================== RESPONSİVLİK ================== */
   @media screen and (max-width: 1024px) {
-    /* Planşet ölçülərində hər iki kartın sığışması çətinləşəndə alt-alta keçsin */
-    .settings-content {
-      flex-direction: column;
+    .settings-grid {
+      grid-template-columns: 1fr;
     }
-    .modern-card {
-      width: 100%;
+    .settings-col:last-child .modern-card {
+      height: auto;
+      flex: unset;
     }
   }
 
@@ -342,9 +476,24 @@
       align-items: flex-start;
       gap: 5px;
     }
-
     .modern-card {
       padding: 25px 20px;
+    }
+
+    .language-card {
+      .language-box {
+        padding: 14px 16px;
+      }
+      .lang-flag {
+        font-size: 24px;
+      }
+      .language-actions {
+        justify-content: stretch;
+      }
+      .lang-save-btn {
+        width: 100%;
+        margin-left: 0;
+      }
     }
 
     .password-card {
@@ -352,14 +501,11 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
-        text-align: left;
       }
-
       .password-form .input-group .password-rules {
         flex-direction: column;
         gap: 5px;
       }
-
       .form-actions {
         flex-direction: column;
         align-items: stretch;

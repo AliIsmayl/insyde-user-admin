@@ -243,7 +243,16 @@ function HomeMain() {
                     <div className="order-num">{index + 1}</div>
                     <button
                       className="remove-link-btn"
-                      onClick={() => removeLink(index)}
+                      onClick={() =>
+                        setPopup({
+                          isOpen: true,
+                          type: "delete",
+                          title: "Məlumat silinsin?",
+                          message: "Məlumatları sistemdəm sil.",
+                          confirmText: "Sil",
+                          onConfirm: () => removeLink(index),
+                        })
+                      }
                     >
                       <FaTrashAlt />
                     </button>
