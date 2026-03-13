@@ -250,10 +250,9 @@
           font-weight: 700;
           cursor: pointer;
           transition: color 0.2s;
-
+          text-decoration: none;
           &:hover {
             color: var(--text-link-hover); /* YENİLƏNDİ */
-            text-decoration: underline;
           }
         }
       }

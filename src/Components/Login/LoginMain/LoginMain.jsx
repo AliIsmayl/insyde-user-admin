@@ -147,92 +147,18 @@ function LoginMain() {
             <div className="login-footer">
               <p>
                 Hesabınız yoxdur?{" "}
-                <span
+                <a
                   className="link-text"
-                  onClick={() => {
-                    setActiveTab("register");
-                    setErrorMsg("");
-                  }}
+                  href="https://insyde.info/new-card"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Qeydiyyatdan keçin
-                </span>
+                </a>
               </p>
             </div>
           </>
         )}
-
-        {/* ========================================= */}
-        {/* ============ 2. QEYDİYYAT FORMASI ======= */}
-        {/* ========================================= */}
-        {activeTab === "register" && (
-          <>
-            <div className="login-header">
-              <div className="logo-text">Insyde</div>
-              <h2>Hesab Yaradın 🚀</h2>
-              <p>
-                Məlumatlarınızı daxil edin. Müraciətiniz admin tərəfindən
-                təsdiqlənəcək.
-              </p>
-            </div>
-
-            <form className="login-form" onSubmit={handleRegister}>
-              {successMsg && (
-                <div className="message success-msg">{successMsg}</div>
-              )}
-
-              <div className="input-group">
-                <label>Ad və Soyad</label>
-                <div className="input-wrapper">
-                  <FiUser className="input-icon" />
-                  <input
-                    type="text"
-                    placeholder="Ad Soyad"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="input-group">
-                <label>E-poçt ünvanı</label>
-                <div className="input-wrapper">
-                  <FiMail className="input-icon" />
-                  <input
-                    type="email"
-                    placeholder="nümunə@mail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <button type="submit" className="login-btn">
-                Təsdiq üçün göndər
-              </button>
-            </form>
-
-            <div className="login-footer">
-              <p>
-                Artıq hesabınız var?{" "}
-                <span
-                  className="link-text"
-                  onClick={() => {
-                    setActiveTab("login");
-                    setSuccessMsg("");
-                  }}
-                >
-                  Daxil olun
-                </span>
-              </p>
-            </div>
-          </>
-        )}
-
-        {/* ========================================= */}
-        {/* ========== 3. ŞİFRƏNİ UNUTDUM =========== */}
-        {/* ========================================= */}
         {activeTab === "forgot" && (
           <>
             <div
