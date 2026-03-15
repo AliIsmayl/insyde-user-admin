@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
 
+/* ================== LAYOUT ================== */
 .login-main {
   font-family: "Poppins", sans-serif;
   width: 100%;
@@ -7,327 +8,631 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--outer-bg, #0d0d0d);
+  background-color: var(--bg-app);
   padding: 20px;
+}
 
-  .login-card {
-    background-color: var(--row-bg, #1a1a1a);
-    width: 100%;
-    max-width: 450px;
-    border-radius: 30px;
-    border: 1px solid var(--border, #2a2a2a);
-    padding: 40px;
+/* ================== CARD ================== */
+.login-card {
+  background-color: var(--bg-panel);
+  width: 100%;
+  max-width: 450px;
+  border-radius: 30px;
+  border: 1px solid var(--border-default);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  box-shadow: var(--card-shadow);
+}
+
+/* ================== HEADER ================== */
+.lm-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .lm-logo {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--btn-primary-bg);
+    letter-spacing: -1px;
+    margin-bottom: 5px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+
+    strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+  }
+}
+
+/* ================== FORM ================== */
+.lm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-left: 4px;
+  }
+
+  /* ── Text input ── */
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .input-icon {
+      position: absolute;
+      left: 18px;
+      color: var(--text-muted);
+      font-size: 18px;
+      pointer-events: none;
+      transition: color 0.3s;
+    }
+
+    &:focus-within .input-icon {
+      color: var(--btn-primary-bg);
+    }
+
+    input {
+      width: 100%;
+      padding: 16px 20px 16px 48px;
+      border-radius: 15px;
+      border: 1.5px solid var(--border-input);
+      background-color: var(--bg-input);
+      font-family: "Poppins", sans-serif;
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+
+      &::placeholder {
+        color: var(--text-muted);
+      }
+
+      &:hover:not(:disabled) {
+        border-color: var(--border-input-hover);
+      }
+
+      &:focus {
+        border-color: var(--border-focus);
+        background-color: var(--bg-hover);
+      }
+    }
+  }
+
+  /* ── Kart növü ── */
+  .card-type-group {
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    position: relative;
+    gap: 12px;
 
-    .message {
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 13px;
-      text-align: center;
-      font-weight: 500;
-
-      &.error-msg {
-        background-color: rgba(231, 76, 60, 0.1);
-        color: #e74c3c;
-        border: 1px solid rgba(231, 76, 60, 0.2);
-      }
-
-      &.success-msg {
-        background-color: transparent;
-        color: var(--accent, #f0c040);
-        border: 1px solid var(--accent-dark, #c8a73a);
-      }
-    }
-
-    .login-header {
-      text-align: center;
+    .card-type-option {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-
-      .logo-text {
-        font-size: 28px;
-        font-weight: 800;
-        color: var(--accent, #f0c040);
-        letter-spacing: -1px;
-        margin-bottom: 5px;
-      }
-
-      h2 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--text-main, #ffffff);
-      }
-
-      p {
-        margin: 0;
-        font-size: 14px;
-        color: var(--text-muted, #888888);
-
-        strong {
-          color: var(--text-main, #ffffff);
-          font-weight: 600;
-        }
-      }
-    }
-
-    .login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-
-      .input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-
-        label {
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--text-muted, #888888);
-          margin-left: 5px;
-        }
-
-        .input-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-
-          .input-icon {
-            position: absolute;
-            left: 18px;
-            color: var(--text-muted, #888888);
-            font-size: 18px;
-            pointer-events: none;
-            transition: color 0.3s;
-          }
-
-          input {
-            width: 100%;
-            padding: 16px 20px 16px 48px;
-            border-radius: 15px;
-            border: 1.5px solid var(--border, #2a2a2a);
-            background-color: var(--handle-bg, #222222);
-            font-family: "Poppins", sans-serif;
-            font-size: 14px;
-            color: var(--text-main, #ffffff);
-            outline: none;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-
-            &::placeholder {
-              color: var(--text-muted, #888888);
-            }
-
-            &:hover {
-              border-color: var(--accent-dark, #c8a73a);
-            }
-
-            &:focus {
-              border-color: var(--accent, #f0c040);
-              background-color: var(--shell-bg, #1e1e1e);
-
-              & ~ .input-icon {
-                color: var(--accent, #f0c040);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    /* OTP */
-    .otp-section {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
       align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 15px;
+      border: 1.5px solid var(--border-input);
+      background-color: var(--bg-input);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      user-select: none;
 
-      .otp-inputs {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
+      &:hover {
+        border-color: var(--border-input-hover);
+        background-color: var(--bg-hover);
 
-        .otp-box {
-          width: 52px;
-          height: 60px;
-          border-radius: 14px;
-          border: 1.5px solid var(--border, #2a2a2a);
-          background-color: var(--handle-bg, #222222);
-          font-family: "Poppins", sans-serif;
-          font-size: 22px;
-          font-weight: 700;
-          color: var(--text-main, #ffffff);
-          text-align: center;
-          outline: none;
-          transition: all 0.25s ease;
-          caret-color: var(--accent, #f0c040);
-          box-sizing: border-box;
+        .card-type-icon {
+          background-color: var(--btn-primary-bg);
+          color: var(--text-on-gold);
+        }
 
-          &:hover {
-            border-color: var(--accent-dark, #c8a73a);
-          }
-
-          &:focus {
-            border-color: var(--accent, #f0c040);
-            background-color: var(--shell-bg, #1e1e1e);
-            transform: translateY(-1px);
-          }
-
-          &.filled {
-            border-color: var(--accent-dark, #c8a73a);
-            background-color: var(--shell-bg, #1e1e1e);
-          }
+        .card-type-label {
+          color: var(--text-primary);
         }
       }
 
-      .submit-btn {
-        width: 100%;
+      &.selected {
+        border-color: var(--btn-primary-bg);
+        background-color: var(--bg-hover);
+
+        .card-type-icon {
+          background-color: var(--btn-primary-bg);
+          color: var(--text-on-gold);
+        }
+
+        .card-type-label {
+          color: var(--text-primary);
+        }
+
+        .card-type-check {
+          opacity: 1;
+          transform: scale(1);
+        }
       }
 
-      .back-btn {
+      .card-type-icon {
+        font-size: 18px;
+        color: var(--text-secondary);
+        background-color: var(--bg-active);
+        padding: 10px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        background: none;
-        border: none;
-        font-family: "Poppins", sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-muted, #888888);
-        cursor: pointer;
-        padding: 8px 0;
-        transition: color 0.2s ease;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+      }
 
-        &:hover {
-          color: var(--text-main, #ffffff);
+      .card-type-info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        flex: 1;
+
+        .card-type-label {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          transition: color 0.25s;
         }
 
-        svg {
-          font-size: 16px;
+        .card-type-desc {
+          font-size: 12px;
+          color: var(--text-muted);
         }
       }
-    }
 
-    /* Shared button */
-    .submit-btn {
-      width: 100%;
-      padding: 16px 0;
-      border-radius: 15px;
-      border: none;
-      background-color: var(--cta-bg, #f0c040);
-      color: var(--cta-color, #1a1a1a);
+      .card-type-check {
+        font-size: 20px;
+        color: var(--btn-primary-bg);
+        display: flex;
+        align-items: center;
+        opacity: 0;
+        transform: scale(0.4);
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+/* ================== OTP SECTION ================== */
+.otp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+
+  .otp-inputs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+
+    .otp-box {
+      width: 52px;
+      height: 60px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border-input);
+      background-color: var(--bg-input);
       font-family: "Poppins", sans-serif;
-      font-size: 16px;
+      font-size: 22px;
       font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 0.3px;
-      transition: all 0.3s ease;
-
-      &:hover {
-        background-color: var(--cta-hover-bg, #e0b030);
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-    }
-
-    /* Footer */
-    .login-footer {
+      color: var(--text-primary);
       text-align: center;
-      border-top: 1px dashed var(--border, #2a2a2a);
-      padding-top: 20px;
+      outline: none;
+      transition: all 0.25s ease;
+      caret-color: var(--btn-primary-bg);
+      box-sizing: border-box;
 
-      p {
-        margin: 0;
-        font-size: 14px;
-        color: var(--text-muted, #888888);
+      &:hover:not(:disabled) {
+        border-color: var(--border-input-hover);
       }
 
-      .link-text {
-        color: var(--accent, #f0c040);
-        font-weight: 700;
-        cursor: pointer;
-        transition: color 0.2s;
-        text-decoration: none;
+      &:focus {
+        border-color: var(--border-focus);
+        background-color: var(--bg-hover);
+        box-shadow: 0 0 0 3px rgba(255, 194, 0, 0.12);
+        transform: translateY(-2px);
+      }
 
-        &:hover {
-          color: var(--accent-dark, #c8a73a);
-        }
+      &.filled {
+        border-color: var(--border-strong);
+        background-color: var(--bg-hover);
       }
     }
   }
 
-  @media screen and (max-width: 480px) {
+  .submit-btn {
+    width: 100%;
+  }
+}
+
+/* ================== DONE SECTION ================== */
+.done-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+
+  .done-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background-color: var(--bg-input);
+    border: 2px solid var(--btn-primary-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--btn-primary-bg);
+    font-size: 32px;
+    animation: pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .submit-btn {
+    width: 100%;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ================== SUBMIT BUTTON ================== */
+.submit-btn {
+  width: 100%;
+  padding: 16px 0;
+  border-radius: 15px;
+  border: none;
+  background-color: var(--btn-primary-bg);
+  color: var(--text-on-gold);
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--btn-primary-shadow);
+
+  &:hover:not(:disabled) {
+    background-color: var(--btn-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--btn-primary-active);
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background-color: var(--btn-disabled-bg);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
+  }
+}
+
+/* ================== BACK BUTTON ================== */
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  svg {
+    font-size: 16px;
+  }
+}
+
+/* ================== MESSAGES ================== */
+.message {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  text-align: center;
+  font-weight: 500;
+
+  &.error-msg {
+    background-color: rgba(192, 57, 43, 0.12);
+    color: #e74c3c;
+    border: 1px solid rgba(192, 57, 43, 0.25);
+  }
+
+  &.success-msg {
+    background-color: var(--badge-success-bg);
+    color: var(--badge-success-text);
+    border: 1px solid var(--badge-success-text);
+  }
+}
+
+/* ================== FOOTER ================== */
+.lm-footer {
+  text-align: center;
+  margin-top: -10px;
+
+  p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+.link-text {
+  color: var(--text-link);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--text-link-hover);
+  }
+}
+
+/* ================== RESPONSİVLİK ================== */
+
+@media screen and (max-width: 768px) {
+  .login-main {
+    padding: 16px;
+    padding-top: 40px;
+  }
+
+  .login-card {
+    max-width: 100%;
+    padding: 36px 28px;
+    border-radius: 24px;
+    gap: 26px;
+
+    .lm-header {
+      .lm-logo {
+        font-size: 26px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+      p {
+        font-size: 13.5px;
+      }
+    }
+
+    .lm-form {
+      gap: 18px;
+
+      .input-group {
+        .input-wrapper input {
+          padding: 15px 18px 15px 46px;
+        }
+
+        .card-type-group {
+          gap: 10px;
+
+          .card-type-option {
+            padding: 15px 16px;
+            gap: 12px;
+
+            .card-type-icon {
+              font-size: 17px;
+              padding: 9px;
+            }
+            .card-type-info .card-type-label {
+              font-size: 13.5px;
+            }
+          }
+        }
+      }
+    }
+
+    .otp-section {
+      gap: 18px;
+
+      .otp-inputs .otp-box {
+        width: 50px;
+        height: 58px;
+        font-size: 21px;
+        border-radius: 13px;
+      }
+    }
+
+    .done-section .done-icon {
+      width: 66px;
+      height: 66px;
+      font-size: 30px;
+    }
+    .submit-btn {
+      padding: 15px 0;
+      font-size: 15px;
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .login-main {
     padding: 12px;
     padding-top: 24px;
-
-    .login-card {
-      padding: 28px 20px;
-      border-radius: 20px;
-      gap: 22px;
-
-      .login-header {
-        .logo-text {
-          font-size: 24px;
-        }
-        h2 {
-          font-size: 20px;
-        }
-        p {
-          font-size: 13px;
-        }
-      }
-
-      .login-form .input-group .input-wrapper input {
-        padding: 14px 16px 14px 42px;
-        font-size: 13.5px;
-        border-radius: 13px;
-      }
-
-      .otp-section .otp-inputs {
-        gap: 7px;
-
-        .otp-box {
-          width: 44px;
-          height: 52px;
-          font-size: 20px;
-          border-radius: 12px;
-        }
-      }
-
-      .submit-btn {
-        padding: 14px 0;
-        font-size: 15px;
-        border-radius: 13px;
-      }
-    }
   }
 
-  @media screen and (max-width: 360px) {
-    padding: 10px;
+  .login-card {
+    padding: 28px 20px;
+    border-radius: 20px;
+    gap: 22px;
 
-    .login-card {
-      padding: 22px 16px;
-      border-radius: 18px;
+    .lm-header {
+      gap: 8px;
+      .lm-logo {
+        font-size: 24px;
+      }
+      h2 {
+        font-size: 20px;
+      }
+      p {
+        font-size: 13px;
+      }
+    }
 
-      .otp-section .otp-inputs {
-        gap: 5px;
+    .lm-form {
+      gap: 16px;
 
-        .otp-box {
-          width: 38px;
-          height: 46px;
-          font-size: 18px;
-          border-radius: 10px;
+      .input-group {
+        gap: 7px;
+
+        label {
+          font-size: 12px;
+        }
+
+        .input-wrapper {
+          .input-icon {
+            left: 15px;
+            font-size: 16px;
+          }
+          input {
+            padding: 14px 16px 14px 42px;
+            font-size: 13.5px;
+            border-radius: 13px;
+          }
+        }
+
+        .card-type-group {
+          gap: 9px;
+
+          .card-type-option {
+            padding: 13px 14px;
+            gap: 11px;
+            border-radius: 13px;
+
+            .card-type-icon {
+              font-size: 16px;
+              padding: 8px;
+              border-radius: 10px;
+            }
+            .card-type-info {
+              .card-type-label {
+                font-size: 13px;
+              }
+              .card-type-desc {
+                font-size: 11px;
+              }
+            }
+            .card-type-check {
+              font-size: 18px;
+            }
+          }
         }
       }
+    }
+
+    .otp-section {
+      gap: 18px;
+
+      .otp-inputs .otp-box {
+        width: 44px;
+        height: 52px;
+        font-size: 20px;
+        border-radius: 12px;
+      }
+
+      .back-btn {
+        font-size: 13px;
+      }
+    }
+
+    .done-section .done-icon {
+      width: 60px;
+      height: 60px;
+      font-size: 26px;
+    }
+
+    .submit-btn {
+      padding: 14px 0;
+      font-size: 15px;
+      border-radius: 13px;
+    }
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .login-main {
+    padding: 10px;
+    padding-top: 16px;
+  }
+
+  .login-card {
+    padding: 22px 16px;
+    border-radius: 18px;
+    gap: 18px;
+
+    .lm-header {
+      .lm-logo {
+        font-size: 22px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      p {
+        font-size: 12px;
+      }
+    }
+
+    .otp-section .otp-inputs .otp-box {
+      width: 38px;
+      height: 46px;
+      font-size: 18px;
+      border-radius: 10px;
+    }
+
+    .submit-btn {
+      padding: 13px 0;
+      font-size: 14px;
+      border-radius: 12px;
     }
   }
 }
