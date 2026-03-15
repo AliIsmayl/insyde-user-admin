@@ -13,35 +13,21 @@ import "./LoginMain.scss";
 // API URLs
 // ─────────────────────────────────────────────────────────
 const AUTH_BASE =
-  "https://corn-strengthening-acc-bathroom.trycloudflare.com/api/dash/auth";
-const URL_REGISTER = `${AUTH_BASE}/register/`;
-const URL_LOGIN = `${AUTH_BASE}/login/`;
+  "https://crop-folder-fares-milan.trycloudflare.com/api/dash/auth";
+const URL_REGISTER   = `${AUTH_BASE}/register/`;
+const URL_LOGIN      = `${AUTH_BASE}/login/`;
 const URL_VERIFY_OTP = `${AUTH_BASE}/verify_otp/`;
 
 // ─────────────────────────────────────────────────────────
 // localStorage helpers
 // ─────────────────────────────────────────────────────────
 const LS = {
-  set: (k, v) => {
-    try {
-      localStorage.setItem(k, v);
-    } catch {}
-  },
-  get: (k) => {
-    try {
-      return localStorage.getItem(k) || "";
-    } catch {
-      return "";
-    }
-  },
-  del: (k) => {
-    try {
-      localStorage.removeItem(k);
-    } catch {}
-  },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  get: (k)    => { try { return localStorage.getItem(k) || ""; } catch { return ""; } },
+  del: (k)    => { try { localStorage.removeItem(k); } catch {} },
 };
 
-const REG_TOKEN_KEY = "insyde_reg_token";
+const REG_TOKEN_KEY   = "insyde_reg_token";
 const LOGIN_TOKEN_KEY = "insyde_login_token";
 
 // ─────────────────────────────────────────────────────────
@@ -62,16 +48,10 @@ function useOtp() {
   const onKeyDown = (i, e) => {
     if (e.key === "Backspace") {
       const n = [...otp];
-      if (otp[i]) {
-        n[i] = "";
-        setOtp(n);
-      } else if (i > 0) {
-        n[i - 1] = "";
-        setOtp(n);
-        refs.current[i - 1]?.focus();
-      }
-    } else if (e.key === "ArrowLeft" && i > 0) refs.current[i - 1]?.focus();
-    else if (e.key === "ArrowRight" && i < 5) refs.current[i + 1]?.focus();
+      if (otp[i]) { n[i] = ""; setOtp(n); }
+      else if (i > 0) { n[i - 1] = ""; setOtp(n); refs.current[i - 1]?.focus(); }
+    } else if (e.key === "ArrowLeft"  && i > 0) refs.current[i - 1]?.focus();
+    else if   (e.key === "ArrowRight" && i < 5) refs.current[i + 1]?.focus();
   };
 
   const onPaste = (e) => {
@@ -84,7 +64,7 @@ function useOtp() {
   };
 
   const reset = () => setOtp(["", "", "", "", "", ""]);
-  const code = otp.join("");
+  const code  = otp.join("");
 
   return { otp, refs, onChange, onKeyDown, onPaste, reset, code };
 }
@@ -103,11 +83,8 @@ function useResendTimer() {
     return () => clearTimeout(ref.current);
   }, [timer]);
 
-  const start = (s) => setTimer(s ?? 30);
-  const reset = () => {
-    clearTimeout(ref.current);
-    setTimer(0);
-  };
+  const start = () => setTimer(45);
+  const reset = () => { clearTimeout(ref.current); setTimer(0); };
 
   return { timer, start, reset };
 }
@@ -142,16 +119,16 @@ function OtpBoxes({ ctrl, disabled }) {
 // NEW CARD VIEW  (qeydiyyat)
 // ═════════════════════════════════════════════════════════
 function NewCardView({ onBack }) {
-  const [email, setEmail] = useState("");
-  const [cardType, setCardType] = useState("");
-  const [step, setStep] = useState("form"); // form | otp | done
+  const [email, setEmail]         = useState("");
+  const [cardType, setCardType]   = useState("");
+  const [step, setStep]           = useState("form"); // form | otp | done
   const [formError, setFormError] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [userData, setUserData] = useState(null);
+  const [otpError, setOtpError]   = useState("");
+  const [loading, setLoading]     = useState(false);
+  const [userData, setUserData]   = useState(null);
 
   const otpCtrl = useOtp();
-  const resend = useResendTimer();
+  const resend  = useResendTimer();
 
   const cardOptions = [
     {
@@ -174,14 +151,8 @@ function NewCardView({ onBack }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
-    if (!email) {
-      setFormError("E-poçt ünvanını daxil edin!");
-      return;
-    }
-    if (!cardType) {
-      setFormError("Kart növünü seçin!");
-      return;
-    }
+    if (!email)    { setFormError("E-poçt ünvanını daxil edin!"); return; }
+    if (!cardType) { setFormError("Kart növünü seçin!"); return; }
 
     const selected = cardOptions.find((o) => o.value === cardType);
     setLoading(true);
@@ -195,10 +166,8 @@ function NewCardView({ onBack }) {
 
       if (!res.ok) {
         setFormError(
-          data?.error ||
-            data?.detail ||
-            data?.email?.[0] ||
-            "Xəta baş verdi. Yenidən cəhd edin.",
+          data?.error || data?.detail || data?.email?.[0] ||
+          "Xəta baş verdi. Yenidən cəhd edin."
         );
         return;
       }
@@ -208,9 +177,7 @@ function NewCardView({ onBack }) {
       resend.start(data.resend_after_seconds);
       setStep("otp");
     } catch {
-      setFormError(
-        "Serverə qoşulmaq mümkün olmadı. İnternet bağlantınızı yoxlayın.",
-      );
+      setFormError("Serverə qoşulmaq mümkün olmadı. İnternet bağlantınızı yoxlayın.");
     } finally {
       setLoading(false);
     }
@@ -264,26 +231,24 @@ function NewCardView({ onBack }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          otp_code: otpCtrl.code,
-          email: email,
-          registration_token: token, // ✅ body-də göndərilir
+          otp_code:           otpCtrl.code,
+          email:              email,
+          registration_token: token,   // ✅ body-də göndərilir
         }),
       });
       const data = await res.json();
 
       if (!res.ok) {
         setOtpError(
-          data?.error ||
-            data?.detail ||
-            data?.otp_code?.[0] ||
-            data?.non_field_errors?.[0] ||
-            "Kod yanlışdır. Yenidən cəhd edin.",
+          data?.error || data?.detail ||
+          data?.otp_code?.[0] || data?.non_field_errors?.[0] ||
+          "Kod yanlışdır. Yenidən cəhd edin."
         );
         return;
       }
 
       // JWT tokenləri saxla
-      if (data.tokens?.access) LS.set("access_token", data.tokens.access);
+      if (data.tokens?.access)  LS.set("access_token",  data.tokens.access);
       if (data.tokens?.refresh) LS.set("refresh_token", data.tokens.refresh);
       LS.set("isAuthenticated", "true");
 
@@ -329,10 +294,7 @@ function NewCardView({ onBack }) {
                 type="email"
                 placeholder="example@insyde.az"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setFormError("");
-                }}
+                onChange={(e) => { setEmail(e.target.value); setFormError(""); }}
                 disabled={loading}
                 autoFocus
               />
@@ -346,12 +308,7 @@ function NewCardView({ onBack }) {
                 <div
                   key={opt.value}
                   className={`card-type-option ${cardType === opt.value ? "selected" : ""}`}
-                  onClick={() => {
-                    if (!loading) {
-                      setCardType(opt.value);
-                      setFormError("");
-                    }
-                  }}
+                  onClick={() => { if (!loading) { setCardType(opt.value); setFormError(""); } }}
                 >
                   <div className="card-type-icon">{opt.icon}</div>
                   <div className="card-type-info">
@@ -367,22 +324,17 @@ function NewCardView({ onBack }) {
           </div>
 
           <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? (
-              <span className="btn-loading">
-                <span className="spinner" /> Göndərilir...
-              </span>
-            ) : (
-              "Təsdiqlə"
-            )}
+            {loading
+              ? <span className="btn-loading"><span className="spinner" /> Göndərilir...</span>
+              : "Təsdiqlə"
+            }
           </button>
         </form>
 
         <div className="lm-footer">
           <p>
             Artıq hesabınız var?{" "}
-            <span className="link-text" onClick={onBack}>
-              Daxil olun
-            </span>
+            <span className="link-text" onClick={onBack}>Daxil olun</span>
           </p>
         </div>
       </>
@@ -396,8 +348,7 @@ function NewCardView({ onBack }) {
           <div className="lm-logo">Insyde</div>
           <h2>Kodu Daxil Edin</h2>
           <p>
-            <strong>{email}</strong> ünvanına göndərilən 6 rəqəmli kodu daxil
-            edin.
+            <strong>{email}</strong> ünvanına göndərilən 6 rəqəmli kodu daxil edin.
           </p>
         </div>
 
@@ -411,13 +362,10 @@ function NewCardView({ onBack }) {
             onClick={handleVerify}
             disabled={loading || otpCtrl.code.length < 6}
           >
-            {loading ? (
-              <span className="btn-loading">
-                <span className="spinner" /> Yoxlanılır...
-              </span>
-            ) : (
-              "Doğrula"
-            )}
+            {loading
+              ? <span className="btn-loading"><span className="spinner" /> Yoxlanılır...</span>
+              : "Doğrula"
+            }
           </button>
 
           <div className="resend-wrap">
@@ -426,11 +374,7 @@ function NewCardView({ onBack }) {
                 Yenidən göndər — <strong>{resend.timer}s</strong>
               </span>
             ) : (
-              <button
-                className="resend-btn"
-                onClick={handleResend}
-                disabled={loading}
-              >
+              <button className="resend-btn" onClick={handleResend} disabled={loading}>
                 Kodu yenidən göndər
               </button>
             )}
@@ -446,9 +390,7 @@ function NewCardView({ onBack }) {
   // ── DONE ────────────────────────────────────────────────
   return (
     <div className="done-section">
-      <div className="done-icon">
-        <FiCheckCircle />
-      </div>
+      <div className="done-icon"><FiCheckCircle /></div>
       <div className="lm-header">
         <div className="lm-logo">Insyde</div>
         <h2>Kart Yaradıldı!</h2>
@@ -459,9 +401,7 @@ function NewCardView({ onBack }) {
         <p className="done-email">{email}</p>
         {userData && (
           <div className="done-info">
-            <span>
-              İstifadəçi kodu: <strong>{userData.user_code}</strong>
-            </span>
+            <span>İstifadəçi kodu: <strong>{userData.user_code}</strong></span>
           </div>
         )}
       </div>
@@ -478,24 +418,21 @@ function NewCardView({ onBack }) {
 function LoginMain() {
   const navigate = useNavigate();
 
-  const [view, setView] = useState("login"); // login | newcard
-  const [step, setStep] = useState("email"); // email | otp
-  const [email, setEmail] = useState("");
+  const [view, setView]         = useState("login"); // login | newcard
+  const [step, setStep]         = useState("email"); // email | otp
+  const [email, setEmail]       = useState("");
   const [emailError, setEmailError] = useState("");
   const [otpError, setOtpError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]   = useState(false);
 
   const otpCtrl = useOtp();
-  const resend = useResendTimer();
+  const resend  = useResendTimer();
 
   // ── E-poçt göndər → /login/ ──────────────────────────
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setEmailError("");
-    if (!email) {
-      setEmailError("E-poçt ünvanını daxil edin!");
-      return;
-    }
+    if (!email) { setEmailError("E-poçt ünvanını daxil edin!"); return; }
 
     setLoading(true);
     try {
@@ -508,10 +445,8 @@ function LoginMain() {
 
       if (!res.ok) {
         setEmailError(
-          data?.error ||
-            data?.detail ||
-            data?.email?.[0] ||
-            "Xəta baş verdi. Yenidən cəhd edin.",
+          data?.error || data?.detail || data?.email?.[0] ||
+          "Xəta baş verdi. Yenidən cəhd edin."
         );
         return;
       }
@@ -521,9 +456,7 @@ function LoginMain() {
       resend.start(data.resend_after_seconds);
       setStep("otp");
     } catch {
-      setEmailError(
-        "Serverə qoşulmaq mümkün olmadı. İnternet bağlantınızı yoxlayın.",
-      );
+      setEmailError("Serverə qoşulmaq mümkün olmadı. İnternet bağlantınızı yoxlayın.");
     } finally {
       setLoading(false);
     }
@@ -576,26 +509,24 @@ function LoginMain() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          otp_code: otpCtrl.code,
-          email: email,
-          registration_token: token, // ✅ body-də göndərilir
+          otp_code:           otpCtrl.code,
+          email:              email,
+          registration_token: token,   // ✅ body-də göndərilir
         }),
       });
       const data = await res.json();
 
       if (!res.ok) {
         setOtpError(
-          data?.error ||
-            data?.detail ||
-            data?.otp_code?.[0] ||
-            data?.non_field_errors?.[0] ||
-            "Kod yanlışdır. Yenidən cəhd edin.",
+          data?.error || data?.detail ||
+          data?.otp_code?.[0] || data?.non_field_errors?.[0] ||
+          "Kod yanlışdır. Yenidən cəhd edin."
         );
         return;
       }
 
       // JWT tokenləri saxla və login token-i sil
-      if (data.tokens?.access) LS.set("access_token", data.tokens.access);
+      if (data.tokens?.access)  LS.set("access_token",  data.tokens.access);
       if (data.tokens?.refresh) LS.set("refresh_token", data.tokens.refresh);
       LS.set("isAuthenticated", "true");
       LS.del(LOGIN_TOKEN_KEY);
@@ -619,6 +550,7 @@ function LoginMain() {
   return (
     <div className="login-main">
       <div className="login-card">
+
         {/* ── QEYDIYYAT VIEW ── */}
         {view === "newcard" && <NewCardView onBack={() => setView("login")} />}
 
@@ -632,9 +564,7 @@ function LoginMain() {
             </div>
 
             <form className="lm-form" onSubmit={handleEmailSubmit} noValidate>
-              {emailError && (
-                <div className="message error-msg">{emailError}</div>
-              )}
+              {emailError && <div className="message error-msg">{emailError}</div>}
 
               <div className="input-group">
                 <label>E-poçt ünvanı</label>
@@ -644,10 +574,7 @@ function LoginMain() {
                     type="email"
                     placeholder="example@insyde.az"
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setEmailError("");
-                    }}
+                    onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
                     disabled={loading}
                     autoFocus
                   />
@@ -655,13 +582,10 @@ function LoginMain() {
               </div>
 
               <button type="submit" className="submit-btn" disabled={loading}>
-                {loading ? (
-                  <span className="btn-loading">
-                    <span className="spinner" /> Göndərilir...
-                  </span>
-                ) : (
-                  "Davam et"
-                )}
+                {loading
+                  ? <span className="btn-loading"><span className="spinner" /> Göndərilir...</span>
+                  : "Davam et"
+                }
               </button>
             </form>
 
@@ -683,8 +607,7 @@ function LoginMain() {
               <div className="lm-logo">Insyde</div>
               <h2>Kodu Daxil Edin</h2>
               <p>
-                <strong>{email}</strong> ünvanına göndərilən 6 rəqəmli kodu
-                daxil edin.
+                <strong>{email}</strong> ünvanına göndərilən 6 rəqəmli kodu daxil edin.
               </p>
             </div>
 
@@ -698,13 +621,10 @@ function LoginMain() {
                 onClick={handleVerify}
                 disabled={loading || otpCtrl.code.length < 6}
               >
-                {loading ? (
-                  <span className="btn-loading">
-                    <span className="spinner" /> Yoxlanılır...
-                  </span>
-                ) : (
-                  "Doğrula"
-                )}
+                {loading
+                  ? <span className="btn-loading"><span className="spinner" /> Yoxlanılır...</span>
+                  : "Doğrula"
+                }
               </button>
 
               <div className="resend-wrap">
@@ -713,26 +633,19 @@ function LoginMain() {
                     Yenidən göndər — <strong>{resend.timer}s</strong>
                   </span>
                 ) : (
-                  <button
-                    className="resend-btn"
-                    onClick={handleResend}
-                    disabled={loading}
-                  >
+                  <button className="resend-btn" onClick={handleResend} disabled={loading}>
                     Kodu yenidən göndər
                   </button>
                 )}
               </div>
 
-              <button
-                className="back-btn"
-                onClick={handleBackToEmail}
-                disabled={loading}
-              >
+              <button className="back-btn" onClick={handleBackToEmail} disabled={loading}>
                 <FiArrowLeft /> Geri qayıt
               </button>
             </div>
           </>
         )}
+
       </div>
     </div>
   );
