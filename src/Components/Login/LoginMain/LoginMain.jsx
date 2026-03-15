@@ -1,91 +1,95 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FiMail,
-  FiLock,
-  FiEye,
-  FiEyeOff,
-  FiUser,
-  FiArrowLeft,
-} from "react-icons/fi";
+import { FiMail, FiArrowLeft } from "react-icons/fi";
 import "./LoginMain.scss";
 
 function LoginMain() {
   const navigate = useNavigate();
 
-  // Hansı formanın görünəcəyini idarə edən state ('login', 'register', 'forgot')
-  const [activeTab, setActiveTab] = useState("login");
-
-  // Input states
-  const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState("email"); // "email" | "otp"
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otpError, setOtpError] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
 
-  // Giriş Funksiyası
-  const handleLogin = (e) => {
+  const otpRefs = useRef([]);
+
+  // ── STEP 1: Email submit ──
+  const handleEmailSubmit = (e) => {
     e.preventDefault();
-    if (email === "user" && password === "123456") {
-      setErrorMsg("");
+    if (!email) {
+      setErrorMsg("E-poçt ünvanını daxil edin!");
+      return;
+    }
+    setErrorMsg("");
+    setStep("otp");
+  };
 
-      // 1. İstifadəçinin daxil olduğunu lokal yaddaşa (localStorage) yazırıq
-      localStorage.setItem("isAuthenticated", "true");
-
-      // 2. Ana səhifəyə yönləndiririk (Əvvəlki addımda App.js-də yaratdığımız /home yolu)
-      navigate("/home");
-    } else {
-      setErrorMsg("E-poçt və ya şifrə yanlışdır! (Sınaq üçün: admin / admin)");
-      setSuccessMsg("");
+  // ── OTP handlers ──
+  const handleOtpChange = (index, value) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const newOtp = [...otp];
+    newOtp[index] = digit;
+    setOtp(newOtp);
+    setOtpError("");
+    if (digit && index < 5) {
+      otpRefs.current[index + 1]?.focus();
     }
   };
 
-  // Qeydiyyat İstəyi Funksiyası
-  const handleRegister = (e) => {
-    e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg(
-      "Təsdiq üçün adminə göndərildi. Tezliklə sizinlə əlaqə saxlanılacaq.",
-    );
-    // Gələcəkdə burada backend-ə (API) məlumat göndərmək üçün kod yazılacaq.
-    setTimeout(() => {
-      setActiveTab("login");
-      setSuccessMsg("");
-      setEmail("");
-      setFullName("");
-    }, 3000); // 3 saniyə sonra təkrar login formasına qayıtsın
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace") {
+      const newOtp = [...otp];
+      if (otp[index]) {
+        newOtp[index] = "";
+        setOtp(newOtp);
+      } else if (index > 0) {
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
+        otpRefs.current[index - 1]?.focus();
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
   };
 
-  // Şifrəni Yeniləmə Funksiyası
-  const handleForgot = (e) => {
+  const handleOtpPaste = (e) => {
     e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg(
-      "Şifrəni yeniləmək üçün təlimatlar e-poçt ünvanınıza göndərildi.",
-    );
-    setTimeout(() => {
-      setActiveTab("login");
-      setSuccessMsg("");
-      setEmail("");
-    }, 3000);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
+    const newOtp = ["", "", "", "", "", ""];
+    for (let i = 0; i < pasted.length; i++) newOtp[i] = pasted[i];
+    setOtp(newOtp);
+    otpRefs.current[Math.min(pasted.length, 5)]?.focus();
+  };
+
+  const handleOtpVerify = () => {
+    const code = otp.join("");
+    if (code.length < 6) {
+      setOtpError("Zəhmət olmasa bütün 6 xananı doldurun.");
+      return;
+    }
+    localStorage.setItem("isAuthenticated", "true");
+    navigate("/home");
   };
 
   return (
-    <div className="login-main-modern">
+    <div className="login-main">
       <div className="login-card">
-        {/* ========================================= */}
-        {/* ============ 1. LOGİN FORMASI =========== */}
-        {/* ========================================= */}
-        {activeTab === "login" && (
+        {/* ── EMAIL STEP ── */}
+        {step === "email" && (
           <>
             <div className="login-header">
               <div className="logo-text">Insyde</div>
               <h2>Xoş gəlmisiniz! 👋</h2>
-              <p>Davam etmək üçün idarəetmə panelinə daxil olun.</p>
+              <p>Davam etmək üçün e-poçt ünvanınızı daxil edin.</p>
             </div>
 
-            <form className="login-form" onSubmit={handleLogin}>
+            <form className="login-form" onSubmit={handleEmailSubmit}>
               {errorMsg && <div className="message error-msg">{errorMsg}</div>}
 
               <div className="input-group">
@@ -93,54 +97,18 @@ function LoginMain() {
                 <div className="input-wrapper">
                   <FiMail className="input-icon" />
                   <input
-                    type="text"
-                    placeholder="nümunə@mail.com"
+                    type="email"
+                    placeholder="example@insyde.az"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoFocus
                   />
                 </div>
               </div>
 
-              <div className="input-group">
-                <label>Şifrə</label>
-                <div className="input-wrapper">
-                  <FiLock className="input-icon" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="toggle-password"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <FiEyeOff /> : <FiEye />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <label className="remember-me">
-                  <input type="checkbox" />
-                  <span>Məni xatırla</span>
-                </label>
-                <span
-                  className="forgot-password"
-                  onClick={() => {
-                    setActiveTab("forgot");
-                    setErrorMsg("");
-                  }}
-                >
-                  Parolu unutdum?
-                </span>
-              </div>
-
-              <button type="submit" className="login-btn">
-                Daxil ol
+              <button type="submit" className="submit-btn">
+                Davam et
               </button>
             </form>
 
@@ -159,47 +127,56 @@ function LoginMain() {
             </div>
           </>
         )}
-        {activeTab === "forgot" && (
-          <>
-            <div
-              className="back-btn"
-              onClick={() => {
-                setActiveTab("login");
-                setSuccessMsg("");
-              }}
-            >
-              <FiArrowLeft /> Geri qayıt
-            </div>
 
+        {/* ── OTP STEP ── */}
+        {step === "otp" && (
+          <>
             <div className="login-header">
               <div className="logo-text">Insyde</div>
-              <h2>Şifrəni bərpa et 🔒</h2>
-              <p>Hesabınıza bağlı olan e-poçt ünvanını daxil edin.</p>
+              <h2>Kodu Daxil Edin</h2>
+              <p>
+                <strong>{email}</strong> ünvanına göndərilən 6 rəqəmli kodu
+                daxil edin.
+              </p>
             </div>
 
-            <form className="login-form" onSubmit={handleForgot}>
-              {successMsg && (
-                <div className="message success-msg">{successMsg}</div>
-              )}
+            <div className="otp-section">
+              {otpError && <div className="message error-msg">{otpError}</div>}
 
-              <div className="input-group">
-                <label>E-poçt ünvanı</label>
-                <div className="input-wrapper">
-                  <FiMail className="input-icon" />
+              <div className="otp-inputs">
+                {otp.map((digit, i) => (
                   <input
-                    type="email"
-                    placeholder="nümunə@mail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    key={i}
+                    ref={(el) => (otpRefs.current[i] = el)}
+                    className={`otp-box ${digit ? "filled" : ""}`}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    onPaste={i === 0 ? handleOtpPaste : undefined}
+                    autoFocus={i === 0}
                   />
-                </div>
+                ))}
               </div>
 
-              <button type="submit" className="login-btn">
-                Yeniləmə linki göndər
+              <button className="submit-btn" onClick={handleOtpVerify}>
+                Doğrula
               </button>
-            </form>
+
+              <button
+                className="back-btn"
+                onClick={() => {
+                  setStep("email");
+                  setOtp(["", "", "", "", "", ""]);
+                  setOtpError("");
+                }}
+              >
+                <FiArrowLeft />
+                Geri qayıt
+              </button>
+            </div>
           </>
         )}
       </div>
