@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaCloudUploadAlt,
   FaInstagram,
   FaFacebook,
   FaLinkedin,
   FaWhatsapp,
-  FaGlobe, 
+  FaGlobe,
   FaPlus,
   FaCheckCircle,
   FaSave,
@@ -13,50 +13,52 @@ import {
   FaExternalLinkAlt,
   FaMoon,
   FaSun,
+  FaSpinner,
 } from "react-icons/fa";
 import "./HomeMain.scss";
 import Popup from "../../Popup/Popup";
+import { authFetch, API_BASE } from "../../../Utils/authUtils";
+import { useNavigate } from "react-router-dom";
+
+const URL_PROFILE = `${API_BASE}/api/dash/profile/me/`;
+const URL_SOCIAL_TYPES = `${API_BASE}/api/dash/social-media-types/`;
+
 function HomeMain() {
-  // Yalnız telefonun öz dark/light state-i
+  const navigate = useNavigate();
+
   const [phoneTheme, setPhoneTheme] = useState("dark");
   const [popup, setPopup] = useState({ isOpen: false, type: "success" });
+  const [pageLoading, setPageLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
   const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
-
-  const togglePhoneTheme = () => {
+  const togglePhoneTheme = () =>
     setPhoneTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
 
+  // ── Form data ──────────────────────────────────────────
   const [formData, setFormData] = useState({
-    name: "Elçin",
-    email: "elcin@example.com",
-    profession: "Frontend Developer",
-    skill1: "React",
-    skill2: "CSS",
-    skill3: "UI/UX",
-    about: "Minimalist və müasir interfeyslər qurmağı sevirəm.",
+    name: "",
+    email: "",
+    work: "",
+    skill_1: "",
+    skill_2: "",
+    skill_3: "",
+    about: "",
   });
 
   const [phoneColor, setPhoneColor] = useState("#ff8b94");
-  const [profileImage, setProfileImage] = useState(null);
+  const [phoneMode, setPhoneMode] = useState("dark");
+  const [profileImage, setProfileImage] = useState(null); // URL string
+  const [imageFile, setImageFile] = useState(null); // File object
+  const [userCode, setUserCode] = useState("");
+  const [links, setLinks] = useState([]);
+  const [socialTypes, setSocialTypes] = useState([]);
+  const [cardInfo, setCardInfo] = useState(null);
 
-  const userCode = "SYD4568";
-  const profileUrl = `/profile/${userCode}`;
-
-  const [links, setLinks] = useState([
-    {
-      platform: "Instagram",
-      url: "instagram.com/elcin",
-      icon: <FaInstagram />,
-    },
-  ]);
-
-  const platformOptions = [
-    { name: "Instagram", icon: <FaInstagram /> },
-    { name: "Facebook", icon: <FaFacebook /> },
-    { name: "LinkedIn", icon: <FaLinkedin /> },
-    { name: "WhatsApp", icon: <FaWhatsapp /> },
-    { name: "Web Sayt", icon: <FaGlobe /> },
-  ];
+  const profileUrl = userCode
+    ? `${window.location.origin}/profile/${userCode}`
+    : "#";
 
   const colors = [
     "#e1b12c",
@@ -70,37 +72,198 @@ function HomeMain() {
     "#f1c40f",
   ];
 
+  // ── İlk yükləmə: profil + sosial tiplər ───────────────
+  useEffect(() => {
+    async function load() {
+      setPageLoading(true);
+      try {
+        const [profileRes, typesRes] = await Promise.all([
+          authFetch(URL_PROFILE, { method: "GET" }, navigate),
+          authFetch(URL_SOCIAL_TYPES, { method: "GET" }, navigate),
+        ]);
+
+        if (profileRes) {
+          const d = await profileRes.json();
+
+          // user_info
+          const info = d.user_info || {};
+          setFormData({
+            name: info.name || "",
+            email: info.email || "",
+            work: info.work || "",
+            skill_1: info.skill_1 || "",
+            skill_2: info.skill_2 || "",
+            skill_3: info.skill_3 || "",
+            about: info.about || "",
+          });
+          setUserCode(info.user_code || "");
+          if (info.image) setProfileImage(info.image);
+
+          // system
+          const sys = d.system || {};
+          if (sys.color) setPhoneColor(sys.color);
+          if (sys.mode) setPhoneMode(sys.mode);
+
+          // links
+          setLinks(d.link_side || []);
+
+          // card
+          setCardInfo(d.card || null);
+        }
+
+        if (typesRes) {
+          const types = await typesRes.json();
+          setSocialTypes(types);
+        }
+      } catch (err) {
+        console.error("Yükləmə xətası:", err);
+      } finally {
+        setPageLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  // ── Form dəyişikliyi ───────────────────────────────────
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // ── Şəkil yükləmə ─────────────────────────────────────
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) setProfileImage(URL.createObjectURL(file));
+    if (file) {
+      setImageFile(file);
+      setProfileImage(URL.createObjectURL(file));
+    }
   };
 
+  // ── Link əməliyyatları ─────────────────────────────────
   const addNewLink = () => {
+    const firstType = socialTypes[0] || null;
     setLinks([
       ...links,
-      { platform: "Instagram", url: "", icon: <FaInstagram /> },
+      {
+        social_type: firstType || {
+          id: null,
+          name: "Instagram",
+          icon_code: "",
+        },
+        social_type_id: firstType?.id || null,
+        link: "",
+        preview_count: 0,
+      },
     ]);
   };
 
   const handleLinkChange = (index, field, value) => {
-    const updatedLinks = [...links];
-    if (field === "platform") {
-      const selected = platformOptions.find((p) => p.name === value);
-      updatedLinks[index].platform = value;
-      updatedLinks[index].icon = selected.icon;
+    const updated = [...links];
+    if (field === "social_type_id") {
+      const found = socialTypes.find((t) => t.id === Number(value));
+      updated[index].social_type_id = Number(value);
+      if (found) updated[index].social_type = found;
     } else {
-      updatedLinks[index].url = value;
+      updated[index][field] = value;
     }
-    setLinks(updatedLinks);
+    setLinks(updated);
   };
 
   const removeLink = (index) => {
     setLinks(links.filter((_, i) => i !== index));
   };
+
+  // ── Saxla → PATCH /profile/me/ ────────────────────────
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveError("");
+    try {
+      // Şəkil varsa multipart göndər
+      let body;
+      let headers = {};
+
+      const payload = {
+        user_info: {
+          name: formData.name,
+          email: formData.email,
+          work: formData.work,
+          skill_1: formData.skill_1,
+          skill_2: formData.skill_2,
+          skill_3: formData.skill_3,
+          about: formData.about,
+        },
+        system: {
+          color: phoneColor,
+          mode: phoneMode,
+        },
+        link_side: links.map((l) => ({
+          social_type_id: l.social_type_id || l.social_type?.id,
+          link: l.link,
+        })),
+      };
+
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append("image", imageFile);
+        // JSON hissələri ayrıca field kimi göndər
+        fd.append("user_info", JSON.stringify(payload.user_info));
+        fd.append("system", JSON.stringify(payload.system));
+        fd.append("link_side", JSON.stringify(payload.link_side));
+        body = fd;
+        // Content-Type header-i FormData üçün qoyma — browser özü qoyacaq
+        headers = {};
+      } else {
+        body = JSON.stringify(payload);
+        headers = { "Content-Type": "application/json" };
+      }
+
+      const res = await authFetch(
+        URL_PROFILE,
+        { method: "PATCH", headers, body },
+        navigate,
+      );
+
+      if (!res) return;
+
+      if (res.ok) {
+        setPopup({
+          isOpen: true,
+          type: "success",
+          title: "Uğurlu!",
+          message: "Məlumatlar yadda saxlanıldı.",
+          confirmText: "OK",
+          onConfirm: null,
+        });
+        setImageFile(null);
+      } else {
+        const err = await res.json();
+        setSaveError(err?.detail || err?.error || "Xəta baş verdi.");
+      }
+    } catch {
+      setSaveError("Serverə qoşulmaq mümkün olmadı.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Platform icon köməkçisi ────────────────────────────
+  const getPlatformIcon = (typeName) => {
+    const n = (typeName || "").toLowerCase();
+    if (n.includes("instagram")) return <FaInstagram />;
+    if (n.includes("facebook")) return <FaFacebook />;
+    if (n.includes("linkedin")) return <FaLinkedin />;
+    if (n.includes("whatsapp")) return <FaWhatsapp />;
+    return <FaGlobe />;
+  };
+
+  // ── Yüklənirsə ────────────────────────────────────────
+  if (pageLoading) {
+    return (
+      <div className="page-loading">
+        <FaSpinner className="spin" />
+        <span>Yüklənir...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="home-main-modern-split">
@@ -117,18 +280,23 @@ function HomeMain() {
         }}
         onCancel={closePopup}
       />
+
+      {/* ── SOL: FORM ── */}
       <div className="form-section">
         <div className="top-header">
           <div>
             <h2 className="page-title">İdarəetmə Sistemi</h2>
-            <span className="badge premium">... Paket</span>
+            <span className="badge premium">
+              {cardInfo?.package_type || "..."} Paket
+            </span>
           </div>
           <div className="header-actions">
-            <span className="time-left">... ... qalıb</span>
+            <span className="time-left">{cardInfo?.status || "..."}</span>
           </div>
         </div>
 
         <div className="modern-card form-card">
+          {/* ROW 1 */}
           <div className="row-1">
             <div className="upload-box">
               <input
@@ -181,18 +349,19 @@ function HomeMain() {
               </div>
               <div className="stat-box">
                 <label>User Code</label>
-                <div className="val code">SYD4568</div>
+                <div className="val code">{userCode || "—"}</div>
               </div>
             </div>
           </div>
 
+          {/* ROW 2 */}
           <div className="row-2">
             <div className="input-group flex-1">
               <label>Peşə</label>
               <input
                 type="text"
-                name="profession"
-                value={formData.profession}
+                name="work"
+                value={formData.work}
                 onChange={handleChange}
               />
             </div>
@@ -201,22 +370,22 @@ function HomeMain() {
               <div className="skills-inputs">
                 <input
                   type="text"
-                  name="skill1"
-                  value={formData.skill1}
+                  name="skill_1"
+                  value={formData.skill_1}
                   onChange={handleChange}
                   placeholder="Bacarıq 1"
                 />
                 <input
                   type="text"
-                  name="skill2"
-                  value={formData.skill2}
+                  name="skill_2"
+                  value={formData.skill_2}
                   onChange={handleChange}
                   placeholder="Bacarıq 2"
                 />
                 <input
                   type="text"
-                  name="skill3"
-                  value={formData.skill3}
+                  name="skill_3"
+                  value={formData.skill_3}
                   onChange={handleChange}
                   placeholder="Bacarıq 3"
                 />
@@ -224,6 +393,7 @@ function HomeMain() {
             </div>
           </div>
 
+          {/* HAQQINDA */}
           <div className="input-group full-width">
             <label>Haqqında məlumat</label>
             <textarea
@@ -231,9 +401,10 @@ function HomeMain() {
               rows="3"
               value={formData.about}
               onChange={handleChange}
-            ></textarea>
+            />
           </div>
 
+          {/* LİNKLƏR */}
           <div className="links-wrapper">
             <label>Sosial Şəbəkə / Əlaqə Linkləri</label>
             <div className="links-list">
@@ -248,7 +419,7 @@ function HomeMain() {
                           isOpen: true,
                           type: "delete",
                           title: "Məlumat silinsin?",
-                          message: "Məlumatları sistemdəm sil.",
+                          message: "Məlumatları sistemdən sil.",
                           confirmText: "Sil",
                           onConfirm: () => removeLink(index),
                         })
@@ -258,16 +429,22 @@ function HomeMain() {
                     </button>
                   </div>
                   <div className="social-select">
-                    <span className="select-icon">{link.icon}</span>
+                    <span className="select-icon">
+                      {getPlatformIcon(link.social_type?.name)}
+                    </span>
                     <select
-                      value={link.platform}
+                      value={link.social_type_id || link.social_type?.id || ""}
                       onChange={(e) =>
-                        handleLinkChange(index, "platform", e.target.value)
+                        handleLinkChange(
+                          index,
+                          "social_type_id",
+                          e.target.value,
+                        )
                       }
                     >
-                      {platformOptions.map((opt, i) => (
-                        <option key={i} value={opt.name}>
-                          {opt.name}
+                      {socialTypes.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
                         </option>
                       ))}
                     </select>
@@ -275,9 +452,9 @@ function HomeMain() {
                   <input
                     type="text"
                     placeholder="Linkinizi bura yapışdırın"
-                    value={link.url}
+                    value={link.link || ""}
                     onChange={(e) =>
-                      handleLinkChange(index, "url", e.target.value)
+                      handleLinkChange(index, "link", e.target.value)
                     }
                   />
                 </div>
@@ -289,7 +466,9 @@ function HomeMain() {
           </div>
         </div>
 
+        {/* ALT AKSİYALAR */}
         <div className="bottom-actions">
+          {saveError && <span className="save-error">{saveError}</span>}
           <div className="status-badge">
             <FaCheckCircle /> Məlumatlar işlək vəziyyətdədir
           </div>
@@ -310,23 +489,27 @@ function HomeMain() {
                 title: "Məlumat yadda saxlanılsın?",
                 message: "Məlumatları sistemə əlavə et.",
                 confirmText: "Saxla",
-                onConfirm: null,
+                onConfirm: handleSave,
               })
             }
+            disabled={saving}
           >
-            <FaSave /> Yadda Saxla
+            {saving ? (
+              <>
+                <FaSpinner className="spin" /> Saxlanılır...
+              </>
+            ) : (
+              <>
+                <FaSave /> Yadda Saxla
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* SAĞ TƏRƏF: TELEFON PREVIEW */}
+      {/* ── SAĞ: TELEFON PREVİEW ── */}
       <div className="preview-section">
-        {/* Telefonun öz toggle-u */}
-        <button
-          className="phone-theme-toggle"
-          onClick={togglePhoneTheme}
-          aria-label="Telefon temasını dəyiş"
-        >
+        <button className="phone-theme-toggle" onClick={togglePhoneTheme}>
           <div className="toggle-track">
             <span
               className={`toggle-label left ${phoneTheme === "light" ? "active" : ""}`}
@@ -340,11 +523,10 @@ function HomeMain() {
             </span>
             <div
               className={`toggle-thumb ${phoneTheme === "dark" ? "thumb-right" : "thumb-left"}`}
-            ></div>
+            />
           </div>
         </button>
 
-        {/* phone-dark veya phone-light class-ı alır */}
         <div className={`phone-mockup phone-${phoneTheme}`}>
           <div className="phone-header" style={{ backgroundColor: phoneColor }}>
             {profileImage ? (
@@ -354,12 +536,10 @@ function HomeMain() {
                 className="preview-avatar"
               />
             ) : (
-              <div className="preview-avatar-placeholder"></div>
+              <div className="preview-avatar-placeholder" />
             )}
             <h3 className="preview-name">{formData.name || "Ad Soyad"}</h3>
-            <p className="preview-profession">
-              {formData.profession || "Peşə"}
-            </p>
+            <p className="preview-profession">{formData.work || "Peşə"}</p>
           </div>
 
           <div className="phone-body">
@@ -372,7 +552,7 @@ function HomeMain() {
             </div>
 
             <div className="preview-skills">
-              {[formData.skill1, formData.skill2, formData.skill3]
+              {[formData.skill_1, formData.skill_2, formData.skill_3]
                 .filter(Boolean)
                 .map((skill, i) => (
                   <span
@@ -390,10 +570,12 @@ function HomeMain() {
 
             <div className="preview-socials">
               {links.map((link, index) =>
-                link.url ? (
+                link.link ? (
                   <div className="social-card" key={index}>
-                    <span style={{ color: phoneColor }}>{link.icon}</span>
-                    <span>{link.url}</span>
+                    <span style={{ color: phoneColor }}>
+                      {getPlatformIcon(link.social_type?.name)}
+                    </span>
+                    <span>{link.link}</span>
                   </div>
                 ) : null,
               )}
@@ -410,7 +592,7 @@ function HomeMain() {
                 className={`color-box ${phoneColor === color ? "active" : ""}`}
                 style={{ backgroundColor: color }}
                 onClick={() => setPhoneColor(color)}
-              ></div>
+              />
             ))}
           </div>
         </div>

@@ -16,15 +16,20 @@ import PackagePage from "./Pages/PackagePage";
 import AnalysPage from "./Pages/AnalysPage";
 import LoginPage from "./Pages/LoginPage";
 import ScrollToTop from "./Components/ScroolToTop";
+import { isAuthenticated } from "./utils/authUtils";
 
-// --- YENİ ƏLAVƏ ---
-// Bu komponent yoxlayır ki, istifadəçi login olub ya yox.
 const PrivateRoutes = () => {
-  const isAuthenticated = localStorage.getItem("isAuthenticated");
+  return isAuthenticated() ? (
+    <Layout>
+      <Outlet />
+    </Layout>
+  ) : (
+    <Navigate to="/login" replace />
+  );
+};
 
-  // Əgər login olubsa, Layout-u (və içindəki səhifələri) göstər
-  // Əgər olmayıbsa, məcburi /login səhifəsinə at
-  return isAuthenticated ? <Layout /> : <Navigate to="/login" replace />;
+const LoginPageGuard = () => {
+  return isAuthenticated() ? <Navigate to="/home" replace /> : <LoginPage />;
 };
 
 function App() {
@@ -39,20 +44,18 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/login" element={<LoginPageGuard />} />
 
-        {/* LOGİN SƏHİFƏSİ */}
-        <Route path="/login" element={<LoginPage />} />
-
-        {/* YALNIZ LOGİN OLANLARIN GÖRƏ BİLƏCƏYİ SƏHİFƏLƏR */}
         <Route element={<PrivateRoutes />}>
+          {/* user_code olan və olmayan hər iki halı tutur */}
           <Route path="/home" element={<HomePage />} />
+          <Route path="/home/:user_code" element={<HomePage />} />
           <Route path="/applications" element={<ApplicationsPage />} />
           <Route path="/settings" element={<SettingPage />} />
           <Route path="/packages" element={<PackagePage />} />
           <Route path="/analys" element={<AnalysPage />} />
         </Route>
 
-        {/* Yanlış link */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

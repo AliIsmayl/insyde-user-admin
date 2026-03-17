@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FiSettings, FiChevronDown, FiMenu } from "react-icons/fi";
 import { HiOutlineHome } from "react-icons/hi2";
 import { LuSquareArrowOutDownLeft } from "react-icons/lu";
@@ -7,23 +7,20 @@ import { FaRegMessage } from "react-icons/fa6";
 import { PiPackage } from "react-icons/pi";
 import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import "./Sidebar.scss";
+import { clearSession } from "../../Utils/authUtils";
 
 function Sidebar({ isOpen, setIsOpen }) {
   const [openMenus, setOpenMenus] = useState({});
   const sidebarRef = useRef(null);
-
-  // Ekran ölçüsünü yoxlamaq üçün state (Masaüstü və ya Mobil)
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Kənara klikləyəndə bağlansın (Xüsusilə mobil üçün faydalıdır)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -38,15 +35,13 @@ function Sidebar({ isOpen, setIsOpen }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, setIsOpen]);
 
-  // Hover funksiyaları (Yalnız masaüstü üçün)
   const handleMouseEnter = () => {
     if (!isMobile) setIsOpen(true);
   };
-
   const handleMouseLeave = () => {
     if (!isMobile) {
       setIsOpen(false);
-      setOpenMenus({}); // Bağlananda alt menyuları da bağlasın
+      setOpenMenus({});
     }
   };
 
@@ -56,20 +51,16 @@ function Sidebar({ isOpen, setIsOpen }) {
     setOpenMenus((prev) => ({ ...prev, [menuName]: !prev[menuName] }));
   };
 
-  const menuItems = [
-    {
-      name: "Ana səhifə",
-      path: "/home",
-      icon: <HiOutlineHome />,
-    },
+  const handleLogout = () => {
+    if (isMobile) setIsOpen(false);
+    clearSession(navigate);
+  };
 
+  const menuItems = [
+    { name: "Ana səhifə", path: "/home", icon: <HiOutlineHome /> },
     { name: "Analitika", path: "/analys", icon: <TbBrandGoogleAnalytics /> },
     { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
-    {
-      name: "Müraciətlər",
-      path: "/applications",
-      icon: <FaRegMessage />,
-    },
+    { name: "Müraciətlər", path: "/applications", icon: <FaRegMessage /> },
   ];
 
   return (
@@ -77,7 +68,7 @@ function Sidebar({ isOpen, setIsOpen }) {
       <div
         className={`sidebar-overlay ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen(false)}
-      ></div>
+      />
 
       <div
         className={`sidebar ${isOpen ? "open" : "closed"}`}
@@ -85,13 +76,11 @@ function Sidebar({ isOpen, setIsOpen }) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {/* LOGO HİSSƏSİ (DİNAMİK) */}
         <div className="sidebar-logo">
           <div className="logo-text-container">
             <span className="logo-small">insyde</span>
             <span className="logo-large">INSYDE</span>
           </div>
-
           <button
             className="mobile-close-btn"
             onClick={(e) => {
@@ -103,7 +92,6 @@ function Sidebar({ isOpen, setIsOpen }) {
           </button>
         </div>
 
-        {/* MENYULAR */}
         <div className="sidebar-menu">
           {menuItems.map((item, index) => (
             <div key={index} className="menu-group">
@@ -151,7 +139,6 @@ function Sidebar({ isOpen, setIsOpen }) {
           ))}
         </div>
 
-        {/* ALT HİSSƏ (FOOTER) */}
         <div className="sidebar-footer">
           <NavLink
             to="/settings"
@@ -166,22 +153,19 @@ function Sidebar({ isOpen, setIsOpen }) {
             <span className="menu-text">Ayarlar</span>
           </NavLink>
 
-          <NavLink
-            to="/login"
-            className={({ isActive }) =>
-              `menu-item ${isActive ? "active" : ""}`
-            }
-            onClick={() => isMobile && setIsOpen(false)}
+          <div
+            className="menu-item"
+            onClick={handleLogout}
+            style={{ cursor: "pointer" }}
           >
             <div className="icon-container">
               <LuSquareArrowOutDownLeft />
             </div>
             <span className="menu-text">Çıxış</span>
-          </NavLink>
+          </div>
         </div>
       </div>
 
-      {/* MOBİLDƏ GÖRÜNƏN HAMBURGER DÜYMƏSİ */}
       <button className="mobile-hamburger" onClick={() => setIsOpen(true)}>
         <FiMenu />
       </button>
