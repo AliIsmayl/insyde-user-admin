@@ -5,7 +5,7 @@ import {
   FaFacebook,
   FaLinkedin,
   FaWhatsapp,
-  FaGlobe,
+  FaGlobe, 
   FaPlus,
   FaCheckCircle,
   FaSave,
