@@ -16,7 +16,7 @@ import PackagePage from "./Pages/PackagePage";
 import AnalysPage from "./Pages/AnalysPage";
 import LoginPage from "./Pages/LoginPage";
 import ScrollToTop from "./Components/ScroolToTop";
-import { isAuthenticated } from "./utils/authUtils";
+import { isAuthenticated } from "./Utils/authUtils";
 
 const PrivateRoutes = () => {
   return isAuthenticated() ? (

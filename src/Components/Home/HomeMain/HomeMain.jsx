@@ -1,11 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaCloudUploadAlt,
   FaInstagram,
   FaFacebook,
   FaLinkedin,
   FaWhatsapp,
+  FaTelegram,
+  FaTwitter,
+  FaYoutube,
+  FaTiktok,
   FaGlobe,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaLink,
   FaPlus,
   FaCheckCircle,
   FaSave,
@@ -17,254 +26,510 @@ import {
 } from "react-icons/fa";
 import "./HomeMain.scss";
 import Popup from "../../Popup/Popup";
-import { authFetch, API_BASE } from "../../../Utils/authUtils";
-import { useNavigate } from "react-router-dom";
+import { API_BASE, getToken, CK } from "../../../Utils/authUtils";
 
-const URL_PROFILE = `${API_BASE}/api/dash/profile/me/`;
-const URL_SOCIAL_TYPES = `${API_BASE}/api/dash/social-media-types/`;
+const URL_PROFILE = `${API_BASE}/api/dash/auth/profile/me/`;
+const URL_SOC_TYPES = (cat) =>
+  `${API_BASE}/api/dash/auth/social-media-types/?category=${cat}`;
+const URL_LINK_DEL = (pk) => `${API_BASE}/api/dash/auth/my-profile/link/${pk}/`;
 
-function HomeMain() {
+const CATEGORIES = [
+  { key: "social", label: "Sosial Şəbəkələr" },
+  { key: "contact", label: "Əlaqə Məlumatları" },
+  { key: "additional", label: "Əlavə Linklər" },
+];
+
+const ICON_MAP = {
+  Instagram: <FaInstagram />,
+  Facebook: <FaFacebook />,
+  LinkedIn: <FaLinkedin />,
+  Twitter: <FaTwitter />,
+  YouTube: <FaYoutube />,
+  TikTok: <FaTiktok />,
+  Telegram: <FaTelegram />,
+  WhatsApp: <FaWhatsapp />,
+  Telefon: <FaPhone />,
+  Email: <FaEnvelope />,
+  Ünvan: <FaMapMarkerAlt />,
+  "Web Sayt": <FaGlobe />,
+  Link: <FaLink />,
+};
+
+function getIcon(name) {
+  return ICON_MAP[name] || <FaGlobe />;
+}
+
+const COLORS = [
+  "#e1b12c",
+  "#1a1a1a",
+  "#ff8b94",
+  "#10b981",
+  "#6c5ce7",
+  "#0984e3",
+  "#00b894",
+  "#fd79a8",
+  "#f1c40f",
+];
+
+function apiFetch(url, token, options = {}) {
+  const isFormData = options.body instanceof FormData;
+  const headers = { Authorization: `Token ${token}` };
+  if (!isFormData) headers["Content-Type"] = "application/json";
+  const { headers: _h, ...rest } = options;
+  return fetch(url, { ...rest, headers });
+}
+
+function parseLink(l) {
+  return {
+    id: l.id || null,
+    social_type: l.social_type || null,
+    name: l.name || "",
+    icon: getIcon(l.name),
+    category: l.category || "social",
+    url: l.input || "",
+    isNew: false,
+    isDirty: false,
+    isDeleted: false, // silmə üçün flag — backend-ə hələ getməyib
+  };
+}
+
+// ─────────────────────────────────────────────────────────
+export default function HomeMain() {
   const navigate = useNavigate();
+  const didLoad = useRef(false);
 
-  const [phoneTheme, setPhoneTheme] = useState("dark");
-  const [popup, setPopup] = useState({ isOpen: false, type: "success" });
-  const [pageLoading, setPageLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
+  const [error, setError] = useState("");
+  const [popup, setPopup] = useState({ isOpen: false });
+  const [activeTab, setActiveTab] = useState("social");
 
-  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
-  const togglePhoneTheme = () =>
-    setPhoneTheme((prev) => (prev === "dark" ? "light" : "dark"));
-
-  // ── Form data ──────────────────────────────────────────
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    work: "",
-    skill_1: "",
-    skill_2: "",
-    skill_3: "",
+    profession: "",
+    skill1: "",
+    skill2: "",
+    skill3: "",
     about: "",
   });
 
-  const [phoneColor, setPhoneColor] = useState("#ff8b94");
-  const [phoneMode, setPhoneMode] = useState("dark");
-  const [profileImage, setProfileImage] = useState(null); // URL string
-  const [imageFile, setImageFile] = useState(null); // File object
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileImageFile, setProfileImageFile] = useState(null);
   const [userCode, setUserCode] = useState("");
+  const [totalViews, setTotalViews] = useState(0);
+  const [packageType, setPackageType] = useState("standard");
+  const [phoneTheme, setPhoneTheme] = useState("dark");
+  const [phoneColor, setPhoneColor] = useState("#ff8b94");
+
+  const [platformOptions, setPlatformOptions] = useState({
+    social: [],
+    contact: [],
+    additional: [],
+  });
   const [links, setLinks] = useState([]);
-  const [socialTypes, setSocialTypes] = useState([]);
-  const [cardInfo, setCardInfo] = useState(null);
 
-  const profileUrl = userCode
-    ? `${window.location.origin}/profile/${userCode}`
-    : "#";
+  // Saxlanılmamış dəyişiklik varmı?
+  const hasUnsaved = links.some((l) => l.isNew || l.isDirty || l.isDeleted);
 
-  const colors = [
-    "#e1b12c",
-    "#1a1a1a",
-    "#ff8b94",
-    "#10b981",
-    "#6c5ce7",
-    "#0984e3",
-    "#00b894",
-    "#fd79a8",
-    "#f1c40f",
-  ];
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
-  // ── İlk yükləmə: profil + sosial tiplər ───────────────
-  useEffect(() => {
-    async function load() {
-      setPageLoading(true);
-      try {
-        const [profileRes, typesRes] = await Promise.all([
-          authFetch(URL_PROFILE, { method: "GET" }, navigate),
-          authFetch(URL_SOCIAL_TYPES, { method: "GET" }, navigate),
-        ]);
-
-        if (profileRes) {
-          const d = await profileRes.json();
-
-          // user_info
-          const info = d.user_info || {};
-          setFormData({
-            name: info.name || "",
-            email: info.email || "",
-            work: info.work || "",
-            skill_1: info.skill_1 || "",
-            skill_2: info.skill_2 || "",
-            skill_3: info.skill_3 || "",
-            about: info.about || "",
-          });
-          setUserCode(info.user_code || "");
-          if (info.image) setProfileImage(info.image);
-
-          // system
-          const sys = d.system || {};
-          if (sys.color) setPhoneColor(sys.color);
-          if (sys.mode) setPhoneMode(sys.mode);
-
-          // links
-          setLinks(d.link_side || []);
-
-          // card
-          setCardInfo(d.card || null);
-        }
-
-        if (typesRes) {
-          const types = await typesRes.json();
-          setSocialTypes(types);
-        }
-      } catch (err) {
-        console.error("Yükləmə xətası:", err);
-      } finally {
-        setPageLoading(false);
-      }
+  // ── loadData ──────────────────────────────────────────────
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    const token = getToken();
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
     }
-    load();
-  }, []);
 
-  // ── Form dəyişikliyi ───────────────────────────────────
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    try {
+      const [rProfile, rSocial, rContact, rAdditional] = await Promise.all([
+        apiFetch(URL_PROFILE, token),
+        apiFetch(URL_SOC_TYPES("social"), token),
+        apiFetch(URL_SOC_TYPES("contact"), token),
+        apiFetch(URL_SOC_TYPES("additional"), token),
+      ]);
 
-  // ── Şəkil yükləmə ─────────────────────────────────────
+      const grouped = { social: [], contact: [], additional: [] };
+      const parseCat = async (res, cat) => {
+        if (!res.ok) return;
+        const sd = await res.json().catch(() => []);
+        if (Array.isArray(sd)) {
+          grouped[cat] = sd.map((t) => ({
+            id: t.id,
+            name: t.name,
+            icon: getIcon(t.name),
+            category: cat,
+          }));
+        }
+      };
+      await Promise.all([
+        parseCat(rSocial, "social"),
+        parseCat(rContact, "contact"),
+        parseCat(rAdditional, "additional"),
+      ]);
+      setPlatformOptions({ ...grouped });
+
+      if (rProfile.status === 401) {
+        navigate("/login", { replace: true });
+        return;
+      }
+      if (!rProfile.ok) {
+        const body = await rProfile.json().catch(() => ({}));
+        setError(body?.detail || `Server xətası: ${rProfile.status}`);
+        return;
+      }
+
+      const d = await rProfile.json();
+      const info = d.user_info || {};
+      const sys = d.system || {};
+      const card = d.card || {};
+
+      setFormData({
+        name: info.name || "",
+        email: info.email || "",
+        profession: info.work || "",
+        skill1: info.skill_1 || "",
+        skill2: info.skill_2 || "",
+        skill3: info.skill_3 || "",
+        about: info.about || "",
+      });
+      setUserCode(
+        info.system_user_code || info.user_code || CK.get("user_code") || "",
+      );
+      setTotalViews(info.look ?? 0);
+      if (info.image) setProfileImage(info.image);
+      if (sys.color) setPhoneColor(sys.color);
+      if (sys.mode) setPhoneTheme(sys.mode);
+      setPackageType(card.package_type || "standard");
+
+      const rawLinkSide = d.link_side || {};
+      const allLinks = [];
+      ["social", "contact", "additional"].forEach((cat) => {
+        (rawLinkSide[cat] || []).forEach((l) => allLinks.push(parseLink(l)));
+      });
+      setLinks(allLinks);
+    } catch {
+      setError("Server ilə əlaqə kəsildi.");
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (didLoad.current) return;
+    didLoad.current = true;
+    loadData();
+  }, [loadData]);
+
+  // ── Helpers ───────────────────────────────────────────────
+  const linksFor = (cat) =>
+    links
+      .map((l, globalIdx) => ({ ...l, globalIdx }))
+      .filter((l) => l.category === cat && !l.isDeleted);
+
+  // ── Form handlers ─────────────────────────────────────────
+  const handleChange = (e) =>
+    setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setProfileImage(URL.createObjectURL(file));
-    }
+    if (!file) return;
+    setProfileImageFile(file);
+    setProfileImage(URL.createObjectURL(file));
   };
 
-  // ── Link əməliyyatları ─────────────────────────────────
-  const addNewLink = () => {
-    const firstType = socialTypes[0] || null;
-    setLinks([
-      ...links,
+  const addNewLink = (cat) => {
+    const platforms = platformOptions[cat] || [];
+    if (platforms.length === 0) return;
+    const first = platforms[0];
+    setLinks((p) => [
+      ...p,
       {
-        social_type: firstType || {
-          id: null,
-          name: "Instagram",
-          icon_code: "",
-        },
-        social_type_id: firstType?.id || null,
-        link: "",
-        preview_count: 0,
+        id: null,
+        social_type: first.id,
+        name: first.name,
+        icon: first.icon,
+        category: cat,
+        url: "",
+        isNew: true,
+        isDirty: false,
+        isDeleted: false,
       },
     ]);
   };
 
-  const handleLinkChange = (index, field, value) => {
-    const updated = [...links];
-    if (field === "social_type_id") {
-      const found = socialTypes.find((t) => t.id === Number(value));
-      updated[index].social_type_id = Number(value);
-      if (found) updated[index].social_type = found;
-    } else {
-      updated[index][field] = value;
+  const handleLinkChange = (globalIdx, field, value) => {
+    setLinks((p) => {
+      const u = [...p];
+      const link = { ...u[globalIdx], isDirty: true };
+      if (field === "platform") {
+        const cat = link.category;
+        const platforms = platformOptions[cat] || [];
+        const sel = platforms.find((o) => o.name === value);
+        if (!sel) return p;
+        link.social_type = sel.id;
+        link.name = sel.name;
+        link.icon = sel.icon;
+      } else {
+        link.url = value;
+      }
+      u[globalIdx] = link;
+      return u;
+    });
+  };
+
+  // Sil — sadəcə local flag qoy, backend-ə getmir
+  const removeLink = (globalIdx) => {
+    const link = links[globalIdx];
+    // Yeni link (hələ saxlanılmayıb) — birbaşa array-dən çıxar
+    if (link.isNew) {
+      setLinks((p) => p.filter((_, i) => i !== globalIdx));
+      return;
     }
-    setLinks(updated);
+    // Mövcud link — isDeleted flag-i qoy, saxlananda backend-ə gedəcək
+    setLinks((p) => {
+      const u = [...p];
+      u[globalIdx] = { ...u[globalIdx], isDeleted: true };
+      return u;
+    });
   };
 
-  const removeLink = (index) => {
-    setLinks(links.filter((_, i) => i !== index));
+  const confirmRemove = (globalIdx) => {
+    setPopup({
+      isOpen: true,
+      type: "delete",
+      title: "Link silinsin?",
+      message:
+        "Bu dəyişiklik yalnız 'Yadda Saxla' düyməsi ilə tətbiq olunacaq.",
+      confirmText: "Sil",
+      onConfirm: () => removeLink(globalIdx),
+    });
   };
 
-  // ── Saxla → PATCH /profile/me/ ────────────────────────
+  const togglePhoneTheme = () =>
+    setPhoneTheme((p) => (p === "dark" ? "light" : "dark"));
+
+  // ── Save — bütün pending dəyişiklikləri backend-ə göndər ──
   const handleSave = async () => {
+    const token = getToken();
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
     setSaving(true);
-    setSaveError("");
     try {
-      // Şəkil varsa multipart göndər
-      let body;
-      let headers = {};
+      // 1. Silinəcək linkləri DELETE et
+      const toDelete = links.filter((l) => l.isDeleted && l.id);
+      const deleteResults = await Promise.all(
+        toDelete.map((l) =>
+          apiFetch(URL_LINK_DEL(l.id), token, { method: "DELETE" })
+            .then((r) => ({ id: l.id, ok: r.ok || r.status === 404 }))
+            .catch(() => ({ id: l.id, ok: false })),
+        ),
+      );
+
+      // Uğursuz silmə varsa xəbərdarlıq et, amma davam et
+      const failedDeletes = deleteResults.filter((r) => !r.ok);
+      if (failedDeletes.length > 0) {
+        console.warn("Bəzi linklər silinə bilmədi:", failedDeletes);
+      }
+
+      // 2. Profil + yeni/dəyişmiş linkləri PATCH et
+      const activeLinks = links.filter(
+        (l) => !l.isDeleted && l.url && l.social_type !== null,
+      );
 
       const payload = {
         user_info: {
           name: formData.name,
           email: formData.email,
-          work: formData.work,
-          skill_1: formData.skill_1,
-          skill_2: formData.skill_2,
-          skill_3: formData.skill_3,
+          work: formData.profession,
+          skill_1: formData.skill1,
+          skill_2: formData.skill2,
+          skill_3: formData.skill3,
           about: formData.about,
         },
-        system: {
-          color: phoneColor,
-          mode: phoneMode,
-        },
-        link_side: links.map((l) => ({
-          social_type_id: l.social_type_id || l.social_type?.id,
-          link: l.link,
+        system: { color: phoneColor, mode: phoneTheme },
+        link_side: activeLinks.map((l) => ({
+          social_type: l.social_type,
+          input: l.url,
         })),
       };
 
-      if (imageFile) {
-        const fd = new FormData();
-        fd.append("image", imageFile);
-        // JSON hissələri ayrıca field kimi göndər
-        fd.append("user_info", JSON.stringify(payload.user_info));
-        fd.append("system", JSON.stringify(payload.system));
-        fd.append("link_side", JSON.stringify(payload.link_side));
-        body = fd;
-        // Content-Type header-i FormData üçün qoyma — browser özü qoyacaq
-        headers = {};
-      } else {
-        body = JSON.stringify(payload);
-        headers = { "Content-Type": "application/json" };
+      const fd = new FormData();
+      fd.append("data", JSON.stringify(payload));
+      if (profileImageFile) fd.append("image", profileImageFile);
+
+      const res = await apiFetch(URL_PROFILE, token, {
+        method: "PATCH",
+        body: fd,
+      });
+      if (res.status === 401) {
+        navigate("/login", { replace: true });
+        return;
       }
 
-      const res = await authFetch(
-        URL_PROFILE,
-        { method: "PATCH", headers, body },
-        navigate,
-      );
-
-      if (!res) return;
-
-      if (res.ok) {
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
         setPopup({
           isOpen: true,
-          type: "success",
-          title: "Uğurlu!",
-          message: "Məlumatlar yadda saxlanıldı.",
-          confirmText: "OK",
+          type: "error",
+          title: "Xəta baş verdi",
+          message: err?.detail || err?.error || "Məlumatlar saxlanılmadı.",
+          confirmText: "Bağla",
           onConfirm: null,
         });
-        setImageFile(null);
-      } else {
-        const err = await res.json();
-        setSaveError(err?.detail || err?.error || "Xəta baş verdi.");
+        return;
       }
+
+      // 3. Uğurlu — state-i backend-dən refresh et
+      setProfileImageFile(null);
+      didLoad.current = false;
+      await loadData();
+
+      setPopup({
+        isOpen: true,
+        type: "success",
+        title: "Uğurla saxlanıldı!",
+        message: "Bütün dəyişikliklər tətbiq edildi.",
+        confirmText: "Tamam",
+        onConfirm: null,
+      });
     } catch {
-      setSaveError("Serverə qoşulmaq mümkün olmadı.");
+      setPopup({
+        isOpen: true,
+        type: "error",
+        title: "Xəta",
+        message: "Server ilə əlaqə qurula bilmədi.",
+        confirmText: "Bağla",
+        onConfirm: null,
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  // ── Platform icon köməkçisi ────────────────────────────
-  const getPlatformIcon = (typeName) => {
-    const n = (typeName || "").toLowerCase();
-    if (n.includes("instagram")) return <FaInstagram />;
-    if (n.includes("facebook")) return <FaFacebook />;
-    if (n.includes("linkedin")) return <FaLinkedin />;
-    if (n.includes("whatsapp")) return <FaWhatsapp />;
-    return <FaGlobe />;
-  };
+  const profileUrl = userCode ? `/profile/${userCode}` : "#";
+  const packageLabel =
+    {
+      standard: "Standard",
+      premium: "Premium",
+      pro: "Pro",
+      business: "Business",
+    }[packageType] || packageType;
 
-  // ── Yüklənirsə ────────────────────────────────────────
-  if (pageLoading) {
+  if (loading) {
     return (
-      <div className="page-loading">
-        <FaSpinner className="spin" />
-        <span>Yüklənir...</span>
+      <div className="home-main-modern-split loading-state">
+        <FaSpinner className="spin-icon" />
+        <p>Məlumatlar yüklənir...</p>
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <div className="home-main-modern-split loading-state">
+        <p className="error-text">{error}</p>
+        <button
+          className="save-btn"
+          onClick={() => {
+            didLoad.current = false;
+            loadData();
+          }}
+        >
+          Yenidən cəhd et
+        </button>
+      </div>
+    );
+  }
+
+  // ── Link paneli ───────────────────────────────────────────
+  const renderLinkCategory = (cat) => {
+    const catLinks = linksFor(cat.key);
+    const catPlatforms = platformOptions[cat.key] || [];
+    if (catPlatforms.length === 0) return null;
+
+    return (
+      <div className="link-category-block" key={cat.key}>
+        <div className="link-category-header">
+          <span className="link-category-title">{cat.label}</span>
+          <span className="link-category-count">
+            {catLinks.filter((l) => l.url).length} link
+          </span>
+        </div>
+
+        <div className="links-list">
+          {catLinks.length === 0 && (
+            <div className="links-empty">Hələ link əlavə edilməyib.</div>
+          )}
+
+          {catLinks.map((link, localIdx) => (
+            <div
+              key={link.globalIdx}
+              className={[
+                "social-add-row",
+                link.isNew ? "row-new" : "",
+                link.isDirty && !link.isNew ? "row-dirty" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              <div className="row-top-mobile">
+                <div className="order-num">{localIdx + 1}</div>
+                <button
+                  className="remove-link-btn"
+                  onClick={() => confirmRemove(link.globalIdx)}
+                >
+                  <FaTrashAlt />
+                </button>
+              </div>
+
+              <div className="social-select">
+                <span className="select-icon">{link.icon}</span>
+                <select
+                  value={link.name}
+                  onChange={(e) =>
+                    handleLinkChange(link.globalIdx, "platform", e.target.value)
+                  }
+                >
+                  {catPlatforms.map((opt) => (
+                    <option key={opt.id} value={opt.name}>
+                      {opt.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <input
+                type="text"
+                placeholder="Linkinizi bura yapışdırın"
+                value={link.url}
+                onChange={(e) =>
+                  handleLinkChange(link.globalIdx, "url", e.target.value)
+                }
+              />
+
+              {link.isNew && <span className="new-badge">Yeni</span>}
+              {link.isDirty && !link.isNew && (
+                <span className="dirty-badge">●</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <button className="add-new-btn" onClick={() => addNewLink(cat.key)}>
+          <FaPlus /> {cat.label} Əlavə Et
+        </button>
+      </div>
+    );
+  };
+
+  // ── Render ────────────────────────────────────────────────
   return (
     <div className="home-main-modern-split">
       <Popup
@@ -281,22 +546,17 @@ function HomeMain() {
         onCancel={closePopup}
       />
 
-      {/* ── SOL: FORM ── */}
+      {/* ── LEFT: FORM ── */}
       <div className="form-section">
         <div className="top-header">
           <div>
             <h2 className="page-title">İdarəetmə Sistemi</h2>
-            <span className="badge premium">
-              {cardInfo?.package_type || "..."} Paket
-            </span>
-          </div>
-          <div className="header-actions">
-            <span className="time-left">{cardInfo?.status || "..."}</span>
+            <span className="badge premium">{packageLabel} Paket</span>
           </div>
         </div>
 
         <div className="modern-card form-card">
-          {/* ROW 1 */}
+          {/* Row 1 */}
           <div className="row-1">
             <div className="upload-box">
               <input
@@ -320,7 +580,6 @@ function HomeMain() {
                 )}
               </label>
             </div>
-
             <div className="inputs-grid">
               <div className="input-group">
                 <label>Ad Soyad</label>
@@ -341,11 +600,10 @@ function HomeMain() {
                 />
               </div>
             </div>
-
             <div className="stats-boxes">
               <div className="stat-box">
                 <label>Ümumi Baxış</label>
-                <div className="val green">0</div>
+                <div className="val green">{totalViews}</div>
               </div>
               <div className="stat-box">
                 <label>User Code</label>
@@ -354,14 +612,14 @@ function HomeMain() {
             </div>
           </div>
 
-          {/* ROW 2 */}
+          {/* Row 2 */}
           <div className="row-2">
             <div className="input-group flex-1">
               <label>Peşə</label>
               <input
                 type="text"
-                name="work"
-                value={formData.work}
+                name="profession"
+                value={formData.profession}
                 onChange={handleChange}
               />
             </div>
@@ -370,22 +628,22 @@ function HomeMain() {
               <div className="skills-inputs">
                 <input
                   type="text"
-                  name="skill_1"
-                  value={formData.skill_1}
+                  name="skill1"
+                  value={formData.skill1}
                   onChange={handleChange}
                   placeholder="Bacarıq 1"
                 />
                 <input
                   type="text"
-                  name="skill_2"
-                  value={formData.skill_2}
+                  name="skill2"
+                  value={formData.skill2}
                   onChange={handleChange}
                   placeholder="Bacarıq 2"
                 />
                 <input
                   type="text"
-                  name="skill_3"
-                  value={formData.skill_3}
+                  name="skill3"
+                  value={formData.skill3}
                   onChange={handleChange}
                   placeholder="Bacarıq 3"
                 />
@@ -393,7 +651,7 @@ function HomeMain() {
             </div>
           </div>
 
-          {/* HAQQINDA */}
+          {/* About */}
           <div className="input-group full-width">
             <label>Haqqında məlumat</label>
             <textarea
@@ -404,73 +662,42 @@ function HomeMain() {
             />
           </div>
 
-          {/* LİNKLƏR */}
-          <div className="links-wrapper">
-            <label>Sosial Şəbəkə / Əlaqə Linkləri</label>
-            <div className="links-list">
-              {links.map((link, index) => (
-                <div className="social-add-row" key={index}>
-                  <div className="row-top-mobile">
-                    <div className="order-num">{index + 1}</div>
-                    <button
-                      className="remove-link-btn"
-                      onClick={() =>
-                        setPopup({
-                          isOpen: true,
-                          type: "delete",
-                          title: "Məlumat silinsin?",
-                          message: "Məlumatları sistemdən sil.",
-                          confirmText: "Sil",
-                          onConfirm: () => removeLink(index),
-                        })
-                      }
-                    >
-                      <FaTrashAlt />
-                    </button>
-                  </div>
-                  <div className="social-select">
-                    <span className="select-icon">
-                      {getPlatformIcon(link.social_type?.name)}
-                    </span>
-                    <select
-                      value={link.social_type_id || link.social_type?.id || ""}
-                      onChange={(e) =>
-                        handleLinkChange(
-                          index,
-                          "social_type_id",
-                          e.target.value,
-                        )
-                      }
-                    >
-                      {socialTypes.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Linkinizi bura yapışdırın"
-                    value={link.link || ""}
-                    onChange={(e) =>
-                      handleLinkChange(index, "link", e.target.value)
-                    }
-                  />
-                </div>
-              ))}
+          {/* ── Link Tabs ── */}
+          <div className="links-section">
+            <div className="link-tabs">
+              {CATEGORIES.map((cat) => {
+                const count = links.filter(
+                  (l) => l.category === cat.key && l.url && !l.isDeleted,
+                ).length;
+                return (
+                  <button
+                    key={cat.key}
+                    className={`link-tab ${activeTab === cat.key ? "active" : ""}`}
+                    onClick={() => setActiveTab(cat.key)}
+                  >
+                    {cat.label}
+                    {count > 0 && <span className="tab-count">{count}</span>}
+                  </button>
+                );
+              })}
             </div>
-            <button className="add-new-btn" onClick={addNewLink}>
-              <FaPlus /> Yeni Link Əlavə Et
-            </button>
+
+            {CATEGORIES.filter((c) => c.key === activeTab).map(
+              renderLinkCategory,
+            )}
           </div>
         </div>
 
-        {/* ALT AKSİYALAR */}
         <div className="bottom-actions">
-          {saveError && <span className="save-error">{saveError}</span>}
           <div className="status-badge">
-            <FaCheckCircle /> Məlumatlar işlək vəziyyətdədir
+            <FaCheckCircle />
+            {hasUnsaved ? (
+              <span style={{ color: "var(--badge-warning-text, #e1b12c)" }}>
+                Saxlanılmamış dəyişikliklər var
+              </span>
+            ) : (
+              "Məlumatlar işlək vəziyyətdədir"
+            )}
           </div>
           <a
             href={profileUrl}
@@ -481,35 +708,33 @@ function HomeMain() {
             <FaExternalLinkAlt /> Səhifəmə Keçid
           </a>
           <button
-            className="save-btn"
+            className={`save-btn ${hasUnsaved ? "save-btn--unsaved" : ""}`}
+            disabled={saving}
             onClick={() =>
               setPopup({
                 isOpen: true,
                 type: "update",
                 title: "Məlumat yadda saxlanılsın?",
-                message: "Məlumatları sistemə əlavə et.",
+                message:
+                  "Bütün dəyişikliklər (yeni linklər, dəyişdirilmiş linklər, silinmiş linklər) tətbiq ediləcək.",
                 confirmText: "Saxla",
                 onConfirm: handleSave,
               })
             }
-            disabled={saving}
           >
-            {saving ? (
-              <>
-                <FaSpinner className="spin" /> Saxlanılır...
-              </>
-            ) : (
-              <>
-                <FaSave /> Yadda Saxla
-              </>
-            )}
+            {saving ? <FaSpinner className="spin-icon-sm" /> : <FaSave />}
+            {saving ? "Saxlanılır..." : "Yadda Saxla"}
           </button>
         </div>
       </div>
 
-      {/* ── SAĞ: TELEFON PREVİEW ── */}
+      {/* ── RIGHT: PHONE PREVIEW ── */}
       <div className="preview-section">
-        <button className="phone-theme-toggle" onClick={togglePhoneTheme}>
+        <button
+          className="phone-theme-toggle"
+          onClick={togglePhoneTheme}
+          aria-label="Telefon temasını dəyiş"
+        >
           <div className="toggle-track">
             <span
               className={`toggle-label left ${phoneTheme === "light" ? "active" : ""}`}
@@ -539,7 +764,9 @@ function HomeMain() {
               <div className="preview-avatar-placeholder" />
             )}
             <h3 className="preview-name">{formData.name || "Ad Soyad"}</h3>
-            <p className="preview-profession">{formData.work || "Peşə"}</p>
+            <p className="preview-profession">
+              {formData.profession || "Peşə"}
+            </p>
           </div>
 
           <div className="phone-body">
@@ -552,7 +779,7 @@ function HomeMain() {
             </div>
 
             <div className="preview-skills">
-              {[formData.skill_1, formData.skill_2, formData.skill_3]
+              {[formData.skill1, formData.skill2, formData.skill3]
                 .filter(Boolean)
                 .map((skill, i) => (
                   <span
@@ -568,25 +795,30 @@ function HomeMain() {
                 ))}
             </div>
 
-            <div className="preview-socials">
-              {links.map((link, index) =>
-                link.link ? (
-                  <div className="social-card" key={index}>
-                    <span style={{ color: phoneColor }}>
-                      {getPlatformIcon(link.social_type?.name)}
-                    </span>
-                    <span>{link.link}</span>
-                  </div>
-                ) : null,
-              )}
-            </div>
+            {CATEGORIES.map((cat) => {
+              const catLinks = links.filter(
+                (l) => l.category === cat.key && l.url && !l.isDeleted,
+              );
+              if (catLinks.length === 0) return null;
+              return (
+                <div className="preview-link-group" key={cat.key}>
+                  <h4 className="preview-group-title">{cat.label}</h4>
+                  {catLinks.map((link, idx) => (
+                    <div className="social-card" key={idx}>
+                      <span style={{ color: phoneColor }}>{link.icon}</span>
+                      <span>{link.url}</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
 
         <div className="theme-color-section">
           <label>Profil Rəngi / Tema Rəngi</label>
           <div className="color-palette">
-            {colors.map((color, index) => (
+            {COLORS.map((color, index) => (
               <div
                 key={index}
                 className={`color-box ${phoneColor === color ? "active" : ""}`}
@@ -600,5 +832,3 @@ function HomeMain() {
     </div>
   );
 }
-
-export default HomeMain;

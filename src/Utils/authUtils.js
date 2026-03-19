@@ -1,7 +1,3 @@
-// ─────────────────────────────────────────────────────────
-// src/utils/authUtils.js
-// ─────────────────────────────────────────────────────────
-
 export const API_BASE = import.meta.env.VITE_API_BASE;
 
 // ── Cookie helpers ────────────────────────────────────────
@@ -21,24 +17,29 @@ export const CK = {
   },
 };
 
-// ── LS — köhnə kod uyğunluğu üçün CK-ya yönləndirir ─────
-export const LS = {
-  set: CK.set,
-  get: CK.get,
-  del: CK.del,
-};
+export const LS = { set: CK.set, get: CK.get, del: CK.del };
 
-// ── Token var mı? ─────────────────────────────────────────
-export function isAuthenticated() {
-  return !!CK.get("access_token");
+// ── Token oxuma: cookie → localStorage ───────────────────
+export function getToken() {
+  const fromCookie = CK.get("access_token");
+  if (fromCookie) return fromCookie;
+  try {
+    const fromLS = localStorage.getItem("access_token");
+    if (fromLS) return fromLS;
+  } catch {}
+  return "";
 }
 
-// ── Sessionu təmizlə + login-ə yönləndir ─────────────────
+// ── Auth yoxlama ──────────────────────────────────────────
+export function isAuthenticated() {
+  return !!getToken();
+}
+
+// ── Session təmizlə ───────────────────────────────────────
 export function clearSession(navigate) {
   CK.del("access_token");
   CK.del("refresh_token");
   CK.del("isAuthenticated");
-  // köhnə localStorage qalıqlarını da sil
   try {
     localStorage.removeItem("access_token");
   } catch {}
@@ -53,25 +54,36 @@ export function clearSession(navigate) {
 
 // ── Authenticated fetch ───────────────────────────────────
 export async function authFetch(url, options = {}, navigate) {
-  const token = CK.get("access_token");
+  const token = getToken();
 
   if (!token) {
     clearSession(navigate);
     return null;
   }
 
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-    ...(options.headers || {}),
-  };
+  const isFormData = options.body instanceof FormData;
 
-  const res = await fetch(url, { ...options, headers });
-
-  if (res.status === 401) {
-    clearSession(navigate);
-    return null;
+  const headers = { Authorization: `Token ${token}` };
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (options.headers) {
+    Object.entries(options.headers).forEach(([k, v]) => {
+      if (isFormData && k.toLowerCase() === "content-type") return;
+      headers[k] = v;
+    });
   }
 
-  return res;
+  const { headers: _drop, ...restOptions } = options;
+
+  try {
+    const res = await fetch(url, { ...restOptions, headers });
+    if (res.status === 401) {
+      clearSession(navigate);
+      return null;
+    }
+    return res;
+  } catch (err) {
+    throw err;
+  }
 }
