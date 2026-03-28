@@ -1,37 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaCloudUploadAlt,
-  FaInstagram,
-  FaFacebook,
-  FaLinkedin,
-  FaWhatsapp,
-  FaTelegram,
-  FaTwitter,
-  FaYoutube,
-  FaTiktok,
-  FaGlobe,
-  FaPhone,
-  FaEnvelope,
-  FaMapMarkerAlt,
-  FaLink,
-  FaPlus,
-  FaCheckCircle,
-  FaSave,
-  FaTrashAlt,
-  FaExternalLinkAlt,
-  FaMoon,
-  FaSun,
-  FaSpinner,
-} from "react-icons/fa";
+import * as FaIcons from "react-icons/fa";
+import * as MdIcons from "react-icons/md";
+import * as BsIcons from "react-icons/bs";
+import * as AiIcons from "react-icons/ai";
+import * as BiIcons from "react-icons/bi";
+import * as RiIcons from "react-icons/ri";
 import "./HomeMain.scss";
 import Popup from "../../Popup/Popup";
-import { API_BASE, getToken, CK } from "../../../Utils/authUtils";
+import { API_BASE, authFetch, getToken, CK } from "../../../Utils/authUtils";
 
-const URL_PROFILE = `${API_BASE}/api/dash/auth/profile/me/`;
-const URL_SOC_TYPES = (cat) =>
-  `${API_BASE}/api/dash/auth/social-media-types/?category=${cat}`;
-const URL_LINK_DEL = (pk) => `${API_BASE}/api/dash/auth/my-profile/link/${pk}/`;
+const URL_PROFILE = `${API_BASE}/api/v1/profile/me/`;
+const URL_PLATFORMS = `${API_BASE}/api/v1/platforms/`;
+const URL_DELETE_LINK = (id) => `${API_BASE}/api/v1/social-link/${id}/delete/`;
+const URL_CLICK_LINK = (id) => `${API_BASE}/api/v1/social-link/${id}/click/`;
 
 const CATEGORIES = [
   { key: "social", label: "Sosial Şəbəkələr" },
@@ -39,64 +21,71 @@ const CATEGORIES = [
   { key: "additional", label: "Əlavə Linklər" },
 ];
 
-const ICON_MAP = {
-  Instagram: <FaInstagram />,
-  Facebook: <FaFacebook />,
-  LinkedIn: <FaLinkedin />,
-  Twitter: <FaTwitter />,
-  YouTube: <FaYoutube />,
-  TikTok: <FaTiktok />,
-  Telegram: <FaTelegram />,
-  WhatsApp: <FaWhatsapp />,
-  Telefon: <FaPhone />,
-  Email: <FaEnvelope />,
-  Ünvan: <FaMapMarkerAlt />,
-  "Web Sayt": <FaGlobe />,
-  Link: <FaLink />,
-};
-
-function getIcon(name) {
-  return ICON_MAP[name] || <FaGlobe />;
-}
-
 const COLORS = [
-  "#e1b12c",
-  "#1a1a1a",
-  "#ff8b94",
-  "#10b981",
-  "#6c5ce7",
-  "#0984e3",
-  "#00b894",
-  "#fd79a8",
-  "#f1c40f",
+  "#d3d3d3", // Ağ
+  "#1a1a1a", // Qara
+  "#e74c3c", // Qırmızı
+  "#2980b9", // Mavi
+  "#87ceeb", // Göy (Sky Blue)
+  "#27ae60", // Yaşıl
+  "#2ecc71", // Açıq Yaşıl
+  "#8e44ad", // Bənövşəyi
+  "#e91e8c", // Şəhrayı
+  "#f1c40f", // Sarı
+  "#e67e22", // Narıncı
+  "#d4a017", // Qızılı
 ];
 
-function apiFetch(url, token, options = {}) {
-  const isFormData = options.body instanceof FormData;
-  const headers = { Authorization: `Token ${token}` };
-  if (!isFormData) headers["Content-Type"] = "application/json";
-  const { headers: _h, ...rest } = options;
-  return fetch(url, { ...rest, headers });
-}
-
-function parseLink(l) {
-  return {
-    id: l.id || null,
-    social_type: l.social_type || null,
-    name: l.name || "",
-    icon: getIcon(l.name),
-    category: l.category || "social",
-    url: l.input || "",
-    isNew: false,
-    isDirty: false,
-    isDeleted: false, // silmə üçün flag — backend-ə hələ getməyib
+function getIcon(icon_code) {
+  if (!icon_code) return <FaIcons.FaLink />;
+  const libraries = {
+    Fa: FaIcons,
+    Md: MdIcons,
+    Bs: BsIcons,
+    Ai: AiIcons,
+    Bi: BiIcons,
+    Ri: RiIcons,
   };
+  const prefix = icon_code.slice(0, 2);
+  const lib = libraries[prefix];
+  if (!lib) return <FaIcons.FaLink />;
+  const C = lib[icon_code];
+  return C ? <C /> : <FaIcons.FaLink />;
 }
 
-// ─────────────────────────────────────────────────────────
+function normalizeResponse(raw) {
+  if (raw?.status === "success" && raw?.data) return raw.data;
+  return raw;
+}
+
+function parseSkills(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(String).filter(Boolean);
+  if (typeof raw === "string") {
+    const t = raw.trim();
+    if (t.startsWith("[")) {
+      try {
+        const p = JSON.parse(t);
+        if (Array.isArray(p)) return p.map(String).filter(Boolean);
+      } catch {}
+      return t
+        .replace(/^\[|\]$/g, "")
+        .split(",")
+        .map((s) => s.trim().replace(/^["']|["']$/g, ""))
+        .filter(Boolean);
+    }
+    return t
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 export default function HomeMain() {
   const navigate = useNavigate();
-  const didLoad = useRef(false);
+  const isNavigating = useRef(false);
+  const abortRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -118,7 +107,7 @@ export default function HomeMain() {
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [userCode, setUserCode] = useState("");
   const [totalViews, setTotalViews] = useState(0);
-  const [packageType, setPackageType] = useState("standard");
+  const [packageType, setPackageType] = useState("free");
   const [phoneTheme, setPhoneTheme] = useState("dark");
   const [phoneColor, setPhoneColor] = useState("#ff8b94");
 
@@ -127,110 +116,161 @@ export default function HomeMain() {
     contact: [],
     additional: [],
   });
+  const platformOptionsRef = useRef({
+    social: [],
+    contact: [],
+    additional: [],
+  });
   const [links, setLinks] = useState([]);
 
-  // Saxlanılmamış dəyişiklik varmı?
+  // isDeleted olanlar UI-da görsənmir amma state-də qalır → Yadda Saxla-da DELETE olunur
   const hasUnsaved = links.some((l) => l.isNew || l.isDirty || l.isDeleted);
-
   const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
-  // ── loadData ──────────────────────────────────────────────
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    const token = getToken();
-    if (!token) {
-      navigate("/login", { replace: true });
-      return;
-    }
+  const handleUnauthorized = useCallback(() => {
+    if (isNavigating.current) return;
+    isNavigating.current = true;
+    abortRef.current?.abort();
+    navigate("/login", { replace: true });
+  }, [navigate]);
 
-    try {
-      const [rProfile, rSocial, rContact, rAdditional] = await Promise.all([
-        apiFetch(URL_PROFILE, token),
-        apiFetch(URL_SOC_TYPES("social"), token),
-        apiFetch(URL_SOC_TYPES("contact"), token),
-        apiFetch(URL_SOC_TYPES("additional"), token),
-      ]);
+  const parseLink = useCallback((l) => {
+    const allPlatforms = [
+      ...platformOptionsRef.current.social,
+      ...platformOptionsRef.current.contact,
+      ...platformOptionsRef.current.additional,
+    ];
+    const matched =
+      allPlatforms.find((p) => p.id === l.platform_id) ||
+      allPlatforms.find((p) => p.name?.toLowerCase() === l.name?.toLowerCase());
 
-      const grouped = { social: [], contact: [], additional: [] };
-      const parseCat = async (res, cat) => {
-        if (!res.ok) return;
-        const sd = await res.json().catch(() => []);
-        if (Array.isArray(sd)) {
-          grouped[cat] = sd.map((t) => ({
-            id: t.id,
-            name: t.name,
-            icon: getIcon(t.name),
-            category: cat,
-          }));
-        }
-      };
-      await Promise.all([
-        parseCat(rSocial, "social"),
-        parseCat(rContact, "contact"),
-        parseCat(rAdditional, "additional"),
-      ]);
-      setPlatformOptions({ ...grouped });
+    const icon_code = matched?.icon_code || l.icon || l.icon_code || "";
+    const name = l.name || matched?.name || "";
+    const category =
+      matched?.category || l.category || l.all_category || "social";
 
-      if (rProfile.status === 401) {
-        navigate("/login", { replace: true });
-        return;
-      }
-      if (!rProfile.ok) {
-        const body = await rProfile.json().catch(() => ({}));
-        setError(body?.detail || `Server xətası: ${rProfile.status}`);
-        return;
-      }
+    return {
+      id: l.id ?? null,
+      platform_id: l.platform_id ?? matched?.id ?? null,
+      category,
+      url: l.link ?? l.url ?? "",
+      name,
+      icon_code,
+      icon: getIcon(icon_code),
+      clicks: l.clicks ?? 0,
+      isNew: false,
+      isDirty: false,
+      isDeleted: false,
+    };
+  }, []);
 
-      const d = await rProfile.json();
+  const applyProfileData = useCallback(
+    (raw) => {
+      const d = normalizeResponse(raw);
+      if (!d) return;
+
       const info = d.user_info || {};
       const sys = d.system || {};
-      const card = d.card || {};
+      const sub = d.subscription || {};
+      const skills = parseSkills(info.skills);
 
       setFormData({
         name: info.name || "",
         email: info.email || "",
         profession: info.work || "",
-        skill1: info.skill_1 || "",
-        skill2: info.skill_2 || "",
-        skill3: info.skill_3 || "",
+        skill1: skills[0] || "",
+        skill2: skills[1] || "",
+        skill3: skills[2] || "",
         about: info.about || "",
       });
-      setUserCode(
-        info.system_user_code || info.user_code || CK.get("user_code") || "",
-      );
+
+      setUserCode(info.user_code || CK.get("user_code") || "");
       setTotalViews(info.look ?? 0);
       if (info.image) setProfileImage(info.image);
       if (sys.color) setPhoneColor(sys.color);
       if (sys.mode) setPhoneTheme(sys.mode);
-      setPackageType(card.package_type || "standard");
+      setPackageType(sub.version_type || sub.packet_type || "free");
 
-      const rawLinkSide = d.link_side || {};
-      const allLinks = [];
-      ["social", "contact", "additional"].forEach((cat) => {
-        (rawLinkSide[cat] || []).forEach((l) => allLinks.push(parseLink(l)));
-      });
-      setLinks(allLinks);
-    } catch {
-      setError("Server ilə əlaqə kəsildi.");
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]);
+      const rawLinks = Array.isArray(d.link_side) ? d.link_side : [];
+      setLinks(rawLinks.map((l) => parseLink(l)));
+    },
+    [parseLink],
+  );
+
+  const loadData = useCallback(
+    async (signal) => {
+      setLoading(true);
+      setError("");
+      if (!getToken()) {
+        handleUnauthorized();
+        return;
+      }
+
+      try {
+        const [rProfile, rPlatforms] = await Promise.all([
+          authFetch(URL_PROFILE, { signal }, navigate).catch(() => null),
+          fetch(URL_PLATFORMS, { signal }).catch(() => null),
+        ]);
+
+        if (signal.aborted) return;
+        if (!rProfile) {
+          handleUnauthorized();
+          return;
+        }
+
+        if (rPlatforms?.ok) {
+          const data = await rPlatforms.json().catch(() => []);
+          const list = Array.isArray(data) ? data : data?.results || [];
+          const grouped = { social: [], contact: [], additional: [] };
+          list.forEach((p) => {
+            const cat = p.category?.toLowerCase().trim();
+            if (grouped[cat] !== undefined) {
+              grouped[cat].push({
+                id: p.id,
+                name: p.name,
+                icon_code: p.icon_code || p.icon || "",
+                icon: getIcon(p.icon_code || p.icon || ""),
+                category: cat,
+              });
+            }
+          });
+          platformOptionsRef.current = grouped;
+          setPlatformOptions({ ...grouped });
+        }
+
+        if (!rProfile.ok) {
+          const body = await rProfile.json().catch(() => ({}));
+          setError(body?.detail || `Server xətası: ${rProfile.status}`);
+          return;
+        }
+
+        const d = await rProfile.json();
+        if (!signal.aborted) applyProfileData(d);
+      } catch (err) {
+        if (err?.name === "AbortError" || signal?.aborted) return;
+        setError("Server ilə əlaqə kəsildi.");
+      } finally {
+        if (!signal?.aborted) setLoading(false);
+      }
+    },
+    [navigate, handleUnauthorized, applyProfileData],
+  );
 
   useEffect(() => {
-    if (didLoad.current) return;
-    didLoad.current = true;
-    loadData();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    loadData(controller.signal);
+    return () => {
+      controller.abort();
+    };
   }, [loadData]);
 
-  // ── Helpers ───────────────────────────────────────────────
+  // isDeleted olanlar UI-da göstərilmir
   const linksFor = (cat) =>
     links
-      .map((l, globalIdx) => ({ ...l, globalIdx }))
+      .map((l, i) => ({ ...l, globalIdx: i }))
       .filter((l) => l.category === cat && !l.isDeleted);
 
-  // ── Form handlers ─────────────────────────────────────────
   const handleChange = (e) =>
     setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -243,17 +283,19 @@ export default function HomeMain() {
 
   const addNewLink = (cat) => {
     const platforms = platformOptions[cat] || [];
-    if (platforms.length === 0) return;
+    if (!platforms.length) return;
     const first = platforms[0];
     setLinks((p) => [
       ...p,
       {
         id: null,
-        social_type: first.id,
-        name: first.name,
-        icon: first.icon,
+        platform_id: first.id,
         category: cat,
         url: "",
+        name: first.name,
+        icon_code: first.icon_code,
+        icon: first.icon,
+        clicks: 0,
         isNew: true,
         isDirty: false,
         isDeleted: false,
@@ -266,13 +308,14 @@ export default function HomeMain() {
       const u = [...p];
       const link = { ...u[globalIdx], isDirty: true };
       if (field === "platform") {
-        const cat = link.category;
-        const platforms = platformOptions[cat] || [];
-        const sel = platforms.find((o) => o.name === value);
+        const sel = (platformOptions[link.category] || []).find(
+          (o) => o.name === value,
+        );
         if (!sel) return p;
-        link.social_type = sel.id;
         link.name = sel.name;
+        link.icon_code = sel.icon_code;
         link.icon = sel.icon;
+        link.platform_id = sel.id;
       } else {
         link.url = value;
       }
@@ -281,104 +324,91 @@ export default function HomeMain() {
     });
   };
 
-  // Sil — sadəcə local flag qoy, backend-ə getmir
-  const removeLink = (globalIdx) => {
-    const link = links[globalIdx];
-    // Yeni link (hələ saxlanılmayıb) — birbaşa array-dən çıxar
-    if (link.isNew) {
-      setLinks((p) => p.filter((_, i) => i !== globalIdx));
-      return;
-    }
-    // Mövcud link — isDeleted flag-i qoy, saxlananda backend-ə gedəcək
+  // ✅ Zibil qutusuna bassın → dərhal UI-dan yox olur, state-də isDeleted: true qalır
+  // Yadda Saxla basılanda backend-ə DELETE göndərilir
+  const handleRemoveLink = (globalIdx) => {
     setLinks((p) => {
-      const u = [...p];
-      u[globalIdx] = { ...u[globalIdx], isDeleted: true };
-      return u;
+      const link = p[globalIdx];
+      // Heç saxlanılmamış yeni link → state-dən tamamilə çıxar
+      if (link.isNew) return p.filter((_, i) => i !== globalIdx);
+      // Köhnə link → işarələ, Yadda Saxla-da silinəcək
+      return p.map((l, i) => (i === globalIdx ? { ...l, isDeleted: true } : l));
     });
   };
 
-  const confirmRemove = (globalIdx) => {
-    setPopup({
-      isOpen: true,
-      type: "delete",
-      title: "Link silinsin?",
-      message:
-        "Bu dəyişiklik yalnız 'Yadda Saxla' düyməsi ilə tətbiq olunacaq.",
-      confirmText: "Sil",
-      onConfirm: () => removeLink(globalIdx),
-    });
-  };
+  const handleLinkClick = useCallback(async (linkId) => {
+    if (!linkId) return;
+    try {
+      await fetch(URL_CLICK_LINK(linkId), { method: "POST" });
+    } catch {}
+  }, []);
 
   const togglePhoneTheme = () =>
     setPhoneTheme((p) => (p === "dark" ? "light" : "dark"));
 
-  // ── Save — bütün pending dəyişiklikləri backend-ə göndər ──
-  const handleSave = async () => {
-    const token = getToken();
-    if (!token) {
-      navigate("/login", { replace: true });
+  // ✅ Yadda Saxla:
+  //   1. isDeleted && id olan linkləri → DELETE /social-link/{id}/delete/
+  //   2. Aktiv linkləri               → PATCH /profile/me/
+  const handleSave = useCallback(async () => {
+    if (saving) return;
+    if (!getToken()) {
+      handleUnauthorized();
       return;
     }
-
     setSaving(true);
+
     try {
-      // 1. Silinəcək linkləri DELETE et
-      const toDelete = links.filter((l) => l.isDeleted && l.id);
-      const deleteResults = await Promise.all(
-        toDelete.map((l) =>
-          apiFetch(URL_LINK_DEL(l.id), token, { method: "DELETE" })
-            .then((r) => ({ id: l.id, ok: r.ok || r.status === 404 }))
-            .catch(() => ({ id: l.id, ok: false })),
+      // ── Addım 1: Silinəcək köhnə linkləri backend-dən sil ──
+      const deletedLinks = links.filter((l) => l.isDeleted && l.id && !l.isNew);
+      if (deletedLinks.length > 0) {
+        await Promise.all(
+          deletedLinks.map((l) =>
+            authFetch(
+              URL_DELETE_LINK(l.id),
+              { method: "DELETE" },
+              navigate,
+            ).catch(() => null),
+          ),
+        );
+      }
+
+      // ── Addım 2: Profil + aktiv linklər PATCH ──
+      const fd = new FormData();
+      fd.append("name", formData.name);
+      fd.append("email", formData.email);
+      fd.append("work", formData.profession);
+      fd.append("about", formData.about);
+      [formData.skill1, formData.skill2, formData.skill3]
+        .filter(Boolean)
+        .forEach((s, i) => fd.append(`skills[${i}]`, s));
+      fd.append(
+        "system",
+        JSON.stringify({ color: phoneColor, mode: phoneTheme }),
+      );
+      if (profileImageFile) fd.append("image", profileImageFile);
+
+      const activeLinks = links.filter(
+        (l) => !l.isDeleted && l.url.trim() !== "",
+      );
+      fd.append(
+        "sosial_media",
+        JSON.stringify(
+          activeLinks.map((l) => ({ platform_id: l.platform_id, url: l.url })),
         ),
       );
 
-      // Uğursuz silmə varsa xəbərdarlıq et, amma davam et
-      const failedDeletes = deleteResults.filter((r) => !r.ok);
-      if (failedDeletes.length > 0) {
-        console.warn("Bəzi linklər silinə bilmədi:", failedDeletes);
-      }
-
-      // 2. Profil + yeni/dəyişmiş linkləri PATCH et
-      const activeLinks = links.filter(
-        (l) => !l.isDeleted && l.url && l.social_type !== null,
+      const res = await authFetch(
+        URL_PROFILE,
+        { method: "PATCH", body: fd },
+        navigate,
       );
 
-      const payload = {
-        user_info: {
-          name: formData.name,
-          email: formData.email,
-          work: formData.profession,
-          skill_1: formData.skill1,
-          skill_2: formData.skill2,
-          skill_3: formData.skill3,
-          about: formData.about,
-        },
-        system: { color: phoneColor, mode: phoneTheme },
-        link_side: activeLinks.map((l) => ({
-          social_type: l.social_type,
-          input: l.url,
-        })),
-      };
-
-      const fd = new FormData();
-      fd.append("data", JSON.stringify(payload));
-      if (profileImageFile) fd.append("image", profileImageFile);
-
-      const res = await apiFetch(URL_PROFILE, token, {
-        method: "PATCH",
-        body: fd,
-      });
-      if (res.status === 401) {
-        navigate("/login", { replace: true });
-        return;
-      }
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
+      if (!res?.ok) {
+        const err = await res?.json().catch(() => ({}));
         setPopup({
           isOpen: true,
           type: "error",
-          title: "Xəta baş verdi",
+          title: "Xəta",
           message: err?.detail || err?.error || "Məlumatlar saxlanılmadı.",
           confirmText: "Bağla",
           onConfirm: null,
@@ -386,11 +416,11 @@ export default function HomeMain() {
         return;
       }
 
-      // 3. Uğurlu — state-i backend-dən refresh et
-      setProfileImageFile(null);
-      didLoad.current = false;
-      await loadData();
+      // ── Addım 3: Cavabı state-ə tətbiq et ──
+      const fresh = await res.json().catch(() => null);
+      if (fresh) applyProfileData(fresh);
 
+      setProfileImageFile(null);
       setPopup({
         isOpen: true,
         type: "success",
@@ -411,48 +441,60 @@ export default function HomeMain() {
     } finally {
       setSaving(false);
     }
-  };
+  }, [
+    saving,
+    navigate,
+    handleUnauthorized,
+    applyProfileData,
+    formData,
+    links,
+    profileImageFile,
+    phoneColor,
+    phoneTheme,
+  ]);
 
   const profileUrl = userCode ? `/profile/${userCode}` : "#";
   const packageLabel =
     {
+      free: "Free",
       standard: "Standard",
       premium: "Premium",
       pro: "Pro",
       business: "Business",
     }[packageType] || packageType;
 
-  if (loading) {
+  // ── Loading
+  if (loading)
     return (
       <div className="home-main-modern-split loading-state">
-        <FaSpinner className="spin-icon" />
+        <FaIcons.FaSpinner className="spin-icon" />
         <p>Məlumatlar yüklənir...</p>
       </div>
     );
-  }
 
-  if (error) {
+  // ── Error
+  if (error)
     return (
       <div className="home-main-modern-split loading-state">
         <p className="error-text">{error}</p>
         <button
           className="save-btn"
           onClick={() => {
-            didLoad.current = false;
-            loadData();
+            isNavigating.current = false;
+            const c = new AbortController();
+            abortRef.current = c;
+            loadData(c.signal);
           }}
         >
           Yenidən cəhd et
         </button>
       </div>
     );
-  }
 
-  // ── Link paneli ───────────────────────────────────────────
+  // ── Link kateqoriya render
   const renderLinkCategory = (cat) => {
     const catLinks = linksFor(cat.key);
     const catPlatforms = platformOptions[cat.key] || [];
-    if (catPlatforms.length === 0) return null;
 
     return (
       <div className="link-category-block" key={cat.key}>
@@ -467,7 +509,6 @@ export default function HomeMain() {
           {catLinks.length === 0 && (
             <div className="links-empty">Hələ link əlavə edilməyib.</div>
           )}
-
           {catLinks.map((link, localIdx) => (
             <div
               key={link.globalIdx}
@@ -481,11 +522,13 @@ export default function HomeMain() {
             >
               <div className="row-top-mobile">
                 <div className="order-num">{localIdx + 1}</div>
+                {/* ✅ Popup yoxdur — birbaşa handleRemoveLink çağırılır */}
                 <button
                   className="remove-link-btn"
-                  onClick={() => confirmRemove(link.globalIdx)}
+                  onClick={() => handleRemoveLink(link.globalIdx)}
+                  title="Linki sil"
                 >
-                  <FaTrashAlt />
+                  <FaIcons.FaTrashAlt />
                 </button>
               </div>
 
@@ -514,6 +557,11 @@ export default function HomeMain() {
                 }
               />
 
+              {link.clicks > 0 && (
+                <span className="click-count">
+                  <FaIcons.FaMousePointer /> {link.clicks}
+                </span>
+              )}
               {link.isNew && <span className="new-badge">Yeni</span>}
               {link.isDirty && !link.isNew && (
                 <span className="dirty-badge">●</span>
@@ -522,14 +570,18 @@ export default function HomeMain() {
           ))}
         </div>
 
-        <button className="add-new-btn" onClick={() => addNewLink(cat.key)}>
-          <FaPlus /> {cat.label} Əlavə Et
+        <button
+          className="add-new-btn"
+          onClick={() => addNewLink(cat.key)}
+          disabled={!catPlatforms.length}
+          title={!catPlatforms.length ? "Platformlar yüklənir..." : ""}
+        >
+          <FaIcons.FaPlus /> {cat.label} Əlavə Et
         </button>
       </div>
     );
   };
 
-  // ── Render ────────────────────────────────────────────────
   return (
     <div className="home-main-modern-split">
       <Popup
@@ -540,13 +592,16 @@ export default function HomeMain() {
         confirmText={popup.confirmText}
         cancelText="Ləğv et"
         onConfirm={() => {
-          popup.onConfirm?.();
+          const fn = popup.onConfirm;
           closePopup();
+          if (fn) fn();
         }}
         onCancel={closePopup}
       />
 
-      {/* ── LEFT: FORM ── */}
+      {/* ══════════════════════════════
+          LEFT — FORM
+      ══════════════════════════════ */}
       <div className="form-section">
         <div className="top-header">
           <div>
@@ -556,7 +611,7 @@ export default function HomeMain() {
         </div>
 
         <div className="modern-card form-card">
-          {/* Row 1 */}
+          {/* Şəkil + Ad + Stats */}
           <div className="row-1">
             <div className="upload-box">
               <input
@@ -574,12 +629,13 @@ export default function HomeMain() {
                   />
                 ) : (
                   <>
-                    <FaCloudUploadAlt className="upload-icon" />
+                    <FaIcons.FaCloudUploadAlt className="upload-icon" />
                     <span>Yüklə</span>
                   </>
                 )}
               </label>
             </div>
+
             <div className="inputs-grid">
               <div className="input-group">
                 <label>Ad Soyad</label>
@@ -600,6 +656,7 @@ export default function HomeMain() {
                 />
               </div>
             </div>
+
             <div className="stats-boxes">
               <div className="stat-box">
                 <label>Ümumi Baxış</label>
@@ -612,7 +669,7 @@ export default function HomeMain() {
             </div>
           </div>
 
-          {/* Row 2 */}
+          {/* Peşə + Bacarıqlar */}
           <div className="row-2">
             <div className="input-group flex-1">
               <label>Peşə</label>
@@ -651,7 +708,7 @@ export default function HomeMain() {
             </div>
           </div>
 
-          {/* About */}
+          {/* Haqqında */}
           <div className="input-group full-width">
             <label>Haqqında məlumat</label>
             <textarea
@@ -662,7 +719,7 @@ export default function HomeMain() {
             />
           </div>
 
-          {/* ── Link Tabs ── */}
+          {/* Linklər */}
           <div className="links-section">
             <div className="link-tabs">
               {CATEGORIES.map((cat) => {
@@ -681,16 +738,16 @@ export default function HomeMain() {
                 );
               })}
             </div>
-
             {CATEGORIES.filter((c) => c.key === activeTab).map(
               renderLinkCategory,
             )}
           </div>
         </div>
 
+        {/* Alt hərəkətlər */}
         <div className="bottom-actions">
           <div className="status-badge">
-            <FaCheckCircle />
+            <FaIcons.FaCheckCircle />
             {hasUnsaved ? (
               <span style={{ color: "var(--badge-warning-text, #e1b12c)" }}>
                 Saxlanılmamış dəyişikliklər var
@@ -699,14 +756,16 @@ export default function HomeMain() {
               "Məlumatlar işlək vəziyyətdədir"
             )}
           </div>
+
           <a
             href={profileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="view-profile-btn"
           >
-            <FaExternalLinkAlt /> Səhifəmə Keçid
+            <FaIcons.FaExternalLinkAlt /> Səhifəmə Keçid
           </a>
+
           <button
             className={`save-btn ${hasUnsaved ? "save-btn--unsaved" : ""}`}
             disabled={saving}
@@ -716,19 +775,28 @@ export default function HomeMain() {
                 type: "update",
                 title: "Məlumat yadda saxlanılsın?",
                 message:
-                  "Bütün dəyişikliklər (yeni linklər, dəyişdirilmiş linklər, silinmiş linklər) tətbiq ediləcək.",
+                  "Bütün dəyişikliklər (yeni linklər, silinənlər, redaktələr) tətbiq ediləcək.",
                 confirmText: "Saxla",
                 onConfirm: handleSave,
               })
             }
           >
-            {saving ? <FaSpinner className="spin-icon-sm" /> : <FaSave />}
-            {saving ? "Saxlanılır..." : "Yadda Saxla"}
+            {saving ? (
+              <>
+                <FaIcons.FaSpinner className="spin-icon-sm" /> Saxlanılır...
+              </>
+            ) : (
+              <>
+                <FaIcons.FaSave /> Yadda Saxla
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* ── RIGHT: PHONE PREVIEW ── */}
+      {/* ══════════════════════════════
+          RIGHT — PHONE PREVIEW
+      ══════════════════════════════ */}
       <div className="preview-section">
         <button
           className="phone-theme-toggle"
@@ -739,12 +807,12 @@ export default function HomeMain() {
             <span
               className={`toggle-label left ${phoneTheme === "light" ? "active" : ""}`}
             >
-              <FaSun /> <span>Light</span>
+              <FaIcons.FaSun /> <span>Light</span>
             </span>
             <span
               className={`toggle-label right ${phoneTheme === "dark" ? "active" : ""}`}
             >
-              <FaMoon /> <span>Dark</span>
+              <FaIcons.FaMoon /> <span>Dark</span>
             </span>
             <div
               className={`toggle-thumb ${phoneTheme === "dark" ? "thumb-right" : "thumb-left"}`}
@@ -799,14 +867,20 @@ export default function HomeMain() {
               const catLinks = links.filter(
                 (l) => l.category === cat.key && l.url && !l.isDeleted,
               );
-              if (catLinks.length === 0) return null;
+              if (!catLinks.length) return null;
               return (
                 <div className="preview-link-group" key={cat.key}>
                   <h4 className="preview-group-title">{cat.label}</h4>
                   {catLinks.map((link, idx) => (
-                    <div className="social-card" key={idx}>
+                    <div
+                      className="social-card"
+                      key={idx}
+                      onClick={() => handleLinkClick(link.id)}
+                    >
                       <span style={{ color: phoneColor }}>{link.icon}</span>
-                      <span>{link.url}</span>
+                      <span>
+                        {link.name} — {link.url}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -818,9 +892,9 @@ export default function HomeMain() {
         <div className="theme-color-section">
           <label>Profil Rəngi / Tema Rəngi</label>
           <div className="color-palette">
-            {COLORS.map((color, index) => (
+            {COLORS.map((color, i) => (
               <div
-                key={index}
+                key={i}
                 className={`color-box ${phoneColor === color ? "active" : ""}`}
                 style={{ backgroundColor: color }}
                 onClick={() => setPhoneColor(color)}
