@@ -2,10 +2,14 @@
 
 export const API_BASE = import.meta.env.VITE_API_BASE;
 
+/* ── Cookie yardımçıları ── */
+const isSecure = location.protocol === "https:";
+
 export const CK = {
   set: (name, value, days = 7) => {
     const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    const secure = isSecure ? "; Secure" : "";
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax${secure}`;
   },
   get: (name) => {
     const match = document.cookie
@@ -14,12 +18,14 @@ export const CK = {
     return match ? decodeURIComponent(match.split("=")[1]) : "";
   },
   del: (name) => {
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    const secure = isSecure ? "; Secure" : "";
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${secure}`;
   },
 };
 
 export const LS = { set: CK.set, get: CK.get, del: CK.del };
 
+/* ── Token oxu ── */
 export function getToken() {
   const fromCookie = CK.get("access_token");
   if (fromCookie) return fromCookie;
@@ -44,6 +50,7 @@ export function isAuthenticated() {
   return !!getToken();
 }
 
+/* ── Session təmizlə ── */
 export function clearSession(navigate) {
   CK.del("access_token");
   CK.del("refresh_token");
@@ -60,10 +67,23 @@ export function clearSession(navigate) {
   if (navigate) navigate("/login", { replace: true });
 }
 
-// ── Eyni anda birdən çox refresh sorğusu getməsin deyə singleton
+/* ── Token saxla (login zamanı çağır) ── */
+export function saveTokens(access, refresh) {
+  CK.set("access_token", access, 1); // 1 gün
+  CK.set("refresh_token", refresh, 7); // 7 gün
+  try {
+    localStorage.setItem("access_token", access);
+  } catch {}
+  try {
+    localStorage.setItem("refresh_token", refresh);
+  } catch {}
+}
+
+/* ── Refresh singleton ── */
 let _refreshPromise = null;
 
 async function refreshAccessToken() {
+  // Artıq gedən refresh varsa gözlə, yeni başlatma
   if (_refreshPromise) return _refreshPromise;
 
   _refreshPromise = (async () => {
@@ -80,18 +100,15 @@ async function refreshAccessToken() {
       if (!res.ok) return null;
 
       const data = await res.json().catch(() => null);
-      if (!data) return null;
+      if (!data?.access) return null;
 
-      const newAccess = data?.access;
-      if (!newAccess) return null;
+      const newAccess = data.access;
 
-      // Yeni access token saxla
       CK.set("access_token", newAccess, 1);
       try {
         localStorage.setItem("access_token", newAccess);
       } catch {}
 
-      // Backend yeni refresh token da qaytarırsa onu da saxla
       if (data?.refresh) {
         CK.set("refresh_token", data.refresh, 7);
         try {
@@ -103,28 +120,34 @@ async function refreshAccessToken() {
     } catch {
       return null;
     } finally {
-      _refreshPromise = null;
+      // Qısa gecikmə ilə sıfırla — race condition qarşısını al
+      setTimeout(() => {
+        _refreshPromise = null;
+      }, 100);
     }
   })();
 
   return _refreshPromise;
 }
 
+/* ── Authenticated fetch ── */
 export async function authFetch(url, options = {}, navigate) {
   let token = getToken();
 
   if (!token) {
-    clearSession(navigate);
-    return null;
+    // Token yoxdursa əvvəlcə refresh cəhd et
+    token = await refreshAccessToken();
+    if (!token) {
+      clearSession(navigate);
+      return null;
+    }
   }
 
   const isFormData = options.body instanceof FormData;
 
   const buildHeaders = (t) => {
     const headers = { Authorization: `Bearer ${t}` };
-    if (!isFormData) {
-      headers["Content-Type"] = "application/json";
-    }
+    if (!isFormData) headers["Content-Type"] = "application/json";
     if (options.headers) {
       Object.entries(options.headers).forEach(([k, v]) => {
         if (isFormData && k.toLowerCase() === "content-type") return;
@@ -137,29 +160,24 @@ export async function authFetch(url, options = {}, navigate) {
   const { headers: _drop, ...restOptions } = options;
 
   try {
-    // ── İlk sorğu cəhdi
     let res = await fetch(url, {
       ...restOptions,
       headers: buildHeaders(token),
     });
 
-    // ── 401 gəldisə refresh token ilə yenilə
     if (res.status === 401) {
       const newToken = await refreshAccessToken();
 
-      // Refresh uğursuz → session bitdi
       if (!newToken) {
         clearSession(navigate);
         return null;
       }
 
-      // Yeni token ilə sorğunu təkrar et
       res = await fetch(url, {
         ...restOptions,
         headers: buildHeaders(newToken),
       });
 
-      // Yenə 401 → session tamamilə bitib
       if (res.status === 401) {
         clearSession(navigate);
         return null;

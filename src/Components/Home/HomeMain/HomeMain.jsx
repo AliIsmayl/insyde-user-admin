@@ -22,19 +22,23 @@ const CATEGORIES = [
 ];
 
 const COLORS = [
-  "#d3d3d3", // Ağ
-  "#1a1a1a", // Qara
-  "#e74c3c", // Qırmızı
-  "#2980b9", // Mavi
-  "#87ceeb", // Göy (Sky Blue)
-  "#27ae60", // Yaşıl
-  "#2ecc71", // Açıq Yaşıl
-  "#8e44ad", // Bənövşəyi
-  "#e91e8c", // Şəhrayı
-  "#f1c40f", // Sarı
-  "#e67e22", // Narıncı
-  "#d4a017", // Qızılı
+  "#d3d3d3",
+  "#1a1a1a",
+  "#e74c3c",
+  "#2980b9",
+  "#87ceeb",
+  "#27ae60",
+  "#2ecc71",
+  "#8e44ad",
+  "#e91e8c",
+  "#f1c40f",
+  "#e67e22",
+  "#d4a017",
 ];
+
+// Rəng paneli görünən paketlər
+const COLOR_ALLOWED_PACKAGES = ["premium", "pro", "business"];
+const DEFAULT_COLOR = "#d4af37";
 
 function getIcon(icon_code) {
   if (!icon_code) return <FaIcons.FaLink />;
@@ -92,6 +96,7 @@ export default function HomeMain() {
   const [error, setError] = useState("");
   const [popup, setPopup] = useState({ isOpen: false });
   const [activeTab, setActiveTab] = useState("social");
+  const [cardStatus, setCardStatus] = useState("active");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -106,10 +111,11 @@ export default function HomeMain() {
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [userCode, setUserCode] = useState("");
+  const [hash_id, setHashId] = useState("");
   const [totalViews, setTotalViews] = useState(0);
   const [packageType, setPackageType] = useState("free");
   const [phoneTheme, setPhoneTheme] = useState("dark");
-  const [phoneColor, setPhoneColor] = useState("#ff8b94");
+  const [phoneColor, setPhoneColor] = useState(DEFAULT_COLOR);
 
   const [platformOptions, setPlatformOptions] = useState({
     social: [],
@@ -123,8 +129,12 @@ export default function HomeMain() {
   });
   const [links, setLinks] = useState([]);
 
-  // isDeleted olanlar UI-da görsənmir amma state-də qalır → Yadda Saxla-da DELETE olunur
   const hasUnsaved = links.some((l) => l.isNew || l.isDirty || l.isDeleted);
+  const isBlocked = cardStatus === "blocked";
+
+  // Rəng panelinin görünüb-görünməyəcəyini müəyyən edir
+  const canChangeColor = COLOR_ALLOWED_PACKAGES.includes(packageType);
+
   const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
   const handleUnauthorized = useCallback(() => {
@@ -174,6 +184,17 @@ export default function HomeMain() {
       const sub = d.subscription || {};
       const skills = parseSkills(info.skills);
 
+      const cardSt = d.card?.status || "active";
+      setCardStatus(cardSt);
+
+      const pkg = sub.version_type || sub.packet_type || "free";
+      setPackageType(pkg);
+
+      // Rəng: free/standard → həmişə DEFAULT_COLOR; digərləri → backend rəngi
+      const allowColor = COLOR_ALLOWED_PACKAGES.includes(pkg);
+      const backendColor = sys.color || DEFAULT_COLOR;
+      setPhoneColor(allowColor ? backendColor : DEFAULT_COLOR);
+
       setFormData({
         name: info.name || "",
         email: info.email || "",
@@ -185,11 +206,10 @@ export default function HomeMain() {
       });
 
       setUserCode(info.user_code || CK.get("user_code") || "");
+      setHashId(info.hash_id || "");
       setTotalViews(info.look ?? 0);
       if (info.image) setProfileImage(info.image);
-      if (sys.color) setPhoneColor(sys.color);
       if (sys.mode) setPhoneTheme(sys.mode);
-      setPackageType(sub.version_type || sub.packet_type || "free");
 
       const rawLinks = Array.isArray(d.link_side) ? d.link_side : [];
       setLinks(rawLinks.map((l) => parseLink(l)));
@@ -265,7 +285,6 @@ export default function HomeMain() {
     };
   }, [loadData]);
 
-  // isDeleted olanlar UI-da göstərilmir
   const linksFor = (cat) =>
     links
       .map((l, i) => ({ ...l, globalIdx: i }))
@@ -324,14 +343,10 @@ export default function HomeMain() {
     });
   };
 
-  // ✅ Zibil qutusuna bassın → dərhal UI-dan yox olur, state-də isDeleted: true qalır
-  // Yadda Saxla basılanda backend-ə DELETE göndərilir
   const handleRemoveLink = (globalIdx) => {
     setLinks((p) => {
       const link = p[globalIdx];
-      // Heç saxlanılmamış yeni link → state-dən tamamilə çıxar
       if (link.isNew) return p.filter((_, i) => i !== globalIdx);
-      // Köhnə link → işarələ, Yadda Saxla-da silinəcək
       return p.map((l, i) => (i === globalIdx ? { ...l, isDeleted: true } : l));
     });
   };
@@ -346,9 +361,6 @@ export default function HomeMain() {
   const togglePhoneTheme = () =>
     setPhoneTheme((p) => (p === "dark" ? "light" : "dark"));
 
-  // ✅ Yadda Saxla:
-  //   1. isDeleted && id olan linkləri → DELETE /social-link/{id}/delete/
-  //   2. Aktiv linkləri               → PATCH /profile/me/
   const handleSave = useCallback(async () => {
     if (saving) return;
     if (!getToken()) {
@@ -358,7 +370,6 @@ export default function HomeMain() {
     setSaving(true);
 
     try {
-      // ── Addım 1: Silinəcək köhnə linkləri backend-dən sil ──
       const deletedLinks = links.filter((l) => l.isDeleted && l.id && !l.isNew);
       if (deletedLinks.length > 0) {
         await Promise.all(
@@ -372,7 +383,6 @@ export default function HomeMain() {
         );
       }
 
-      // ── Addım 2: Profil + aktiv linklər PATCH ──
       const fd = new FormData();
       fd.append("name", formData.name);
       fd.append("email", formData.email);
@@ -381,9 +391,12 @@ export default function HomeMain() {
       [formData.skill1, formData.skill2, formData.skill3]
         .filter(Boolean)
         .forEach((s, i) => fd.append(`skills[${i}]`, s));
+
+      // free/standard → həmişə DEFAULT_COLOR göndər
+      const colorToSend = canChangeColor ? phoneColor : DEFAULT_COLOR;
       fd.append(
         "system",
-        JSON.stringify({ color: phoneColor, mode: phoneTheme }),
+        JSON.stringify({ color: colorToSend, mode: phoneTheme }),
       );
       if (profileImageFile) fd.append("image", profileImageFile);
 
@@ -393,7 +406,10 @@ export default function HomeMain() {
       fd.append(
         "sosial_media",
         JSON.stringify(
-          activeLinks.map((l) => ({ platform_id: l.platform_id, url: l.url })),
+          activeLinks.map((l) => ({
+            platform_id: l.platform_id,
+            url: l.url,
+          })),
         ),
       );
 
@@ -416,7 +432,6 @@ export default function HomeMain() {
         return;
       }
 
-      // ── Addım 3: Cavabı state-ə tətbiq et ──
       const fresh = await res.json().catch(() => null);
       if (fresh) applyProfileData(fresh);
 
@@ -451,9 +466,10 @@ export default function HomeMain() {
     profileImageFile,
     phoneColor,
     phoneTheme,
+    canChangeColor,
   ]);
 
-  const profileUrl = userCode ? `/profile/${userCode}` : "#";
+  const profileUrl = hash_id ? `https://insyde.info/person/${hash_id}` : "#";
   const packageLabel =
     {
       free: "Free",
@@ -463,7 +479,6 @@ export default function HomeMain() {
       business: "Business",
     }[packageType] || packageType;
 
-  // ── Loading
   if (loading)
     return (
       <div className="home-main-modern-split loading-state">
@@ -472,7 +487,6 @@ export default function HomeMain() {
       </div>
     );
 
-  // ── Error
   if (error)
     return (
       <div className="home-main-modern-split loading-state">
@@ -491,7 +505,6 @@ export default function HomeMain() {
       </div>
     );
 
-  // ── Link kateqoriya render
   const renderLinkCategory = (cat) => {
     const catLinks = linksFor(cat.key);
     const catPlatforms = platformOptions[cat.key] || [];
@@ -522,7 +535,6 @@ export default function HomeMain() {
             >
               <div className="row-top-mobile">
                 <div className="order-num">{localIdx + 1}</div>
-                {/* ✅ Popup yoxdur — birbaşa handleRemoveLink çağırılır */}
                 <button
                   className="remove-link-btn"
                   onClick={() => handleRemoveLink(link.globalIdx)}
@@ -746,14 +758,30 @@ export default function HomeMain() {
 
         {/* Alt hərəkətlər */}
         <div className="bottom-actions">
-          <div className="status-badge">
-            <FaIcons.FaCheckCircle />
-            {hasUnsaved ? (
-              <span style={{ color: "var(--badge-warning-text, #e1b12c)" }}>
-                Saxlanılmamış dəyişikliklər var
-              </span>
+          <div
+            className={`status-badge ${
+              isBlocked
+                ? "status-badge--blocked"
+                : hasUnsaved
+                  ? "status-badge--unsaved"
+                  : ""
+            }`}
+          >
+            {isBlocked ? (
+              <>
+                <FaIcons.FaBan />
+                <span>Sizin hesab bloklanmışdır</span>
+              </>
+            ) : hasUnsaved ? (
+              <>
+                <FaIcons.FaCheckCircle />
+                <span>Saxlanılmamış dəyişikliklər var</span>
+              </>
             ) : (
-              "Məlumatlar işlək vəziyyətdədir"
+              <>
+                <FaIcons.FaCheckCircle />
+                <span>Məlumatlar işlək vəziyyətdədir</span>
+              </>
             )}
           </div>
 
@@ -768,7 +796,7 @@ export default function HomeMain() {
 
           <button
             className={`save-btn ${hasUnsaved ? "save-btn--unsaved" : ""}`}
-            disabled={saving}
+            disabled={saving || isBlocked}
             onClick={() =>
               setPopup({
                 isOpen: true,
@@ -889,19 +917,30 @@ export default function HomeMain() {
           </div>
         </div>
 
-        <div className="theme-color-section">
-          <label>Profil Rəngi / Tema Rəngi</label>
-          <div className="color-palette">
-            {COLORS.map((color, i) => (
-              <div
-                key={i}
-                className={`color-box ${phoneColor === color ? "active" : ""}`}
-                style={{ backgroundColor: color }}
-                onClick={() => setPhoneColor(color)}
-              />
-            ))}
+        {/* ── Rəng paneli: yalnız premium/pro/business üçün ── */}
+        {canChangeColor ? (
+          <div className="theme-color-section">
+            <label>Profil Rəngi / Tema Rəngi</label>
+            <div className="color-palette">
+              {COLORS.map((color, i) => (
+                <div
+                  key={i}
+                  className={`color-box ${phoneColor === color ? "active" : ""}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setPhoneColor(color)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="theme-color-section theme-color-section--locked">
+            <FaIcons.FaLock className="locked-icon" />
+            <p className="locked-text">
+              Rəng dəyişdirmə digər paketdə
+              mövcuddur.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

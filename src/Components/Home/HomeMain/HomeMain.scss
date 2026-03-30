@@ -236,7 +236,6 @@
       gap: 16px;
     }
 
-    // Hər kateqoriya ayrı blok
     .link-category-block {
       display: flex;
       flex-direction: column;
@@ -521,18 +520,50 @@
     flex-wrap: wrap;
     gap: 15px;
 
+    // ── Status badge — 3 vəziyyət ──────────────────────
     .status-badge {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      color: var(--badge-success-text);
       padding: 10px 20px;
       border-radius: 12px;
       font-weight: 600;
       font-size: 14px;
       flex: 1;
       min-width: 220px;
+      border: 1px solid transparent;
+      transition:
+        background-color 0.3s,
+        color 0.3s,
+        border-color 0.3s;
+
+      color: #27ae60;
+
+      svg {
+        color: #27ae60;
+        font-size: 16px;
+        flex-shrink: 0;
+        transition: color 0.3s;
+      }
+
+      // Saxlanılmamış dəyişiklik (sarı)
+      &.status-badge--unsaved {
+        color: #e1b12c;
+
+        svg {
+          color: #e1b12c;
+        }
+      }
+
+      // Bloklanmış hesab (qırmızı)
+      &.status-badge--blocked {
+        color: #e74c3c;
+
+        svg {
+          color: #e74c3c;
+        }
+      }
     }
 
     .view-profile-btn {
@@ -835,7 +866,6 @@
         }
       }
 
-      // Kateqoriya qrupu
       .preview-link-group {
         display: flex;
         flex-direction: column;
