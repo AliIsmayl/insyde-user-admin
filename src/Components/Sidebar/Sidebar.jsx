@@ -9,11 +9,49 @@ import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import "./Sidebar.scss";
 import { clearSession } from "../../Utils/authUtils";
 
-function Sidebar({ isOpen, setIsOpen }) {
+// Yalnız bu paketlərdə bütün səhifələr görünür
+const FULL_ACCESS_PACKAGES = ["standard", "premium", "pro", "business"];
+
+// Bütün menyu elementləri
+const ALL_MENU_ITEMS = [
+  {
+    name: "Ana səhifə",
+    path: "/home",
+    icon: <HiOutlineHome />,
+    freeVisible: true,
+  },
+  {
+    name: "Analitika",
+    path: "/analys",
+    icon: <TbBrandGoogleAnalytics />,
+    freeVisible: false,
+  },
+  {
+    name: "Paketlər",
+    path: "/packages",
+    icon: <PiPackage />,
+    freeVisible: false,
+  },
+  {
+    name: "Müraciətlər",
+    path: "/applications",
+    icon: <FaRegMessage />,
+    freeVisible: false,
+  },
+];
+
+function Sidebar({ isOpen, setIsOpen, packageType = "free" }) {
   const [openMenus, setOpenMenus] = useState({});
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const hasFullAccess = FULL_ACCESS_PACKAGES.includes(packageType);
+
+  // Pakete görə menyu filterləmə
+  const menuItems = hasFullAccess
+    ? ALL_MENU_ITEMS
+    : ALL_MENU_ITEMS.filter((item) => item.freeVisible);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -55,13 +93,6 @@ function Sidebar({ isOpen, setIsOpen }) {
     if (isMobile) setIsOpen(false);
     clearSession(navigate);
   };
-
-  const menuItems = [
-    { name: "Ana səhifə", path: "/home", icon: <HiOutlineHome /> },
-    { name: "Analitika", path: "/analys", icon: <TbBrandGoogleAnalytics /> },
-    { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
-    { name: "Müraciətlər", path: "/applications", icon: <FaRegMessage /> },
-  ];
 
   return (
     <>

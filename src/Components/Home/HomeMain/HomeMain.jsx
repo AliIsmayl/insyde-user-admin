@@ -36,7 +36,6 @@ const COLORS = [
   "#d4a017",
 ];
 
-// Rəng paneli görünən paketlər
 const COLOR_ALLOWED_PACKAGES = ["premium", "pro", "business"];
 const DEFAULT_COLOR = "#d4af37";
 
@@ -97,6 +96,7 @@ export default function HomeMain() {
   const [popup, setPopup] = useState({ isOpen: false });
   const [activeTab, setActiveTab] = useState("social");
   const [cardStatus, setCardStatus] = useState("active");
+  const [statusSms, setStatusSms] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -131,8 +131,6 @@ export default function HomeMain() {
 
   const hasUnsaved = links.some((l) => l.isNew || l.isDirty || l.isDeleted);
   const isBlocked = cardStatus === "blocked";
-
-  // Rəng panelinin görünüb-görünməyəcəyini müəyyən edir
   const canChangeColor = COLOR_ALLOWED_PACKAGES.includes(packageType);
 
   const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
@@ -186,11 +184,11 @@ export default function HomeMain() {
 
       const cardSt = d.card?.status || "active";
       setCardStatus(cardSt);
+      setStatusSms(d.card?.status_sms || "");
 
       const pkg = sub.version_type || sub.packet_type || "free";
       setPackageType(pkg);
 
-      // Rəng: free/standard → həmişə DEFAULT_COLOR; digərləri → backend rəngi
       const allowColor = COLOR_ALLOWED_PACKAGES.includes(pkg);
       const backendColor = sys.color || DEFAULT_COLOR;
       setPhoneColor(allowColor ? backendColor : DEFAULT_COLOR);
@@ -392,7 +390,6 @@ export default function HomeMain() {
         .filter(Boolean)
         .forEach((s, i) => fd.append(`skills[${i}]`, s));
 
-      // free/standard → həmişə DEFAULT_COLOR göndər
       const colorToSend = canChangeColor ? phoneColor : DEFAULT_COLOR;
       fd.append(
         "system",
@@ -434,7 +431,6 @@ export default function HomeMain() {
 
       const fresh = await res.json().catch(() => null);
       if (fresh) applyProfileData(fresh);
-
       setProfileImageFile(null);
       setPopup({
         isOpen: true,
@@ -569,11 +565,6 @@ export default function HomeMain() {
                 }
               />
 
-              {link.clicks > 0 && (
-                <span className="click-count">
-                  <FaIcons.FaMousePointer /> {link.clicks}
-                </span>
-              )}
               {link.isNew && <span className="new-badge">Yeni</span>}
               {link.isDirty && !link.isNew && (
                 <span className="dirty-badge">●</span>
@@ -756,8 +747,9 @@ export default function HomeMain() {
           </div>
         </div>
 
-        {/* Alt hərəkətlər */}
+        {/* ── Alt hərəkətlər ── */}
         <div className="bottom-actions">
+          {/* Status badge — icon + başlıq + status_sms yan yana */}
           <div
             className={`status-badge ${
               isBlocked
@@ -769,18 +761,33 @@ export default function HomeMain() {
           >
             {isBlocked ? (
               <>
-                <FaIcons.FaBan />
-                <span>Sizin hesab bloklanmışdır</span>
+                <FaIcons.FaBan className="status-badge-icon" />
+                <div className="status-badge-content">
+                  <span className="status-badge-title">
+                    Sizin hesab bloklanmışdır
+                  </span>
+                  {statusSms && (
+                    <span className="status-badge-sms">{statusSms}</span>
+                  )}
+                </div>
               </>
             ) : hasUnsaved ? (
               <>
-                <FaIcons.FaCheckCircle />
-                <span>Saxlanılmamış dəyişikliklər var</span>
+                <FaIcons.FaCheckCircle className="status-badge-icon" />
+                <div className="status-badge-content">
+                  <span className="status-badge-title">
+                    Saxlanılmamış dəyişikliklər var
+                  </span>
+                </div>
               </>
             ) : (
               <>
-                <FaIcons.FaCheckCircle />
-                <span>Məlumatlar işlək vəziyyətdədir</span>
+                <FaIcons.FaCheckCircle className="status-badge-icon" />
+                <div className="status-badge-content">
+                  <span className="status-badge-title">
+                    Məlumatlar işlək vəziyyətdədir
+                  </span>
+                </div>
               </>
             )}
           </div>
@@ -917,7 +924,7 @@ export default function HomeMain() {
           </div>
         </div>
 
-        {/* ── Rəng paneli: yalnız premium/pro/business üçün ── */}
+        {/* Rəng paneli: yalnız premium/pro/business */}
         {canChangeColor ? (
           <div className="theme-color-section">
             <label>Profil Rəngi / Tema Rəngi</label>
@@ -936,7 +943,7 @@ export default function HomeMain() {
           <div className="theme-color-section theme-color-section--locked">
             <FaIcons.FaLock className="locked-icon" />
             <p className="locked-text">
-              Rəng dəyişdirmə digər paketdə
+              Rəng dəyişdirmə digər versiyalarda
               mövcuddur.
             </p>
           </div>
