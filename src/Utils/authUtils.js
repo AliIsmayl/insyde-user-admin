@@ -55,6 +55,8 @@ export function clearSession(navigate) {
   CK.del("access_token");
   CK.del("refresh_token");
   CK.del("isAuthenticated");
+  CK.del("hash_id"); // ← əlavə edildi
+  CK.del("user_code"); // ← əlavə edildi
   try {
     localStorage.removeItem("access_token");
   } catch {}
@@ -67,10 +69,10 @@ export function clearSession(navigate) {
   if (navigate) navigate("/login", { replace: true });
 }
 
-/* ── Token saxla (login zamanı çağır) ── */
+/* ── Token saxla ── */
 export function saveTokens(access, refresh) {
-  CK.set("access_token", access, 1); // 1 gün
-  CK.set("refresh_token", refresh, 7); // 7 gün
+  CK.set("access_token", access, 1);
+  CK.set("refresh_token", refresh, 7);
   try {
     localStorage.setItem("access_token", access);
   } catch {}
@@ -83,7 +85,6 @@ export function saveTokens(access, refresh) {
 let _refreshPromise = null;
 
 async function refreshAccessToken() {
-  // Artıq gedən refresh varsa gözlə, yeni başlatma
   if (_refreshPromise) return _refreshPromise;
 
   _refreshPromise = (async () => {
@@ -120,7 +121,6 @@ async function refreshAccessToken() {
     } catch {
       return null;
     } finally {
-      // Qısa gecikmə ilə sıfırla — race condition qarşısını al
       setTimeout(() => {
         _refreshPromise = null;
       }, 100);
@@ -135,7 +135,6 @@ export async function authFetch(url, options = {}, navigate) {
   let token = getToken();
 
   if (!token) {
-    // Token yoxdursa əvvəlcə refresh cəhd et
     token = await refreshAccessToken();
     if (!token) {
       clearSession(navigate);

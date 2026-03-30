@@ -9,38 +9,15 @@ import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import "./Sidebar.scss";
 import { clearSession } from "../../Utils/authUtils";
 
-// Yalnız bu paketlərdə bütün səhifələr görünür
 const FULL_ACCESS_PACKAGES = ["standard", "premium", "pro", "business"];
 
-// Bütün menyu elementləri
-const ALL_MENU_ITEMS = [
-  {
-    name: "Ana səhifə",
-    path: "/home",
-    icon: <HiOutlineHome />,
-    freeVisible: true,
-  },
-  {
-    name: "Analitika",
-    path: "/analys",
-    icon: <TbBrandGoogleAnalytics />,
-    freeVisible: false,
-  },
-  {
-    name: "Paketlər",
-    path: "/packages",
-    icon: <PiPackage />,
-    freeVisible: false,
-  },
-  {
-    name: "Müraciətlər",
-    path: "/applications",
-    icon: <FaRegMessage />,
-    freeVisible: false,
-  },
-];
-
-function Sidebar({ isOpen, setIsOpen, packageType = "free" }) {
+function Sidebar({
+  isOpen,
+  setIsOpen,
+  packageType = "free",
+  userCode = "",
+  hashId = "",
+}) {
   const [openMenus, setOpenMenus] = useState({});
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
@@ -48,7 +25,33 @@ function Sidebar({ isOpen, setIsOpen, packageType = "free" }) {
 
   const hasFullAccess = FULL_ACCESS_PACKAGES.includes(packageType);
 
-  // Pakete görə menyu filterləmə
+  const ALL_MENU_ITEMS = [
+    {
+      name: "Ana səhifə",
+      path: "/home",
+      icon: <HiOutlineHome />,
+      freeVisible: true,
+    },
+    {
+      name: "Analitika",
+      path: "/analys",
+      icon: <TbBrandGoogleAnalytics />,
+      freeVisible: false,
+    },
+    {
+      name: "Paketlər",
+      path: "/packages",
+      icon: <PiPackage />,
+      freeVisible: false,
+    },
+    {
+      name: "Müraciətlər",
+      path: "/applications",
+      icon: <FaRegMessage />,
+      freeVisible: false,
+    },
+  ];
+
   const menuItems = hasFullAccess
     ? ALL_MENU_ITEMS
     : ALL_MENU_ITEMS.filter((item) => item.freeVisible);
@@ -148,7 +151,7 @@ function Sidebar({ isOpen, setIsOpen, packageType = "free" }) {
                         }
                         onClick={() => isMobile && setIsOpen(false)}
                       >
-                        <span className="sub-menu-dot"></span>
+                        <span className="sub-menu-dot" />
                         <span className="sub-menu-text">{sub.name}</span>
                       </NavLink>
                     ))}

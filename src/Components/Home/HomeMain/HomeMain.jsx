@@ -465,7 +465,10 @@ export default function HomeMain() {
     canChangeColor,
   ]);
 
-  const profileUrl = hash_id ? `https://insyde.info/person/${hash_id}` : "#";
+  const profileUrl =
+    hash_id || CK.get("hash_id")
+      ? `https://insyde.info/person/${hash_id || CK.get("hash_id")}`
+      : "#";
   const packageLabel =
     {
       free: "Free",
@@ -943,8 +946,7 @@ export default function HomeMain() {
           <div className="theme-color-section theme-color-section--locked">
             <FaIcons.FaLock className="locked-icon" />
             <p className="locked-text">
-              Rəng dəyişdirmə digər versiyalarda
-              mövcuddur.
+              Rəng dəyişdirmə digər versiyalarda mövcuddur.
             </p>
           </div>
         )}

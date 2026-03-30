@@ -17,6 +17,7 @@ const URL_VERIFY_OTP = `${API_BASE}/api/dash/auth/verify_otp/`;
 const REG_TOKEN_KEY = "insyde_reg_token";
 const LOGIN_TOKEN_KEY = "insyde_login_token";
 
+// ── OTP hook ────────────────────────────────────────────
 function useOtp() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const refs = useRef([]);
@@ -58,6 +59,7 @@ function useOtp() {
   return { otp, refs, onChange, onKeyDown, onPaste, reset, code };
 }
 
+// ── Resend timer hook ────────────────────────────────────
 function useResendTimer() {
   const [timer, setTimer] = useState(0);
   const ref = useRef(null);
@@ -77,6 +79,7 @@ function useResendTimer() {
   return { timer, start, reset };
 }
 
+// ── OTP qutuları ────────────────────────────────────────
 function OtpBoxes({ ctrl, disabled }) {
   return (
     <div className="otp-inputs">
@@ -100,11 +103,27 @@ function OtpBoxes({ ctrl, disabled }) {
   );
 }
 
+// ── Verify sonrası cookie yazma + redirect (ortaq funksiya) ──
+function saveSessionAndRedirect(data, tokenKey) {
+  if (data.tokens?.access) CK.set("access_token", data.tokens.access);
+  if (data.tokens?.refresh) CK.set("refresh_token", data.tokens.refresh);
+  CK.set("isAuthenticated", "true");
+  CK.del(tokenKey);
+
+  const hashId = data.data?.hash_id || "";
+  const userCode = data.data?.user_code || "";
+
+  if (hashId) CK.set("hash_id", hashId);
+  if (userCode) CK.set("user_code", userCode);
+
+  // hash_id varsa onunla get, yoxdursa sadə /home
+  window.location.href = hashId ? `/home/${hashId}` : "/home";
+}
+
 // ═════════════════════════════════════════════════════════
 // NewCardView — Qeydiyyat
 // ═════════════════════════════════════════════════════════
 function NewCardView({ onBack }) {
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [cardType, setCardType] = useState("");
   const [step, setStep] = useState("form");
@@ -231,17 +250,9 @@ function NewCardView({ onBack }) {
         );
         return;
       }
-      if (data.tokens?.access) CK.set("access_token", data.tokens.access);
-      if (data.tokens?.refresh) CK.set("refresh_token", data.tokens.refresh);
-      CK.set("isAuthenticated", "true");
-      CK.del(REG_TOKEN_KEY);
-      const userCode = data.data?.user_code || "";
-      if (userCode) CK.set("user_code", userCode);
       setUserData(data.data || null);
       setStep("done");
-      setTimeout(() => {
-        window.location.href = userCode ? `/home/${userCode}` : "/home";
-      }, 2000);
+      setTimeout(() => saveSessionAndRedirect(data, REG_TOKEN_KEY), 2000);
     } catch {
       setOtpError("Serverə qoşulmaq mümkün olmadı.");
     } finally {
@@ -258,6 +269,7 @@ function NewCardView({ onBack }) {
     CK.del(REG_TOKEN_KEY);
   };
 
+  // ── FORM ──
   if (step === "form")
     return (
       <>
@@ -332,6 +344,7 @@ function NewCardView({ onBack }) {
       </>
     );
 
+  // ── OTP ──
   if (step === "otp")
     return (
       <>
@@ -381,6 +394,7 @@ function NewCardView({ onBack }) {
       </>
     );
 
+  // ── DONE ──
   return (
     <div className="done-section">
       <div className="done-icon">
@@ -513,16 +527,8 @@ function LoginMain() {
         );
         return;
       }
-      if (data.tokens?.access) CK.set("access_token", data.tokens.access);
-      if (data.tokens?.refresh) CK.set("refresh_token", data.tokens.refresh);
-      CK.set("isAuthenticated", "true");
-      CK.del(LOGIN_TOKEN_KEY);
-      const userCode = data.data?.user_code || "";
-      if (userCode) CK.set("user_code", userCode);
       setLoginDone(true);
-      setTimeout(() => {
-        window.location.href = userCode ? `/home/${userCode}` : "/home";
-      }, 2000);
+      setTimeout(() => saveSessionAndRedirect(data, LOGIN_TOKEN_KEY), 2000);
     } catch {
       setOtpError("Serverə qoşulmaq mümkün olmadı.");
     } finally {
@@ -543,7 +549,7 @@ function LoginMain() {
       <div className="login-card">
         {view === "newcard" && <NewCardView onBack={() => setView("login")} />}
 
-        {/* ── LOGIN: uğur ekranı ── */}
+        {/* ── Uğur ekranı ── */}
         {view === "login" && loginDone && (
           <div className="done-section">
             <div className="done-icon">
@@ -557,7 +563,7 @@ function LoginMain() {
           </div>
         )}
 
-        {/* ── LOGIN: e-poçt ── */}
+        {/* ── E-poçt ── */}
         {view === "login" && !loginDone && step === "email" && (
           <>
             <div className="lm-header">
@@ -607,7 +613,7 @@ function LoginMain() {
           </>
         )}
 
-        {/* ── LOGIN: OTP ── */}
+        {/* ── OTP ── */}
         {view === "login" && !loginDone && step === "otp" && (
           <>
             <div className="lm-header">

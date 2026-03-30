@@ -47,13 +47,14 @@ function App() {
         <Route path="/login" element={<LoginPageGuard />} />
 
         <Route element={<PrivateRoutes />}>
-          {/* user_code olan və olmayan hər iki halı tutur */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/home/:user_code" element={<HomePage />} />
+          <Route path="/home/:hash_id" element={<HomePage />} />
+          <Route path="/analys" element={<AnalysPage />} />
+          <Route path="/analys/:hash_id" element={<AnalysPage />} />
           <Route path="/applications" element={<ApplicationsPage />} />
+          <Route path="/applications/:hash_id" element={<ApplicationsPage />} />
           <Route path="/settings" element={<SettingPage />} />
           <Route path="/packages" element={<PackagePage />} />
-          <Route path="/analys" element={<AnalysPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
