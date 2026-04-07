@@ -1,0 +1,449 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Bitter:ital,wght@0,100..900;1,100..900&display=swap");
+
+$gold: #c9a84c;
+$radius: 18px;
+
+// ── TEMA RƏNGLƏRİ ─────────────────────────────────────────────
+.cdm-card.theme-dark {
+  --c-front-bg: #0b0b0b;
+  --c-back-bg: #111111;
+  --c-topbar-text: #{$gold};
+  --c-subtitle: rgba(255, 255, 255, 0.5);
+  --c-logo-text: rgba(255, 255, 255, 0.35);
+  --c-logo-border: rgba(255, 255, 255, 0.3);
+}
+
+.cdm-card.theme-light {
+  --c-front-bg: #f5f2ec;
+  --c-back-bg: #f0ede6;
+  --c-topbar-text: rgba(17, 17, 17, 0.45);
+  --c-subtitle: rgba(17, 17, 17, 0.5);
+  --c-logo-text: rgba(0, 0, 0, 0.3);
+  --c-logo-border: rgba(0, 0, 0, 0.25);
+}
+
+// ── ROOT ──────────────────────────────────────────────────────
+.card-design-main {
+  font-family: "Poppins", sans-serif;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.cdm-workspace {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+  align-items: start;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 480px) {
+    gap: 20px;
+  }
+}
+
+// ── PREVIEW PANEL ─────────────────────────────────────────────
+.cdm-preview-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 44px 24px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 25px;
+  overflow: hidden;
+
+  @media (max-width: 600px) {
+    padding: 28px 16px;
+    gap: 16px;
+    border-radius: 20px;
+  }
+}
+
+.cdm-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.cdm-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+// ── 3D SCENE ──────────────────────────────────────────────────
+.cdm-scene {
+  width: min(420px, 100%);
+  aspect-ratio: 5 / 3;
+  height: auto;
+  perspective: 1400px;
+  cursor: pointer;
+}
+
+.cdm-card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.35, 0.15, 0.15, 1);
+  border-radius: $radius;
+
+  .cdm-scene.is-flipped & {
+    transform: rotateY(180deg);
+  }
+}
+
+// ── FACE BASE ─────────────────────────────────────────────────
+.cdm-face {
+  position: absolute;
+  inset: 0;
+  border-radius: $radius;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+// ── FRONT ─────────────────────────────────────────────────────
+.cdm-front {
+  background: var(--c-front-bg);
+}
+
+.cdm-front-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(13px, 4.5%, 22px) clamp(14px, 5.5%, 24px) 0;
+}
+
+.cdm-tagline,
+.cdm-site {
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(11px, 4%, 16px);
+  font-weight: 400;
+  color: var(--c-topbar-text);
+  letter-spacing: 0.02em;
+}
+
+.cdm-brand-word {
+  position: absolute;
+  bottom: clamp(-5px, -2%, -8px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: "Bitter", serif;
+  font-size: clamp(80px, 34%, 160px);
+  font-weight: 900;
+  line-height: 1;
+  color: $gold;
+  letter-spacing: -0.02em;
+  user-select: none;
+}
+
+// ── BACK ──────────────────────────────────────────────────────
+.cdm-back {
+  background: var(--c-back-bg);
+  transform: rotateY(180deg);
+}
+
+.cdm-back-logo-wrap {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.cdm-back-logo-img {
+  width: 80px; // əvvəl: 66px
+  height: 54px;
+  object-fit: contain;
+}
+
+.cdm-logo-text {
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-logo-text);
+  border: 1.5px dashed var(--c-logo-border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  user-select: none;
+}
+
+.cdm-qr-wrap {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: $gold;
+}
+
+.cdm-back-info {
+  position: absolute;
+  bottom: clamp(18px, 6.5%, 28px);
+  left: clamp(12px, 4.5%, 22px);
+}
+
+.cdm-back-name {
+  display: block;
+  font-size: clamp(20px, 6.5%, 28px);
+  font-weight: 700;
+  color: $gold;
+  letter-spacing: 0.01em;
+}
+
+.cdm-back-title {
+  display: block;
+  font-size: clamp(14px, 4.5%, 19px);
+  font-weight: 400;
+  color: var(--c-subtitle);
+  margin-top: 4px;
+  letter-spacing: 0.03em;
+}
+
+// ── CONTROLS PANEL ────────────────────────────────────────────
+.cdm-controls {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 25px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  @media (max-width: 960px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    .cdm-ctrl-title,
+    .cdm-flip-btn {
+      grid-column: span 2;
+    }
+  }
+
+  @media (max-width: 600px) {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 16px;
+    gap: 18px;
+    border-radius: 20px;
+  }
+}
+
+.cdm-ctrl-title {
+  margin: 0 0 2px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cdm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+}
+
+// ── THEME TOGGLE ─────────────────────────────────────────────
+.cdm-theme-toggle {
+  display: flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
+
+  button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &.active {
+      background: var(--bg-active);
+      border-color: var(--border-strong);
+      color: var(--text-link);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.dark-dot {
+        background: #0d0d0d;
+        border: 2px solid rgba(255, 255, 255, 0.22);
+      }
+      &.light-dot {
+        background: #f5f2ec;
+        border: 2px solid rgba(0, 0, 0, 0.18);
+      }
+    }
+  }
+}
+
+// ── INPUT ─────────────────────────────────────────────────────
+.cdm-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: 14px;
+  padding: 11px 16px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+
+  &::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.45;
+  }
+  &:focus {
+    border-color: var(--border-focus);
+  }
+}
+
+// ── UPLOAD ────────────────────────────────────────────────────
+.cdm-upload-area {
+  background: var(--bg-input);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 14px;
+  padding: 18px;
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:hover {
+    border-color: var(--border-focus);
+    background: var(--bg-hover);
+  }
+
+  @media (max-width: 600px) {
+    min-height: 56px;
+    padding: 14px 16px;
+    flex-direction: row;
+    gap: 12px;
+    justify-content: flex-start;
+  }
+}
+
+.cdm-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+
+  span {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: row;
+    gap: 10px;
+    svg {
+      width: 20px;
+      flex-shrink: 0;
+    }
+    span {
+      font-size: 14px;
+    }
+  }
+}
+
+.cdm-upload-preview {
+  max-height: 68px;
+  max-width: 160px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.cdm-remove-btn {
+  align-self: flex-start;
+  background: rgba(239, 68, 68, 0.1);
+  border: none;
+  border-radius: 10px;
+  color: #fca5a5;
+  padding: 5px 14px;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.22);
+  }
+}
+
+// ── FLIP BUTTON ──────────────────────────────────────────────
+.cdm-flip-btn {
+  margin-top: 2px;
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-active);
+  color: var(--text-link);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  width: 100%;
+
+  &:hover {
+    background: var(--border-focus);
+    color: #fff;
+    border-color: transparent;
+  }
+
+  @media (max-width: 480px) {
+    padding: 15px;
+    font-size: 15px;
+  }
+}
