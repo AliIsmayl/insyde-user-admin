@@ -163,8 +163,8 @@ function SettingsMain() {
             </div>
           </div>
 
-          {/* SOL AŞAĞI — DİL */}
-          <div className="modern-card language-card">
+          {/* SOL AŞAĞI — DİL (müvəqqəti deaktiv edilib) */}
+          {/* <div className="modern-card language-card">
             <div className="card-header">
               <div className="header-icon">
                 <FiGlobe />
@@ -193,8 +193,7 @@ function SettingsMain() {
                 </div>
               ))}
             </div>
-        
-          </div>
+          </div> */}
         </div>
 
         {/* SAĞ SÜTUN — PAROL */}

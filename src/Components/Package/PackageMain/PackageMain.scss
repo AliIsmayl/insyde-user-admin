@@ -1,25 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Bitter:ital,wght@0,100..900;1,100..900&display=swap");
 
-$gold: #c9a84c;
 $radius-card: 18px;
-
-// ── Kart tema dəyişənləri ──────────────────────────────
-.pkg-card.theme-dark {
-  --c-front-bg:    #0b0b0b;
-  --c-back-bg:     #111111;
-  --c-topbar-text: #{$gold};
-  --c-subtitle:    rgba(255,255,255,0.45);
-  --c-logo-text:   rgba(255,255,255,0.3);
-  --c-logo-border: rgba(255,255,255,0.25);
-}
-.pkg-card.theme-light {
-  --c-front-bg:    #f5f2ec;
-  --c-back-bg:     #f0ede6;
-  --c-topbar-text: rgba(17,17,17,0.45);
-  --c-subtitle:    rgba(17,17,17,0.5);
-  --c-logo-text:   rgba(0,0,0,0.3);
-  --c-logo-border: rgba(0,0,0,0.22);
-}
 
 // ─────────────────────────────────────────────────────────
 .package-main-modern {
@@ -322,26 +303,48 @@ $radius-card: 18px;
     padding: 22px 20px;
     cursor: pointer;
     transition: all 0.22s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 
     &:hover { border-color: var(--border-focus); transform: translateY(-2px); }
 
     &.selected {
       border-color: var(--border-focus);
       background: var(--bg-active);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+      transform: translateY(-2px);
     }
 
     .billing-card-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
 
       .billing-label { font-size: 15px; font-weight: 700; color: var(--text-primary); }
       .billing-check { color: var(--text-link); font-size: 18px; }
+
+      .billing-discount-badge {
+        background: rgba(16,185,129,0.14);
+        color: #10b981;
+        border-radius: 8px;
+        padding: 2px 9px;
+        font-size: 11px;
+        font-weight: 700;
+        margin-right: auto;
+        margin-left: 8px;
+      }
     }
 
-    .billing-total { font-size: 30px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
-    .billing-rate  { font-size: 12px; color: var(--text-secondary); }
+    .billing-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .billing-total    { font-size: 30px; font-weight: 800; color: var(--text-primary); }
+    .billing-original { font-size: 16px; font-weight: 500; color: var(--text-secondary); text-decoration: line-through; opacity: 0.6; }
+    .billing-rate     { font-size: 12px; color: var(--text-secondary); }
   }
 
   .billing-summary-mini {
@@ -394,10 +397,10 @@ $radius-card: 18px;
     opacity: 0.5;
   }
 
-  // 3D card scene
+  // ── 3D kart səhnəsi ─────────────────────────────────
   .pkg-scene {
-    width: min(400px, 100%);
-    aspect-ratio: 5 / 3;
+    width: min(420px, 100%);
+    aspect-ratio: 856 / 540;   // kredit kartı nisbəti
     perspective: 1400px;
     cursor: pointer;
 
@@ -409,7 +412,7 @@ $radius-card: 18px;
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.35, 0.15, 0.15, 1);
+    transition: transform 0.75s cubic-bezier(0.35, 0.15, 0.15, 1);
     border-radius: $radius-card;
   }
 
@@ -420,86 +423,134 @@ $radius-card: 18px;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     overflow: hidden;
+    background: var(--card-bg, #0b0b0b);
   }
 
+  // ── ÖN ÜZ ────────────────────────────────────────────
   .pkg-front {
-    background: var(--c-front-bg);
-
     .pkg-front-topbar {
       position: absolute;
       top: 0; left: 0; right: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: clamp(12px,4.5%,20px) clamp(14px,5.5%,22px) 0;
+      padding: 16px 20px 0;
     }
 
-    .pkg-tagline, .pkg-site {
+    .pkg-tagline,
+    .pkg-site {
       font-family: "Poppins", sans-serif;
-      font-size: clamp(10px,3.5%,14px);
+      font-size: 13px;
       font-weight: 400;
-      color: var(--c-topbar-text);
+      color: var(--card-gold, #c9a84c);
+      white-space: nowrap;
     }
 
+    // Böyük "Insyde" brand yazısı — aşağıda, mərkəzdə
     .pkg-brand-word {
       position: absolute;
-      bottom: clamp(-5px,-2%,-8px);
+      bottom: -14px;
       left: 0; right: 0;
       text-align: center;
       font-family: "Bitter", serif;
-      font-size: clamp(70px,32%,140px);
+      font-size: 118px;
       font-weight: 900;
       line-height: 1;
-      color: $gold;
+      color: var(--card-gold, #c9a84c);
       letter-spacing: -0.02em;
       user-select: none;
     }
   }
 
+  // ── ARXA ÜZ ──────────────────────────────────────────
   .pkg-back {
-    background: var(--c-back-bg);
     transform: rotateY(180deg);
 
-    .pkg-back-logo { position: absolute; top: 10px; left: 12px; }
+    // "Insyde" watermark — arxa fonda solğun
+    .pkg-wm {
+      position: absolute;
+      bottom: -14px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: "Bitter", serif;
+      font-size: 118px;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--card-wm, rgba(201,168,76,0.07));
+      letter-spacing: -0.02em;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    // Sol yuxarı: Logo sahəsi
+    .pkg-back-logo {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+    }
 
     .pkg-logo-img {
-      width: 72px;
-      height: 48px;
+      width:  70px;
+      height: 46px;
       object-fit: contain;
+      border-radius: 6px;
     }
 
     .pkg-logo-placeholder {
       font-family: "Poppins", sans-serif;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--c-logo-text);
-      border: 1.5px dashed var(--c-logo-border);
-      border-radius: 7px;
-      padding: 5px 12px;
+      color: var(--card-text2, rgba(255,255,255,0.35));
+      border: 1.5px dashed var(--card-text2, rgba(255,255,255,0.25));
+      border-radius: 6px;
+      padding: 6px 14px;
+      white-space: nowrap;
     }
 
-    .pkg-qr-wrap { position: absolute; top: 18px; right: 18px; color: $gold; }
+    // Sağ yuxarı: QR kod
+    .pkg-qr-wrap {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      color: var(--card-gold, #c9a84c);
 
+      svg {
+        width:  72px;
+        height: 72px;
+      }
+    }
+
+    // Sol aşağı: Ad + Vəzifə
     .pkg-back-info {
       position: absolute;
-      bottom: clamp(16px,6%,26px);
-      left: clamp(12px,4.5%,20px);
+      bottom: 20px;
+      left: 20px;
+      right: 110px; // QR ilə üst-üstə düşməsin
 
       .pkg-back-name {
         display: block;
-        font-size: clamp(18px,6%,26px);
+        font-family: "Poppins", sans-serif;
+        font-size: 21px;
         font-weight: 700;
+        color: var(--card-gold, #c9a84c);
         letter-spacing: 0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .pkg-back-title {
         display: block;
-        font-size: clamp(12px,4%,17px);
+        font-family: "Poppins", sans-serif;
+        font-size: 14px;
         font-weight: 400;
-        color: var(--c-subtitle);
-        margin-top: 3px;
+        color: var(--card-text2, rgba(255,255,255,0.45));
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }
@@ -682,15 +733,31 @@ $radius-card: 18px;
 
     strong { color: var(--text-primary); font-weight: 700; }
 
+    .checkout-save { color: #10b981 !important; }
+
     &.total-row {
       font-size: 15px;
       font-weight: 600;
       color: var(--text-primary);
 
-      .total-amount {
-        font-size: 22px;
-        font-weight: 800;
-        color: var(--text-link);
+      .total-price-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+
+        .total-original {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          text-decoration: line-through;
+        }
+
+        .total-amount {
+          font-size: 22px;
+          font-weight: 800;
+          color: var(--text-link);
+        }
       }
     }
   }

@@ -53,10 +53,11 @@ function mapPlan(p, idx) {
     cardPrice:   p.card_price         ? `${parseFloat(p.card_price).toFixed(2)}₼`
                : p.price              ? `${parseFloat(p.price).toFixed(2)}₼`
                : "—",
-    monthlyRate: p.monthly_rate       ? parseFloat(p.monthly_rate)
-               : p.monthly_price      ? parseFloat(p.monthly_price)
-               : p.subscription_price ? parseFloat(p.subscription_price)
-               : 0,
+    monthlyRate: +(Math.round((
+                   p.monthly_rate       ? parseFloat(p.monthly_rate)
+                 : p.monthly_price      ? parseFloat(p.monthly_price)
+                 : p.subscription_price ? parseFloat(p.subscription_price)
+                 : 0) * 100) / 100).toFixed(2),
     color:       p.color   || PKG_COLOR_MAP[key] || "#6b7280",
     badge:       p.badge   || PKG_BADGE_MAP[key] || null,
     // Backend features (null = yoxdur, hardcoded istifadə et)
@@ -64,11 +65,22 @@ function mapPlan(p, idx) {
   };
 }
 
+// Endirim dərəcəsi: 1 aylıq → 0%, 6 aylıq → 8.5% off, 12 aylıq → 8.5% off
+// (eyni % → məbləğ fərqi artır: 6 ayda 2₼, 12 ayda 4₼ qənaət)
 const BILLING_OPTIONS = [
-  { key: "monthly",  label: "1 Aylıq",  months: 1  },
-  { key: "biannual", label: "6 Aylıq",  months: 6  },
-  { key: "annual",   label: "12 Aylıq", months: 12 },
+  { key: "monthly",  label: "1 Aylıq",  months: 1,  discountRate: 0      },
+  { key: "biannual", label: "6 Aylıq",  months: 6,  discountRate: 0.0855 },
+  { key: "annual",   label: "12 Aylıq", months: 12, discountRate: 0.0855 },
 ];
+
+// Endirimli cəm qiyməti hesabla
+function calcTotal(monthlyRate, months, discountRate) {
+  const raw = monthlyRate * months;
+  return +(raw * (1 - discountRate)).toFixed(2);
+}
+function calcRaw(monthlyRate, months) {
+  return +(monthlyRate * months).toFixed(2);
+}
 
 const FEATURES = [
   { name: "Sosial şəbəkə",      basic: true,  pro: true,  premium: true  },
@@ -107,34 +119,51 @@ function QrPlaceholder({ color = "currentColor" }) {
 
 // ─── Kart Preview ─────────────────────────────────────────
 function CardPreview({ theme, logo, name, title, flipped, onFlip }) {
-  const isDark = theme === "dark";
-  const gold = isDark ? "#c9a84c" : "#b8942a";
+  const isDark = theme !== "light";
+  const gold   = isDark ? "#c9a84c" : "#b8942a";
+  const bg     = isDark ? "#0b0b0b" : "#f5f2ec";
+  const text2  = isDark ? "rgba(255,255,255,0.45)" : "rgba(17,17,17,0.5)";
+  const wmClr  = isDark ? "rgba(201,168,76,0.07)"  : "rgba(184,148,42,0.09)";
+
   return (
     <div className={`pkg-scene ${flipped ? "is-flipped" : ""}`} onClick={onFlip}>
-      <div className={`pkg-card theme-${theme}`}>
-        {/* FRONT */}
+      <div className="pkg-card" style={{ "--card-bg": bg, "--card-gold": gold, "--card-text2": text2, "--card-wm": wmClr }}>
+
+        {/* ── ÖN ÜZ ──────────────────────────── */}
         <div className="pkg-face pkg-front">
+          {/* yuxarı sətir */}
           <div className="pkg-front-topbar">
             <span className="pkg-tagline">İlk təəssürat önəmlidir</span>
-            <span className="pkg-site">insyde.info</span>
+            <span className="pkg-site">İnsyde.info</span>
           </div>
+          {/* böyük brand sözü */}
           <div className="pkg-brand-word">Insyde</div>
         </div>
-        {/* BACK */}
+
+        {/* ── ARXA ÜZ ────────────────────────── */}
         <div className="pkg-face pkg-back">
+          {/* Watermark */}
+          <div className="pkg-wm" aria-hidden>Insyde</div>
+
+          {/* Sol yuxarı: Logo */}
           <div className="pkg-back-logo">
             {logo
               ? <img src={logo} alt="logo" className="pkg-logo-img" />
               : <span className="pkg-logo-placeholder">LOGO</span>}
           </div>
+
+          {/* Sağ yuxarı: QR */}
           <div className="pkg-qr-wrap">
             <QrPlaceholder color={gold} />
           </div>
+
+          {/* Sol aşağı: Ad + Vəzifə */}
           <div className="pkg-back-info">
-            <span className="pkg-back-name" style={{ color: gold }}>{name || "Ad Soyad"}</span>
+            <span className="pkg-back-name">{name  || "Ad Soyad"}</span>
             <span className="pkg-back-title">{title || "Peşə / Vəzifə"}</span>
           </div>
         </div>
+
       </div>
     </div>
   );
@@ -206,7 +235,10 @@ function PackageMain() {
                 ? json.plans
                 : null;
           if (arr && arr.length > 0) {
-            setPackages(arr.slice(0, 3).map((p, i) => mapPlan(p, i)));
+            const PLAN_ORDER = { basic: 0, pro: 1, premium: 2 };
+            const mapped = arr.slice(0, 3).map((p, i) => mapPlan(p, i));
+            mapped.sort((a, b) => (PLAN_ORDER[a.key] ?? 99) - (PLAN_ORDER[b.key] ?? 99));
+            setPackages(mapped);
           }
         } catch { /* fallback-i saxla */ }
       }
@@ -229,9 +261,9 @@ function PackageMain() {
   // ── Hesablama ─────────────────────────────────────────
   const pkgData    = packages.find(p => p.key === selectedPkg);
   const billData   = BILLING_OPTIONS.find(b => b.key === selectedBilling);
-  const totalPrice = pkgData && billData
-    ? +(pkgData.monthlyRate * billData.months).toFixed(2)
-    : 0;
+  const rawPrice   = pkgData && billData ? calcRaw(pkgData.monthlyRate, billData.months)   : 0;
+  const totalPrice = pkgData && billData ? calcTotal(pkgData.monthlyRate, billData.months, billData.discountRate) : 0;
+  const savedAmount = +(rawPrice - totalPrice).toFixed(2);
 
   // ── Logo yüklə ────────────────────────────────────────
   const handleLogoUpload = (e) => {
@@ -401,7 +433,9 @@ function PackageMain() {
 
           <div className="billing-options">
             {BILLING_OPTIONS.map(opt => {
-              const price = pkgData ? +(pkgData.monthlyRate * opt.months).toFixed(2) : 0;
+              const raw       = pkgData ? calcRaw(pkgData.monthlyRate, opt.months) : 0;
+              const discounted = pkgData ? calcTotal(pkgData.monthlyRate, opt.months, opt.discountRate) : 0;
+              const saved     = +(raw - discounted).toFixed(2);
               const isSelected = selectedBilling === opt.key;
               return (
                 <div
@@ -411,9 +445,17 @@ function PackageMain() {
                 >
                   <div className="billing-card-top">
                     <span className="billing-label">{opt.label}</span>
+                    {opt.discountRate > 0 && (
+                      <span className="billing-discount-badge">
+                        -{Math.round(opt.discountRate * 100)}%
+                      </span>
+                    )}
                     {isSelected && <FiCheck className="billing-check" />}
                   </div>
-                  <div className="billing-total">{price}₼</div>
+                  <div className="billing-price-row">
+                    <div className="billing-total">{discounted}₼</div>
+                    {saved > 0 && <div className="billing-original">{raw}₼</div>}
+                  </div>
                   <div className="billing-rate">
                     {pkgData?.monthlyRate.toFixed(2)}₼ × {opt.months} ay
                   </div>
@@ -559,10 +601,19 @@ function PackageMain() {
                   <span>Aylıq qiymət</span>
                   <strong>{pkgData?.monthlyRate.toFixed(2)}₼</strong>
                 </div>
+                {savedAmount > 0 && (
+                  <div className="checkout-row">
+                    <span>Endirim</span>
+                    <strong className="checkout-save">-{savedAmount}₼</strong>
+                  </div>
+                )}
                 <div className="checkout-divider" />
                 <div className="checkout-row total-row">
                   <span>Ümumi məbləğ</span>
-                  <strong className="total-amount">{totalPrice}₼</strong>
+                  <div className="total-price-stack">
+                    {savedAmount > 0 && <span className="total-original">{rawPrice}₼</span>}
+                    <strong className="total-amount">{totalPrice}₼</strong>
+                  </div>
                 </div>
               </div>
 
