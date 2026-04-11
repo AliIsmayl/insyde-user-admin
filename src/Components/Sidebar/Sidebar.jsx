@@ -5,11 +5,11 @@ import { HiOutlineHome } from "react-icons/hi2";
 import { LuSquareArrowOutDownLeft } from "react-icons/lu";
 import { FaRegMessage } from "react-icons/fa6";
 import { PiPackage } from "react-icons/pi";
-import { TbBrandGoogleAnalytics } from "react-icons/tb";
+import { TbBrandGoogleAnalytics, TbTruckDelivery } from "react-icons/tb";
 import "./Sidebar.scss";
 import { clearSession } from "../../Utils/authUtils";
 
-const FULL_ACCESS_PACKAGES = ["standard", "premium", "pro", "business"];
+const FULL_ACCESS_PACKAGES = ["standard", "premium", "pro" /*, "business" */];
 const ANALYS_ALLOWED_PLANS = ["pro", "premium"];
 
 function Sidebar({
@@ -45,7 +45,13 @@ function Sidebar({
       name: "Paketlər",
       path: "/packages",
       icon: <PiPackage />,
-      freeVisible: false,
+      freeVisible: true,
+    },
+    {
+      name: "Sifarişim",
+      path: "/order",
+      icon: <TbTruckDelivery />,
+      freeVisible: true,
     },
     {
       name: "Müraciətlər",

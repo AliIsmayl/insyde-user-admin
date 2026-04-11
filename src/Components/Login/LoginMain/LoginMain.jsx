@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   FiMail,
   FiArrowLeft,
-  FiCreditCard,
-  FiBriefcase,
   FiCheckCircle,
 } from "react-icons/fi";
 import "./LoginMain.scss";
@@ -125,7 +123,6 @@ function saveSessionAndRedirect(data, tokenKey) {
 // ═════════════════════════════════════════════════════════
 function NewCardView({ onBack }) {
   const [email, setEmail] = useState("");
-  const [cardType, setCardType] = useState("");
   const [step, setStep] = useState("form");
   const [formError, setFormError] = useState("");
   const [otpError, setOtpError] = useState("");
@@ -135,23 +132,6 @@ function NewCardView({ onBack }) {
   const otpCtrl = useOtp();
   const resend = useResendTimer();
 
-  const cardOptions = [
-    {
-      value: "personal",
-      apiValue: "Ozel",
-      label: "Özəl Kart",
-      desc: "Şəxsi istifadə üçün",
-      icon: <FiCreditCard />,
-    },
-    {
-      value: "business",
-      apiValue: "Business",
-      label: "Biznes Kart",
-      desc: "Korporativ istifadə üçün",
-      icon: <FiBriefcase />,
-    },
-  ];
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -159,18 +139,13 @@ function NewCardView({ onBack }) {
       setFormError("E-poçt ünvanını daxil edin!");
       return;
     }
-    if (!cardType) {
-      setFormError("Kart növünü seçin!");
-      return;
-    }
 
-    const selected = cardOptions.find((o) => o.value === cardType);
     setLoading(true);
     try {
       const res = await fetch(URL_REGISTER, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, card_type: selected.apiValue }),
+        body: JSON.stringify({ email, card_type: "Ozel" }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -191,14 +166,13 @@ function NewCardView({ onBack }) {
 
   const handleResend = async () => {
     if (resend.timer > 0) return;
-    const selected = cardOptions.find((o) => o.value === cardType);
     setOtpError("");
     setLoading(true);
     try {
       const res = await fetch(URL_REGISTER, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, card_type: selected.apiValue }),
+        body: JSON.stringify({ email, card_type: "Ozel" }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -297,32 +271,6 @@ function NewCardView({ onBack }) {
               />
             </div>
           </div>
-          <div className="input-group">
-            <label>Kart növü</label>
-            <div className="card-type-group">
-              {cardOptions.map((opt) => (
-                <div
-                  key={opt.value}
-                  className={`card-type-option ${cardType === opt.value ? "selected" : ""}`}
-                  onClick={() => {
-                    if (!loading) {
-                      setCardType(opt.value);
-                      setFormError("");
-                    }
-                  }}
-                >
-                  <div className="card-type-icon">{opt.icon}</div>
-                  <div className="card-type-info">
-                    <span className="card-type-label">{opt.label}</span>
-                    <span className="card-type-desc">{opt.desc}</span>
-                  </div>
-                  <div className="card-type-check">
-                    {cardType === opt.value && <FiCheckCircle />}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? (
               <span className="btn-loading">
@@ -403,10 +351,7 @@ function NewCardView({ onBack }) {
       <div className="lm-header">
         <div className="lm-logo">Insyde</div>
         <h2>Kart Yaradıldı!</h2>
-        <p>
-          <strong>{cardType === "personal" ? "Özəl" : "Biznes"}</strong>{" "}
-          kartınız uğurla aktivləşdirildi.
-        </p>
+        <p>Özəl kartınız uğurla aktivləşdirildi.</p>
         <p className="done-email">{email}</p>
         {userData && (
           <div className="done-info">

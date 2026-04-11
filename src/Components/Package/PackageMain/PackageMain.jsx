@@ -5,15 +5,20 @@ import "./PackageMain.scss";
 
 // ─── Sabitlər ─────────────────────────────────────────────
 
+// true = yalnız müddət seçimi + ödəniş (paket/kart addımları olmur)
+const MANUAL_MODE = true;
+
 // Fallback: API cavab verməsə bu data istifadə olunur
 const FALLBACK_PACKAGES = [
-  { key: "basic",   name: "Sadə",   cardPrice: "12.90₼", monthlyRate: 1.5, color: "#6b7280", badge: null       },
-  { key: "pro",     name: "Pro",    cardPrice: "27.90₼", monthlyRate: 2.0, color: "#3b82f6", badge: "Populyar" },
-  { key: "premium", name: "Premium",cardPrice: "36.90₼", monthlyRate: 2.0, color: "#f59e0b", badge: "Tam"      },
+  { key: "basic", name: "Sadə", cardPrice: "12.90₼", monthlyRate: 1.5, color: "#6b7280", badge: null       },
+  { key: "pro",   name: "Pro",  cardPrice: "27.90₼", monthlyRate: 2.0, color: "#3b82f6", badge: "Populyar" },
+  // { key: "premium", name: "Premium", cardPrice: "36.90₼", monthlyRate: 2.0, color: "#f59e0b", badge: "Tam" },
+  // { key: "business", name: "Business", cardPrice: "—", monthlyRate: 0, color: "#10b981", badge: null },
 ];
 
-// Yalnız bu 3 plan göstərilir, qalanı hamısı gizlədilir
-const ALLOWED_PLANS = ["basic", "pro", "premium"];
+// Hələlik yalnız sadə və pro görünür
+const ALLOWED_PLANS = ["basic", "pro"];
+// const ALLOWED_PLANS = ["basic", "pro", "premium"]; // premium hazır olanda
 
 // API-dan gələn plan obyektini UI strukturuna çevir
 const PKG_COLOR_MAP = { basic: "#6b7280", pro: "#3b82f6", premium: "#f59e0b" };
@@ -40,10 +45,11 @@ function mapPlan(p, idx) {
 
   if (!key) {
     const nm = (p.name || p.display_name || "").toLowerCase();
-    if (nm.includes("premium"))        key = "premium";
-    else if (nm.includes("pro"))       key = "pro";
+    if      (nm.includes("business") || nm.includes("biznes")) key = "business";
+    else if (nm.includes("premium"))                           key = "premium";
+    else if (nm.includes("pro"))                               key = "pro";
     else if (nm.includes("basic") || nm.includes("sadə") || nm.includes("sade")) key = "basic";
-    else                               key = ["basic", "pro", "premium"][idx] || `plan-${idx}`;
+    else                                                       key = `plan-${idx}`;
   }
 
   return {
@@ -94,7 +100,8 @@ const FEATURES = [
   { name: "Digital kart",      basic: false, pro: false, premium: true  },
 ];
 
-const STEP_LABELS = ["Paket", "Müddət", "Kart", "Ödəniş"];
+const STEP_LABELS_FULL  = ["Paket", "Müddət", "Kart", "Ödəniş"];
+const STEP_LABELS_BASIC = ["Paket", "Müddət", "Ödəniş"];
 
 // ─── QR Placeholder ───────────────────────────────────────
 function QrPlaceholder({ color = "currentColor" }) {
@@ -169,11 +176,29 @@ function CardPreview({ theme, logo, name, title, flipped, onFlip }) {
   );
 }
 
+// ─── Basic Kart Preview (screenshota uyğun) ───────────────
+function BasicCardPreview() {
+  const gold = "#c9a84c";
+  return (
+    <div className="pkg-scene">
+      <div className="pkg-card" style={{ "--card-bg": "#0b0b0b", "--card-gold": gold }}>
+        <div className="pkg-face pkg-front">
+          <div className="pkg-front-topbar">
+            <span className="pkg-tagline">İlk təəssürat önəmlidir</span>
+            <span className="pkg-site">İnsyde.info</span>
+          </div>
+          <div className="pkg-brand-word">Insyde</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Step Indicator ───────────────────────────────────────
-function StepIndicator({ current }) {
+function StepIndicator({ current, labels }) {
   return (
     <div className="step-indicator">
-      {STEP_LABELS.map((label, i) => {
+      {labels.map((label, i) => {
         const num = i + 1;
         const done = num < current;
         const active = num === current;
@@ -185,7 +210,7 @@ function StepIndicator({ current }) {
               </div>
               <span className="step-label">{label}</span>
             </div>
-            {i < STEP_LABELS.length - 1 && (
+            {i < labels.length - 1 && (
               <div className={`step-line ${done ? "done" : ""}`} />
             )}
           </React.Fragment>
@@ -199,7 +224,7 @@ function StepIndicator({ current }) {
 function PackageMain() {
   const fileRef = useRef(null);
 
-  const [step,            setStep]           = useState(1);
+  const [step,            setStep]           = useState(MANUAL_MODE ? 2 : 1);
   const [selectedPkg,     setSelectedPkg]    = useState(null);
   const [selectedBilling, setSelectedBilling]= useState("monthly");
   const [cardTheme,       setCardTheme]      = useState("dark");
@@ -209,12 +234,14 @@ function PackageMain() {
   const [cardTitle,       setCardTitle]      = useState("");
   const [flipped,         setFlipped]        = useState(false);
 
-  const [packages,   setPackages]   = useState(FALLBACK_PACKAGES.filter(p => ALLOWED_PLANS.includes(p.key)));
-  const [currentSub, setCurrentSub] = useState(null);
-  const [loading,    setLoading]    = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [success,    setSuccess]    = useState(false);
-  const [error,      setError]      = useState("");
+  const [packages,        setPackages]       = useState(FALLBACK_PACKAGES.filter(p => ALLOWED_PLANS.includes(p.key)));
+  // MANUAL_MODE üçün: istifadəçinin mövcud paketinin tam məlumatı (API-dan)
+  const [currentSubData,  setCurrentSubData] = useState(null);
+  const [currentSub,      setCurrentSub]     = useState(null);
+  const [loading,         setLoading]        = useState(true);
+  const [submitting,      setSubmitting]     = useState(false);
+  const [success,         setSuccess]        = useState(false);
+  const [error,           setError]          = useState("");
 
   // Paralel: planları + profil məlumatlarını yüklə
   useEffect(() => {
@@ -222,11 +249,12 @@ function PackageMain() {
     const profileReq = authFetch(`${API_BASE}/api/v1/profile/me/`);
 
     Promise.allSettled([plansReq, profileReq]).then(async ([plansRes, profileRes]) => {
+      let allMappedPlans = null; // bütün planlar (filtersiz), MANUAL_MODE üçün lazım
+
       // ── Planlar ──────────────────────────────────────
       if (plansRes.status === "fulfilled" && plansRes.value?.ok) {
         try {
           const json = await plansRes.value.json();
-          // [ {...}, {...} ]  yaxud  { results: [...] }  yaxud  { plans: [...] }
           const arr = Array.isArray(json)
             ? json
             : Array.isArray(json.results)
@@ -235,15 +263,20 @@ function PackageMain() {
                 ? json.plans
                 : null;
           if (arr && arr.length > 0) {
+            // Bütün planları map et (filtersiz saxla — MANUAL_MODE üçün lazım)
+            allMappedPlans = arr.map((p, i) => mapPlan(p, i));
+
             const PLAN_ORDER = { basic: 0, pro: 1, premium: 2 };
-            const mapped = arr.slice(0, 3).map((p, i) => mapPlan(p, i));
-            mapped.sort((a, b) => (PLAN_ORDER[a.key] ?? 99) - (PLAN_ORDER[b.key] ?? 99));
-            setPackages(mapped);
+            const filtered = allMappedPlans
+              .filter(p => ALLOWED_PLANS.includes(p.key));
+            filtered.sort((a, b) => (PLAN_ORDER[a.key] ?? 99) - (PLAN_ORDER[b.key] ?? 99));
+            setPackages(filtered);
           }
         } catch { /* fallback-i saxla */ }
       }
 
       // ── Profil ───────────────────────────────────────
+      let detectedSubKey = null;
       if (profileRes.status === "fulfilled" && profileRes.value?.ok) {
         try {
           const data = await profileRes.value.json();
@@ -252,17 +285,41 @@ function PackageMain() {
           setCardName(info.name || "");
           setCardTitle(info.work || "");
           const sub = d?.subscription || {};
-          setCurrentSub((sub.version_type || sub.packet_type || "free").toLowerCase());
+          detectedSubKey = (sub.version_type || sub.packet_type || "free").toLowerCase();
+          setCurrentSub(detectedSubKey);
         } catch { /* ignore */ }
+      }
+
+      // ── MANUAL_MODE: mövcud paketi avtomatik seç ─────
+      // İstifadəçinin hazırkı paketi API planlar siyahısından tapılır,
+      // tapılmasa FALLBACK_PACKAGES-dan, yəni qiymət həmişə düzgün olacaq.
+      if (MANUAL_MODE && detectedSubKey && detectedSubKey !== "free") {
+        const source = allMappedPlans || FALLBACK_PACKAGES;
+        const found  = source.find(p => p.key === detectedSubKey)
+                    || FALLBACK_PACKAGES.find(p => p.key === detectedSubKey);
+        if (found) setCurrentSubData(found);
+        setSelectedPkg(detectedSubKey);
       }
     }).finally(() => setLoading(false));
   }, []);
 
   // ── Hesablama ─────────────────────────────────────────
-  const pkgData    = packages.find(p => p.key === selectedPkg);
-  const billData   = BILLING_OPTIONS.find(b => b.key === selectedBilling);
-  const rawPrice   = pkgData && billData ? calcRaw(pkgData.monthlyRate, billData.months)   : 0;
-  const totalPrice = pkgData && billData ? calcTotal(pkgData.monthlyRate, billData.months, billData.discountRate) : 0;
+  const isBasic    = selectedPkg === "basic";
+  const stepLabels = MANUAL_MODE
+    ? ["Müddət", "Ödəniş"]
+    : (isBasic ? STEP_LABELS_BASIC : STEP_LABELS_FULL);
+  const uiStep = MANUAL_MODE
+    ? (step === 4 ? 2 : 1)
+    : (isBasic && step === 4 ? 3 : step);
+
+  // MANUAL_MODE-da: paketlər siyahısından tap, yoxdursa currentSubData (backend-dən) istifadə et
+  const pkgData = MANUAL_MODE
+    ? (packages.find(p => p.key === selectedPkg) || currentSubData)
+    : packages.find(p => p.key === selectedPkg);
+
+  const billData    = BILLING_OPTIONS.find(b => b.key === selectedBilling);
+  const rawPrice    = pkgData && billData ? calcRaw(pkgData.monthlyRate, billData.months)                        : 0;
+  const totalPrice  = pkgData && billData ? calcTotal(pkgData.monthlyRate, billData.months, billData.discountRate) : 0;
   const savedAmount = +(rawPrice - totalPrice).toFixed(2);
 
   // ── Logo yüklə ────────────────────────────────────────
@@ -325,9 +382,9 @@ function PackageMain() {
         <div className="pkg-success-icon">✓</div>
         <h2>Ödəniş tamamlandı!</h2>
         <p>
-          <strong>{pkgData?.name}</strong> paketi uğurla aktivləşdirildi.
+          {pkgData?.name && <strong>{pkgData.name}</strong>}{pkgData?.name ? " paketi" : "Paket"} uğurla aktivləşdirildi.
         </p>
-        <button className="pkg-nav-btn primary" onClick={() => { setSuccess(false); setStep(1); setSelectedPkg(null); }}>
+        <button className="pkg-nav-btn primary" onClick={() => { setSuccess(false); setStep(MANUAL_MODE ? 2 : 1); setSelectedPkg(null); }}>
           Paketlərə qayıt
         </button>
       </div>
@@ -356,10 +413,10 @@ function PackageMain() {
       </div>
 
       {/* ADDIM İNDİKATORU */}
-      <StepIndicator current={step} />
+      <StepIndicator current={uiStep} labels={stepLabels} />
 
       {/* ══════════ ADDIM 1: PAKET SEÇ ══════════ */}
-      {step === 1 && (
+      {!MANUAL_MODE && step === 1 && (
         <div className="pkg-step-content">
           <h3 className="pkg-step-title">Paket seçin</h3>
 
@@ -428,14 +485,17 @@ function PackageMain() {
         <div className="pkg-step-content">
           <h3 className="pkg-step-title">Ödəniş müddətini seçin</h3>
           <p className="pkg-step-sub">
-            Daha uzun müddət seçdikdə qiymət aşağı düşür
+            {MANUAL_MODE && pkgData
+              ? <>Mövcud paketiniz: <strong style={{ color: pkgData.color }}>{pkgData.name}</strong> · {pkgData.monthlyRate.toFixed(2)}₼/ay — daha uzun müddət seçdikdə qiymət aşağı düşür</>
+              : "Daha uzun müddət seçdikdə qiymət aşağı düşür"
+            }
           </p>
 
           <div className="billing-options">
             {BILLING_OPTIONS.map(opt => {
-              const raw       = pkgData ? calcRaw(pkgData.monthlyRate, opt.months) : 0;
-              const discounted = pkgData ? calcTotal(pkgData.monthlyRate, opt.months, opt.discountRate) : 0;
-              const saved     = +(raw - discounted).toFixed(2);
+              const raw        = pkgData ? calcRaw(pkgData.monthlyRate, opt.months)                        : 0;
+              const discounted = pkgData ? calcTotal(pkgData.monthlyRate, opt.months, opt.discountRate)    : 0;
+              const saved      = +(raw - discounted).toFixed(2);
               const isSelected = selectedBilling === opt.key;
               return (
                 <div
@@ -453,11 +513,14 @@ function PackageMain() {
                     {isSelected && <FiCheck className="billing-check" />}
                   </div>
                   <div className="billing-price-row">
-                    <div className="billing-total">{discounted}₼</div>
+                    <div className="billing-total">
+                      {pkgData ? discounted : "—"}₼
+                    </div>
                     {saved > 0 && <div className="billing-original">{raw}₼</div>}
                   </div>
                   <div className="billing-rate">
-                    {pkgData?.monthlyRate.toFixed(2)}₼ × {opt.months} ay
+                    {pkgData ? pkgData.monthlyRate.toFixed(2) : "—"}₼ × {opt.months} ay
+                    {saved > 0 && <span className="billing-save-note"> ({saved.toFixed(2)}₼ qənaət)</span>}
                   </div>
                 </div>
               );
@@ -465,12 +528,14 @@ function PackageMain() {
           </div>
 
           <div className="pkg-nav-row">
-            <button className="pkg-nav-btn ghost" onClick={() => setStep(1)}>
-              <FiChevronLeft /> Geri
-            </button>
+            {!MANUAL_MODE && (
+              <button className="pkg-nav-btn ghost" onClick={() => setStep(1)}>
+                <FiChevronLeft /> Geri
+              </button>
+            )}
             <button
               className="pkg-nav-btn primary"
-              onClick={() => { setFlipped(false); setStep(3); }}
+              onClick={() => { setFlipped(false); setStep(MANUAL_MODE ? 4 : (isBasic ? 4 : 3)); }}
             >
               Təsdiq et <FiChevronRight />
             </button>
@@ -478,8 +543,8 @@ function PackageMain() {
         </div>
       )}
 
-      {/* ══════════ ADDIM 3: KART DİZAYNI ══════════ */}
-      {step === 3 && (
+      {/* ══════════ ADDIM 3: KART DİZAYNI (yalnız pro/premium) ══════════ */}
+      {!MANUAL_MODE && step === 3 && !isBasic && (
         <div className="pkg-step-content">
           <h3 className="pkg-step-title">Kart dizaynını seçin</h3>
           <p className="pkg-step-sub">Fiziki kartınızın görünüşünü fərdiləşdirin</p>
@@ -589,53 +654,56 @@ function PackageMain() {
               <div className="checkout-card">
                 <p className="checkout-section-label">Paket məlumatları</p>
 
+                {/* Paket adı — həmişə göstər */}
                 <div className="checkout-row">
                   <span>Paket</span>
-                  <strong style={{ color: pkgData?.color }}>{pkgData?.name}</strong>
+                  <strong style={{ color: pkgData?.color }}>{pkgData?.name ?? "—"}</strong>
+                </div>
+                <div className="checkout-row">
+                  <span>Aylıq qiymət</span>
+                  <strong>{pkgData?.monthlyRate?.toFixed(2) ?? "—"}₼</strong>
                 </div>
                 <div className="checkout-row">
                   <span>Ödəniş müddəti</span>
                   <strong>{billData?.label}</strong>
                 </div>
-                <div className="checkout-row">
-                  <span>Aylıq qiymət</span>
-                  <strong>{pkgData?.monthlyRate.toFixed(2)}₼</strong>
-                </div>
                 {savedAmount > 0 && (
                   <div className="checkout-row">
-                    <span>Endirim</span>
-                    <strong className="checkout-save">-{savedAmount}₼</strong>
+                    <span>Endirim ({Math.round((billData?.discountRate ?? 0) * 100)}%)</span>
+                    <strong className="checkout-save">-{savedAmount.toFixed(2)}₼</strong>
                   </div>
                 )}
                 <div className="checkout-divider" />
                 <div className="checkout-row total-row">
                   <span>Ümumi məbləğ</span>
                   <div className="total-price-stack">
-                    {savedAmount > 0 && <span className="total-original">{rawPrice}₼</span>}
-                    <strong className="total-amount">{totalPrice}₼</strong>
+                    {savedAmount > 0 && <span className="total-original">{rawPrice.toFixed(2)}₼</span>}
+                    <strong className="total-amount">{totalPrice.toFixed(2)}₼</strong>
                   </div>
                 </div>
               </div>
 
-              <div className="checkout-card">
-                <p className="checkout-section-label">Kart məlumatları</p>
-                <div className="checkout-row">
-                  <span>Tema</span>
-                  <strong>{cardTheme === "dark" ? "Tünd" : "Açıq"}</strong>
+              {!MANUAL_MODE && !isBasic && (
+                <div className="checkout-card">
+                  <p className="checkout-section-label">Kart məlumatları</p>
+                  <div className="checkout-row">
+                    <span>Tema</span>
+                    <strong>{cardTheme === "dark" ? "Tünd" : "Açıq"}</strong>
+                  </div>
+                  <div className="checkout-row">
+                    <span>Ad</span>
+                    <strong>{cardName || "—"}</strong>
+                  </div>
+                  <div className="checkout-row">
+                    <span>Peşə</span>
+                    <strong>{cardTitle || "—"}</strong>
+                  </div>
+                  <div className="checkout-row">
+                    <span>Logo</span>
+                    <strong>{cardLogo ? "Yüklənib" : "Yoxdur"}</strong>
+                  </div>
                 </div>
-                <div className="checkout-row">
-                  <span>Ad</span>
-                  <strong>{cardName || "—"}</strong>
-                </div>
-                <div className="checkout-row">
-                  <span>Peşə</span>
-                  <strong>{cardTitle || "—"}</strong>
-                </div>
-                <div className="checkout-row">
-                  <span>Logo</span>
-                  <strong>{cardLogo ? "Yüklənib" : "Yoxdur"}</strong>
-                </div>
-              </div>
+              )}
 
               {error && <div className="checkout-error">{error}</div>}
 
@@ -645,27 +713,38 @@ function PackageMain() {
                 disabled={submitting}
               >
                 {submitting ? <span className="pkg-spinner-sm" /> : null}
-                {submitting ? "Emal olunur..." : `${totalPrice}₼ Ödənişi Tamamla`}
+                {submitting ? "Emal olunur..." : `${totalPrice}₼ Ödənişə keç`}
               </button>
             </div>
 
             {/* Sağ: Kart preview */}
-            <div className="checkout-preview">
+            {!MANUAL_MODE && <div className="checkout-preview">
               <p className="checkout-section-label">Kartınızın görünüşü</p>
-              <CardPreview
-                theme={cardTheme}
-                logo={cardLogo}
-                name={cardName}
-                title={cardTitle}
-                flipped={flipped}
-                onFlip={() => setFlipped(f => !f)}
-              />
-              <p className="card-preview-hint">Kartı çevirmək üçün klikləyin</p>
-            </div>
+              {isBasic ? (
+                <>
+                  <BasicCardPreview />
+                  <p className="checkout-upgrade-hint">
+                    Digər paketləri seçərək kartınızı fərdiləşdirə bilərsiz.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <CardPreview
+                    theme={cardTheme}
+                    logo={cardLogo}
+                    name={cardName}
+                    title={cardTitle}
+                    flipped={flipped}
+                    onFlip={() => setFlipped(f => !f)}
+                  />
+                  <p className="card-preview-hint">Kartı çevirmək üçün klikləyin</p>
+                </>
+              )}
+            </div>}
           </div>
 
           <div className="pkg-nav-row">
-            <button className="pkg-nav-btn ghost" onClick={() => setStep(3)}>
+            <button className="pkg-nav-btn ghost" onClick={() => setStep(MANUAL_MODE ? 2 : (isBasic ? 2 : 3))}>
               <FiChevronLeft /> Geri
             </button>
           </div>

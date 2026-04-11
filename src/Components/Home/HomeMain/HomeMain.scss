@@ -208,21 +208,27 @@
 
     // ===== ROW 2 =====
     .row-2 {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
       gap: 20px;
-      flex-wrap: wrap;
+      align-items: start;
 
-      .flex-1 {
-        flex: 1;
-      }
+      .flex-1 { min-width: 0; }
 
       .skills-group {
-        flex: 2;
+        min-width: 0;
+
+        label {
+          display: block;
+          margin-bottom: 8px;
+        }
 
         .skills-inputs {
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
-          gap: 15px;
+          gap: 12px;
+
+          input { width: 100%; }
         }
       }
     }

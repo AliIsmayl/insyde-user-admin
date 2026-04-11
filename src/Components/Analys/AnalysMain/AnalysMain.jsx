@@ -361,7 +361,7 @@ function AnalysMain() {
           </p>
           <div className="summary-cards-row">
             <StatCard icon={<FiEye />}       label="Ümumi Baxış"    value={summary.total_views_ytd  ?? 0} color="#10b981" loading={loading} />
-            <StatCard icon={<FiTrendingUp />} label="Link Keçidləri" value={summary.total_clicks_ytd ?? 0} color="#3b82f6" loading={loading} />
+            <StatCard icon={<FiTrendingUp />} label="Ümumi Keçidlər" value={summary.total_clicks_ytd ?? 0} color="#3b82f6" loading={loading} />
           </div>
         </div>
 

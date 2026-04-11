@@ -23,7 +23,7 @@ const CATEGORIES = [
 
 const COLORS = [
   "#d3d3d3",
-  "#1a1a1a",
+  "#5c6bc0",
   "#e74c3c",
   "#2980b9",
   "#87ceeb",
@@ -36,7 +36,7 @@ const COLORS = [
   "#d4a017",
 ];
 
-const COLOR_ALLOWED_PACKAGES = ["premium", "pro", "business"];
+const COLOR_ALLOWED_PACKAGES = ["premium", "pro" /*, "business" */];
 const DEFAULT_COLOR = "#d4af37";
 
 function getIcon(icon_code) {
@@ -466,7 +466,7 @@ export default function HomeMain() {
 
   const profileUrl =
     hash_id || CK.get("hash_id")
-      ? `https://insyde.info/person/${hash_id || CK.get("hash_id")}`
+      ? `http://localhost:5174/person/${hash_id || CK.get("hash_id")}`
       : "#";
   const packageLabel =
     {
@@ -474,7 +474,7 @@ export default function HomeMain() {
       standard: "Standard",
       premium: "Premium",
       pro: "Pro",
-      business: "Business",
+      // business: "Business",
     }[packageType] || packageType;
 
   if (loading)
@@ -779,6 +779,15 @@ export default function HomeMain() {
                 <div className="status-badge-content">
                   <span className="status-badge-title">
                     Saxlanılmamış dəyişikliklər var
+                  </span>
+                </div>
+              </>
+            ) : packageType === "free" ? (
+              <>
+                <FaIcons.FaCheckCircle className="status-badge-icon" />
+                <div className="status-badge-content">
+                  <span className="status-badge-title">
+                    3 saatlıq yoxlama hesabınız aktivdir
                   </span>
                 </div>
               </>

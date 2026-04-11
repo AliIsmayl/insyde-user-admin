@@ -15,6 +15,7 @@ import SettingPage from "./Pages/SettingPage";
 import PackagePage from "./Pages/PackagePage";
 import AnalysPage from "./Pages/AnalysPage";
 import LoginPage from "./Pages/LoginPage";
+import OrderPage from "./Pages/OrderPage";
 import ScrollToTop from "./Components/ScroolToTop";
 import { isAuthenticated, authFetch, API_BASE } from "./Utils/authUtils";
 const ANALYS_ALLOWED_PLANS = ["pro", "premium"];
@@ -79,6 +80,7 @@ function App() {
           <Route path="/applications/:hash_id" element={<ApplicationsPage />} />
           <Route path="/settings" element={<SettingPage />} />
           <Route path="/packages" element={<PackagePage />} />
+          <Route path="/order" element={<OrderPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
