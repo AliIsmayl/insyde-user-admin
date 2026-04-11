@@ -1,719 +1,812 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Bitter:ital,wght@0,100..900;1,100..900&display=swap");
 
+$gold: #c9a84c;
+$radius-card: 18px;
+
+// ── Kart tema dəyişənləri ──────────────────────────────
+.pkg-card.theme-dark {
+  --c-front-bg:    #0b0b0b;
+  --c-back-bg:     #111111;
+  --c-topbar-text: #{$gold};
+  --c-subtitle:    rgba(255,255,255,0.45);
+  --c-logo-text:   rgba(255,255,255,0.3);
+  --c-logo-border: rgba(255,255,255,0.25);
+}
+.pkg-card.theme-light {
+  --c-front-bg:    #f5f2ec;
+  --c-back-bg:     #f0ede6;
+  --c-topbar-text: rgba(17,17,17,0.45);
+  --c-subtitle:    rgba(17,17,17,0.5);
+  --c-logo-text:   rgba(0,0,0,0.3);
+  --c-logo-border: rgba(0,0,0,0.22);
+}
+
+// ─────────────────────────────────────────────────────────
 .package-main-modern {
   font-family: "Poppins", sans-serif;
   color: var(--text-primary);
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 28px;
 
-  .top-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    .page-title {
+  // ── TOP HEADER ──────────────────────────────────────
+  .pkg-top-header {
+    .pkg-page-title {
       font-size: 24px;
       font-weight: 500;
-      margin: 0 0 5px 0;
-      color: var(--text-primary);
+      margin: 0 0 5px;
     }
-    .page-subtitle {
-      font-size: 14px;
+    .pkg-page-subtitle {
+      font-size: 13px;
       color: var(--text-secondary);
       margin: 0;
     }
   }
 
-  .package-content {
+  // ── STEP INDICATOR ──────────────────────────────────
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+
+      .step-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid var(--border-subtle);
+        background: var(--bg-input);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        transition: all 0.3s;
+      }
+
+      .step-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        transition: color 0.3s;
+      }
+
+      &.active {
+        .step-circle {
+          border-color: var(--border-focus);
+          background: var(--bg-active);
+          color: var(--text-link);
+        }
+        .step-label { color: var(--text-link); }
+      }
+
+      &.done {
+        .step-circle {
+          border-color: #10b981;
+          background: rgba(16,185,129,0.12);
+          color: #10b981;
+        }
+        .step-label { color: #10b981; }
+      }
+    }
+
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border-subtle);
+      margin: 0 8px;
+      margin-bottom: 22px;
+      border-radius: 2px;
+      transition: background 0.3s;
+
+      &.done { background: #10b981; }
+    }
+  }
+
+  // ── STEP CONTENT ────────────────────────────────────
+  .pkg-step-content {
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    width: 100%;
+    gap: 24px;
 
-    .mobile-only {
-      display: none;
-    }
-    .desktop-only {
-      display: block;
+    .pkg-step-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
     }
 
-    /* ===== TOOLTIP ===== */
-    .has-tooltip {
+    .pkg-step-sub {
+      margin: -16px 0 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .pkg-step-hint {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+      opacity: 0.6;
+      text-align: center;
+    }
+  }
+
+  // ── NAV ROW ─────────────────────────────────────────
+  .pkg-nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-strong);
+  }
+
+  .pkg-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 14px;
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+
+    &.primary {
+      background: var(--bg-active);
+      border-color: var(--border-focus);
+      color: var(--text-link);
+
+      &:hover:not(:disabled) {
+        background: var(--border-focus);
+        color: #fff;
+        border-color: transparent;
+      }
+      &:disabled { opacity: 0.4; cursor: not-allowed; }
+    }
+
+    &.ghost {
+      background: transparent;
+      border-color: var(--border-subtle);
+      color: var(--text-secondary);
+
+      &:hover {
+        border-color: var(--border-focus);
+        color: var(--text-primary);
+      }
+    }
+
+    &.full-width {
+      width: 100%;
+      justify-content: center;
+      padding: 14px;
+      font-size: 15px;
+    }
+  }
+
+  // ── ADDIM 1: PAKET KARTLAR ──────────────────────────
+  .pkg-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .pkg-option-card {
+    position: relative;
+    background: var(--bg-panel);
+    border: 2px solid var(--border-subtle);
+    border-radius: 22px;
+    padding: 28px 20px 22px;
+    cursor: pointer;
+    transition: border-color 0.25s, transform 0.25s, background 0.25s, box-shadow 0.25s;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    // unselected: clearly neutral
+    box-shadow: none;
+    opacity: 1;
+
+    &:hover:not(.selected) {
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+    }
+
+    &.selected {
+      border-color: var(--pkg-color, var(--border-focus));
+      background: var(--bg-active);
+      box-shadow: 0 0 0 4px var(--pkg-glow, rgba(59,130,246,0.18)),
+                  0 4px 16px rgba(0,0,0,0.12);
+      transform: translateY(-3px);
+    }
+
+    &.is-current { border-style: dashed; }
+
+    .pkg-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 3px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .pkg-current-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 3px 10px;
+    }
+
+    .pkg-card-top {
+      .pkg-card-name  { font-size: 20px; font-weight: 800; margin: 0 0 6px; }
+      .pkg-card-price { font-size: 28px; font-weight: 800; color: var(--text-primary); }
+      .pkg-card-rate  { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+    }
+
+    .pkg-features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+
+      .pkg-feat-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--text-primary);
+
+        &.unavailable { color: var(--text-secondary); opacity: 0.45; }
+
+        .feat-icon {
+          font-size: 14px;
+          flex-shrink: 0;
+          &.check { color: #10b981; }
+          &.cross  { color: var(--text-secondary); }
+        }
+      }
+    }
+
+    .pkg-select-indicator {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid var(--border-subtle);
       display: flex;
       align-items: center;
-      gap: 8px;
-      .info-icon {
-        color: var(--text-muted);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        position: relative;
-        font-size: 16px;
-        transition: color 0.2s;
-        outline: none;
-        &:hover,
-        &:focus {
-          color: var(--text-link);
-          .tooltip-box {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-          }
-        }
-        .tooltip-box {
-          position: absolute;
-          bottom: 130%;
-          left: 50%;
-          transform: translateX(-50%) translateY(10px);
-          background-color: var(--bg-hover);
-          border: 1px solid var(--border-subtle);
-          color: var(--text-primary);
-          padding: 10px 14px;
-          border-radius: 8px;
-          font-size: 12px;
-          font-weight: 400;
-          white-space: normal;
-          text-align: center;
-          width: max-content;
-          max-width: 220px;
-          opacity: 0;
-          visibility: hidden;
-          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-          z-index: 100;
-          pointer-events: none;
-          line-height: 1.5;
-          &::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 6px;
-            border-style: solid;
-            border-color: var(--border-subtle) transparent transparent
-              transparent;
-          }
-        }
+      justify-content: center;
+      margin-left: auto;
+      transition: all 0.2s;
+
+      &.on {
+        background: var(--pkg-color, #3b82f6);
+        border-color: var(--pkg-color, #3b82f6);
+        color: #fff;
       }
     }
+  }
 
-    /* ===== MASAÜSTÜ CƏDVƏL ===== */
-    & > .pricing-card {
-      background-color: var(--bg-panel);
-      border: 1px solid var(--border-subtle);
-      border-radius: 30px;
-      padding: 30px;
-      width: 100%;
+  // ── ADDIM 2: BİLLİNG ────────────────────────────────
+  .billing-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .billing-card {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 22px 20px;
+    cursor: pointer;
+    transition: all 0.22s;
+
+    &:hover { border-color: var(--border-focus); transform: translateY(-2px); }
+
+    &.selected {
+      border-color: var(--border-focus);
+      background: var(--bg-active);
     }
 
-    .pricing-table {
+    .billing-card-top {
       display: flex;
-      flex-direction: column;
-      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
 
-      .table-header-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 20px;
-        align-items: end;
-
-        .empty-cell {
-          font-size: 20px;
-          font-weight: 500;
-          color: var(--text-primary);
-          padding-bottom: 15px;
-          border-bottom: 2px solid var(--border-subtle);
-        }
-
-        .package-cell {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 25px 15px;
-          border-radius: 20px;
-          background-color: var(--bg-input);
-          border: 1px solid var(--border-input);
-          position: relative;
-          transition: all 0.3s;
-
-          &.is-current {
-            border: 2px solid var(--text-link);
-            background-color: var(--nav-item-active-bg);
-          }
-
-          h3 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-          }
-          .price {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 15px;
-          }
-
-          .select-btn {
-            width: 100%;
-            padding: 10px 0;
-            border-radius: 12px;
-            border: 1px solid var(--border-strong);
-            background: transparent;
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 14px;
-            font-family: "Poppins", sans-serif;
-            cursor: pointer;
-            transition: all 0.3s;
-            &:hover {
-              background: var(--bg-hover);
-              border-color: var(--border-focus);
-            }
-          }
-
-          .current-badge {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            width: 100%;
-            padding: 10px 0;
-            border-radius: 12px;
-            background-color: var(--badge-success-bg);
-            border: 1px solid rgba(46, 204, 113, 0.3);
-            color: var(--badge-success-text);
-            font-weight: 600;
-            font-size: 14px;
-            justify-content: center;
-          }
-        }
-      }
-
-      .table-body {
-        display: flex;
-        flex-direction: column;
-
-        .table-row {
-          display: grid;
-          grid-template-columns: 2fr 1fr 1fr 1fr;
-          gap: 15px;
-          padding: 16px 0;
-          border-bottom: 1px solid var(--border-input);
-          align-items: center;
-          transition: background-color 0.2s;
-
-          &:hover {
-            background-color: var(--bg-hover);
-            border-radius: 10px;
-            padding-left: 10px;
-            padding-right: 10px;
-          }
-          &:last-child {
-            border-bottom: none;
-          }
-
-          .feature-name {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-primary);
-          }
-
-          .feature-status {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            padding: 5px 0;
-            .icon-check {
-              color: var(--badge-success-text);
-              font-size: 20px;
-            }
-            .icon-cross {
-              color: var(--text-muted);
-              font-size: 20px;
-            }
-            strong {
-              font-size: 15px;
-              color: var(--text-primary);
-            }
-            &.active-col {
-              background-color: var(--nav-item-active-bg);
-              border: 1px dashed var(--border-default);
-            }
-          }
-          .feature-status.pro:not(.active-col) {
-            background-color: var(--bg-input);
-          }
-        }
-
-        .highlight-row {
-          background-color: var(--bg-hover);
-          border: 1px solid var(--border-subtle);
-          border-radius: 10px;
-          padding: 16px 10px;
-          margin: 10px -10px 0 -10px;
-          border-bottom: none;
-          .feature-name span {
-            font-weight: 700;
-            color: var(--text-link);
-          }
-          .feature-status strong {
-            color: var(--text-link);
-          }
-          &:hover {
-            background-color: var(--bg-active);
-          }
-          .feature-status.pro {
-            background-color: transparent;
-          }
-          .feature-status.active-col {
-            background-color: rgba(200, 167, 94, 0.1);
-            border-color: var(--border-strong);
-          }
-        }
-      }
+      .billing-label { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+      .billing-check { color: var(--text-link); font-size: 18px; }
     }
 
-    /* ===== MOBİL KARTLAR ===== */
-    .mobile-cards-container {
-      flex-direction: column;
-      gap: 20px;
-      width: 100%;
-      display: none;
+    .billing-total { font-size: 30px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .billing-rate  { font-size: 12px; color: var(--text-secondary); }
+  }
 
-      .mobile-package-card {
-        background-color: var(--bg-panel);
-        border-radius: 25px;
-        padding: 30px 25px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        position: relative;
-        border: 1px solid var(--border-subtle);
+  .billing-summary-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    font-size: 14px;
+    color: var(--text-secondary);
 
-        &.is-current {
-          border: 1px solid var(--text-link);
-          background-color: var(--bg-hover);
-        }
+    strong { color: var(--text-primary); font-weight: 700; }
+    .bill-sum-sep { color: var(--border-strong); }
+  }
 
-        .card-top {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 1px dashed var(--border-strong);
-          padding-bottom: 15px;
-          h3 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-primary);
-          }
-          .price {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-primary);
-          }
-        }
+  // ── ADDIM 3: KART DİZAYNI ───────────────────────────
+  .card-design-workspace {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 28px;
+    align-items: start;
+  }
 
-        .card-features {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
+  .card-preview-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 40px 24px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 22px;
+  }
 
-          .mobile-feat-group {
-            display: flex;
-            flex-direction: column;
+  .card-preview-label {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
 
-            .feat-item {
-              display: flex;
-              align-items: center;
-              gap: 12px;
-              cursor: pointer;
-              padding: 8px 0;
-              border-radius: 8px;
-              transition: 0.2s;
-              -webkit-tap-highlight-color: transparent;
-              &:hover {
-                background-color: var(--bg-input);
-              }
+  .card-preview-hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.5;
+  }
 
-              .icon {
-                width: 24px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              }
-              .icon-check {
-                color: var(--badge-success-text);
-                font-size: 18px;
-              }
-              .icon-cross {
-                color: var(--text-muted);
-                font-size: 18px;
-              }
+  // 3D card scene
+  .pkg-scene {
+    width: min(400px, 100%);
+    aspect-ratio: 5 / 3;
+    perspective: 1400px;
+    cursor: pointer;
 
-              .feat-text-wrapper {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex: 1;
-                padding-right: 5px;
-                span {
-                  font-size: 14px;
-                  font-weight: 500;
-                  color: var(--text-secondary);
-                }
-                .disabled-text {
-                  color: var(--text-muted);
-                  text-decoration: line-through;
-                }
-                .mobile-info-icon {
-                  color: var(--text-muted);
-                  font-size: 18px;
-                  transition:
-                    transform 0.3s,
-                    color 0.3s;
-                  &.active {
-                    color: var(--text-link);
-                    transform: rotate(180deg);
-                  }
-                }
-              }
+    &.is-flipped .pkg-card { transform: rotateY(180deg); }
+  }
 
-              &.monthly-fee {
-                background-color: var(--bg-input);
-                border: 1px solid var(--border-input);
-                padding: 12px 15px;
-                border-radius: 12px;
-                margin-top: 10px;
-                .feat-text-wrapper span {
-                  color: var(--text-link);
-                }
-                .feat-text-wrapper strong {
-                  color: var(--text-link);
-                  font-weight: 700;
-                  font-size: 16px;
-                }
-              }
-            }
+  .pkg-card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.35, 0.15, 0.15, 1);
+    border-radius: $radius-card;
+  }
 
-            .mobile-faq-box {
-              display: grid;
-              grid-template-rows: 0fr;
-              transition: all 0.3s ease-in-out;
-              .faq-inner {
-                overflow: hidden;
-                font-size: 13px;
-                color: var(--text-muted);
-                line-height: 1.5;
-                padding: 0 10px 0 36px;
-                opacity: 0;
-                transition: opacity 0.3s ease-in-out;
-              }
-              &.open {
-                grid-template-rows: 1fr;
-                .faq-inner {
-                  padding: 5px 10px 15px 36px;
-                  opacity: 1;
-                }
-              }
-            }
-          }
-        }
+  .pkg-face {
+    position: absolute;
+    inset: 0;
+    border-radius: $radius-card;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+  }
 
-        .card-bottom {
-          margin-top: 15px;
-          .select-btn {
-            width: 100%;
-            padding: 14px 0;
-            border-radius: 12px;
-            border: 1px solid var(--border-strong);
-            background: transparent;
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 16px;
-            font-family: "Poppins", sans-serif;
-            cursor: pointer;
-            transition: all 0.3s;
-            &:hover {
-              background: var(--bg-hover);
-              border-color: var(--border-focus);
-            }
-          }
-          .current-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            padding: 14px 0;
-            border-radius: 12px;
-            background-color: var(--badge-success-bg);
-            border: 1px solid rgba(46, 204, 113, 0.3);
-            color: var(--badge-success-text);
-            font-weight: 600;
-            font-size: 16px;
-            justify-content: center;
-          }
-        }
-      }
-    }
+  .pkg-front {
+    background: var(--c-front-bg);
 
-    /* ===== AYLIQ AKTİVLİK BÖLMƏSİ ===== */
-    .billing-section {
-      background-color: var(--bg-panel);
-      border: 1px solid var(--border-subtle);
-      border-radius: 30px;
-      padding: 30px;
+    .pkg-front-topbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
       display: flex;
-      flex-direction: column;
-      gap: 25px;
+      justify-content: space-between;
+      align-items: center;
+      padding: clamp(12px,4.5%,20px) clamp(14px,5.5%,22px) 0;
+    }
 
-      .billing-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 15px;
+    .pkg-tagline, .pkg-site {
+      font-family: "Poppins", sans-serif;
+      font-size: clamp(10px,3.5%,14px);
+      font-weight: 400;
+      color: var(--c-topbar-text);
+    }
 
-        .billing-title {
-          margin: 0 0 6px 0;
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-        .billing-subtitle {
-          margin: 0;
-          font-size: 13px;
-          color: var(--text-secondary);
-          .rate-highlight {
-            color: var(--text-link);
-          }
-        }
+    .pkg-brand-word {
+      position: absolute;
+      bottom: clamp(-5px,-2%,-8px);
+      left: 0; right: 0;
+      text-align: center;
+      font-family: "Bitter", serif;
+      font-size: clamp(70px,32%,140px);
+      font-weight: 900;
+      line-height: 1;
+      color: $gold;
+      letter-spacing: -0.02em;
+      user-select: none;
+    }
+  }
 
-        .billing-rate-badge {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background-color: var(--bg-input);
-          border: 1px solid var(--border-input);
-          padding: 10px 18px;
-          border-radius: 12px;
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--text-link);
-          white-space: nowrap;
-          svg {
-            font-size: 16px;
-          }
-        }
+  .pkg-back {
+    background: var(--c-back-bg);
+    transform: rotateY(180deg);
+
+    .pkg-back-logo { position: absolute; top: 10px; left: 12px; }
+
+    .pkg-logo-img {
+      width: 72px;
+      height: 48px;
+      object-fit: contain;
+    }
+
+    .pkg-logo-placeholder {
+      font-family: "Poppins", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--c-logo-text);
+      border: 1.5px dashed var(--c-logo-border);
+      border-radius: 7px;
+      padding: 5px 12px;
+    }
+
+    .pkg-qr-wrap { position: absolute; top: 18px; right: 18px; color: $gold; }
+
+    .pkg-back-info {
+      position: absolute;
+      bottom: clamp(16px,6%,26px);
+      left: clamp(12px,4.5%,20px);
+
+      .pkg-back-name {
+        display: block;
+        font-size: clamp(18px,6%,26px);
+        font-weight: 700;
+        letter-spacing: 0.01em;
       }
 
-      /* Müddət tabları */
-      .billing-tabs {
-        display: flex;
-        gap: 10px;
-        background-color: var(--bg-input);
-        border: 1px solid var(--border-input);
-        border-radius: 16px;
-        padding: 6px;
-        width: fit-content;
-
-        .billing-tab {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          padding: 12px 28px;
-          border-radius: 11px;
-          border: none;
-          background: transparent;
-          font-family: "Poppins", sans-serif;
-          cursor: pointer;
-          transition: all 0.25s;
-
-          .tab-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: color 0.25s;
-          }
-          .tab-price {
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--text-primary);
-            transition: color 0.25s;
-          }
-
-          &:hover {
-            background-color: var(--bg-hover);
-            .tab-label {
-              color: var(--text-primary);
-            }
-          }
-
-          &.active {
-            background-color: var(--btn-primary-bg);
-            .tab-label {
-              color: rgba(255, 255, 255, 0.8);
-            }
-            .tab-price {
-              color: var(--text-on-gold);
-            }
-          }
-        }
-      }
-
-      /* Yekun məbləğ cədvəli */
-      .billing-summary {
-        display: flex;
-        align-items: center;
-        gap: 0;
-        background-color: var(--bg-input);
-        border: 1px solid var(--border-input);
-        border-radius: 18px;
-        padding: 20px 25px;
-        flex-wrap: wrap;
-        row-gap: 15px;
-
-        .summary-item {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          flex: 1;
-          min-width: 100px;
-
-          .summary-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-          .summary-value {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-          }
-        }
-
-        .total-item {
-          .summary-total {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-link);
-          }
-        }
-
-        .summary-divider {
-          width: 1px;
-          height: 40px;
-          background-color: var(--border-subtle);
-          margin: 0 20px;
-          flex-shrink: 0;
-        }
-
-        .pay-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background-color: var(--btn-primary-bg);
-          color: var(--text-on-gold);
-          border: none;
-          padding: 13px 28px;
-          border-radius: 12px;
-          font-family: "Poppins", sans-serif;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-          white-space: nowrap;
-          margin-left: auto;
-
-          &:hover {
-            background-color: var(--btn-primary-hover);
-            transform: translateY(-2px);
-          }
-          &:active {
-            transform: translateY(0);
-          }
-        }
+      .pkg-back-title {
+        display: block;
+        font-size: clamp(12px,4%,17px);
+        font-weight: 400;
+        color: var(--c-subtitle);
+        margin-top: 3px;
       }
     }
   }
 
-  /* ===== RESPONSİVLİK ===== */
-  @media screen and (max-width: 950px) {
-    .package-content {
-      .desktop-only {
-        display: none !important;
-      }
-      .mobile-only {
-        display: flex !important;
-      }
-    }
-    .top-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 5px;
-      margin-bottom: 10px;
+  .card-controls-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 22px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card-ctrl-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
     }
   }
 
-  @media screen and (max-width: 768px) {
-    .package-content {
-      .billing-section {
-        padding: 20px;
-        border-radius: 20px;
+  .card-theme-toggle {
+    display: flex;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px;
 
-        .billing-tabs {
-          width: 100%;
-          .billing-tab {
-            flex: 1;
-            padding: 10px 10px;
-          }
-        }
+    button {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: "Poppins", sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
 
-        .billing-summary {
-          flex-direction: column;
-          align-items: stretch;
-          padding: 20px;
+      &:hover { color: var(--text-primary); }
+      &.active { background: var(--bg-active); border-color: var(--border-strong); color: var(--text-link); }
 
-          .summary-divider {
-            width: 100%;
-            height: 1px;
-            margin: 0;
-          }
-
-          .summary-item {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            min-width: unset;
-          }
-
-          .pay-btn {
-            width: 100%;
-            justify-content: center;
-            margin-left: 0;
-            margin-top: 5px;
-          }
-        }
+      .dot {
+        width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
+        &.dark-dot  { background: #0d0d0d; border: 2px solid rgba(255,255,255,0.2); }
+        &.light-dot { background: #f5f2ec; border: 2px solid rgba(0,0,0,0.18); }
       }
     }
   }
 
-  @media screen and (max-width: 480px) {
-    .package-content .billing-section {
-      .billing-tabs .billing-tab {
-        .tab-label {
-          font-size: 11px;
-        }
-        .tab-price {
-          font-size: 13px;
-        }
+  .card-upload-area {
+    background: var(--bg-input);
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 14px;
+    padding: 18px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+
+    &:hover { border-color: var(--border-focus); background: var(--bg-hover); }
+  }
+
+  .card-upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    span { font-size: 13px; font-weight: 500; }
+  }
+
+  .card-upload-preview {
+    max-height: 60px;
+    max-width: 150px;
+    object-fit: contain;
+    border-radius: 7px;
+  }
+
+  .card-remove-btn {
+    align-self: flex-start;
+    background: rgba(239,68,68,0.1);
+    border: none;
+    border-radius: 10px;
+    color: #fca5a5;
+    padding: 5px 14px;
+    font-family: "Poppins", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    &:hover { background: rgba(239,68,68,0.22); }
+  }
+
+  .card-ctrl-input {
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-radius: 14px;
+    padding: 11px 16px;
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s;
+    &::placeholder { color: var(--text-secondary); opacity: 0.45; }
+    &:focus { border-color: var(--border-focus); }
+  }
+
+  .card-flip-btn {
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-active);
+    color: var(--text-link);
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    &:hover { background: var(--border-focus); color: #fff; border-color: transparent; }
+  }
+
+  // ── ADDIM 4: CHECKOUT ───────────────────────────────
+  .checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .checkout-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .checkout-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    .checkout-section-label {
+      margin: 0 0 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+  }
+
+  .checkout-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+
+    strong { color: var(--text-primary); font-weight: 700; }
+
+    &.total-row {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+
+      .total-amount {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text-link);
       }
     }
+  }
+
+  .checkout-divider {
+    height: 1px;
+    background: var(--border-subtle);
+    border-radius: 2px;
+  }
+
+  .checkout-error {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.22);
+    border-radius: 14px;
+    padding: 12px 16px;
+    color: #fca5a5;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .checkout-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 36px 20px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 22px;
+
+    .checkout-section-label {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+  }
+
+  // ── LOADING & SUCCESS ────────────────────────────────
+  .pkg-loading {
+    display: flex;
+    justify-content: center;
+    padding: 80px 0;
+  }
+
+  .pkg-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--text-link);
+    border-radius: 50%;
+    animation: pkgSpin 0.8s linear infinite;
+  }
+
+  .pkg-spinner-sm {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: pkgSpin 0.8s linear infinite;
+  }
+
+  .pkg-success-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 60px 20px;
+    text-align: center;
+
+    .pkg-success-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(16,185,129,0.12);
+      border: 2px solid #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: #10b981;
+    }
+
+    h2 { font-size: 22px; font-weight: 700; margin: 0; }
+    p  { font-size: 14px; color: var(--text-secondary); margin: 0; }
+  }
+
+  @keyframes pkgSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  // ── RESPONSIVE ──────────────────────────────────────
+  @media (max-width: 1024px) {
+    .pkg-cards-grid        { grid-template-columns: 1fr 1fr; }
+    .card-design-workspace { grid-template-columns: 1fr; }
+    .checkout-layout       { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .step-indicator {
+      padding: 16px 12px;
+      .step-label  { display: none; }
+      .step-circle { width: 30px; height: 30px; font-size: 13px; }
+      .step-line   { margin-bottom: 0; }
+    }
+
+    .pkg-cards-grid  { grid-template-columns: 1fr; }
+    .billing-options { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 480px) {
+    .pkg-nav-btn { padding: 11px 18px; font-size: 13px; }
   }
 }

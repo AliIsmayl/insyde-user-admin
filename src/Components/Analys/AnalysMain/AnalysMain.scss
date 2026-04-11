@@ -6,73 +6,47 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 24px;
 
-  // ── TOP HEADER ──────────────────────────────────────
+  // ── TOP HEADER ─────────────────────────────────────
   .top-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
 
     .title-area {
       .page-title {
         font-size: 24px;
         font-weight: 500;
-        margin: 0 0 5px 0;
+        margin: 0 0 5px;
         color: var(--text-primary);
       }
       .page-subtitle {
-        font-size: 14px;
+        font-size: 13px;
         color: var(--text-secondary);
         margin: 0;
       }
     }
 
-    .top-header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-  
-
-      .period-filters {
-        display: flex;
-        background-color: var(--bg-panel);
-        border: 1px solid var(--border-subtle);
-        padding: 5px;
-        border-radius: 15px;
-        gap: 5px;
-
-        button {
-          border: 1px solid transparent;
-          background: transparent;
-          padding: 8px 16px;
-          border-radius: 10px;
-          font-family: "Poppins", sans-serif;
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--text-secondary);
-          cursor: pointer;
-          transition: all 0.3s ease;
-
-          &:hover {
-            color: var(--text-primary);
-            background-color: var(--bg-hover);
-          }
-
-          &.active {
-            background-color: var(--bg-active);
-            color: var(--text-link);
-            border-color: var(--border-strong);
-          }
-        }
-      }
+    .clear-month-btn {
+      background: var(--bg-active);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      padding: 9px 16px;
+      font-family: "Poppins", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-link);
+      cursor: pointer;
+      transition: all 0.2s;
+      &:hover { opacity: 0.8; }
     }
+
   }
 
-  // ── ERROR BANNER ────────────────────────────────────
+  // ── ERROR BANNER ───────────────────────────────────
   .analys-error-banner {
     display: flex;
     align-items: center;
@@ -80,7 +54,7 @@
     gap: 12px;
     background: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.22);
-    border-radius: 15px;
+    border-radius: 14px;
     padding: 12px 18px;
     color: #fca5a5;
     font-size: 13px;
@@ -98,480 +72,381 @@
       cursor: pointer;
       white-space: nowrap;
       transition: background 0.2s;
-
-      &:hover {
-        background: rgba(239, 68, 68, 0.3);
-      }
+      &:hover { background: rgba(239, 68, 68, 0.3); }
     }
   }
 
-  // ── CONTENT ─────────────────────────────────────────
+  // ── CONTENT ────────────────────────────────────────
   .analys-content {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 28px;
   }
 
-  // ── AYLAR SƏTRİ ─────────────────────────────────────
+  // ── SECTION BLOCK ──────────────────────────────────
+  .section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    .section-label {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+    }
+  }
+
+  // ── AYLAR SƏTRİ ────────────────────────────────────
   .months-row {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 
     .month-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
-      padding: 10px 14px;
+      gap: 5px;
+      padding: 10px 16px;
       border-radius: 14px;
       border: 1px solid var(--border-subtle);
       background: var(--bg-panel);
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.22s ease;
       font-family: "Poppins", sans-serif;
-      min-width: 72px;
+      min-width: 74px;
 
       .month-name {
         font-size: 12px;
         font-weight: 600;
         color: var(--text-secondary);
-        transition: color 0.3s;
+        transition: color 0.2s;
       }
 
-      .month-views {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--text-link);
-        background: var(--bg-active);
-        padding: 1px 7px;
-        border-radius: 20px;
+      .month-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--text-link);
+        opacity: 0.7;
       }
 
       &:hover:not(:disabled):not(.no-data) {
         border-color: var(--border-focus);
         background: var(--bg-hover);
-
-        .month-name {
-          color: var(--text-primary);
-        }
+        .month-name { color: var(--text-primary); }
       }
 
       &.active {
         border-color: var(--border-focus);
         background: var(--bg-active);
-
-        .month-name {
-          color: var(--text-link);
-          font-weight: 700;
-        }
-
-        .month-views {
-          background: var(--border-focus);
-          color: #fff;
-        }
+        .month-name { color: var(--text-link); font-weight: 700; }
+        .month-dot  { background: var(--text-link); opacity: 1; }
       }
 
-      &.no-data {
-        opacity: 0.35;
-        cursor: default;
-      }
-
-      &:disabled {
-        cursor: not-allowed;
-      }
+      &.no-data { opacity: 0.3; cursor: default; }
+      &:disabled { cursor: not-allowed; }
     }
   }
 
-  // ── SUMMARY KARTLAR ─────────────────────────────────
+  // ── SCAN TYPE ROW ──────────────────────────────────
+  .scan-type-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  // ── SUMMARY CARDS ──────────────────────────────────
   .summary-cards-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 16px;
+  }
 
-    .stat-card {
-      background-color: var(--bg-panel);
-      border: 1px solid var(--border-subtle);
-      border-radius: 20px;
-      padding: 25px;
+  // ── STAT CARD (shared) ─────────────────────────────
+  .stat-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.22s, border-color 0.22s;
+
+    &:hover { transform: translateY(-2px); border-color: var(--border-focus); }
+
+    &.skeleton-card {
+      .sk-card {
+        width: 100%;
+        height: 60px;
+        border-radius: 12px;
+        background: var(--bg-input);
+        animation: skShimmer 1.4s ease infinite;
+      }
+    }
+
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
-      gap: 20px;
-      transition:
-        transform 0.3s ease,
-        border-color 0.3s ease;
-
-      &:hover {
-        transform: translateY(-1px);
-        border-color: var(--border-focus);
-      }
-
-      .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 26px;
-        flex-shrink: 0;
-      }
-
-      .stat-info {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-
-        h4 {
-          margin: 0;
-          font-size: 13px;
-          color: var(--text-secondary);
-          font-weight: 500;
-          display: flex;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
-
-        .stat-bottom {
-          display: flex;
-          align-items: baseline;
-          gap: 10px;
-
-          .value {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-primary);
-            line-height: 1;
-          }
-
-          .sk-num {
-            display: inline-block;
-            width: 80px;
-            height: 28px;
-            border-radius: 8px;
-            background: var(--bg-input);
-            animation: skShimmer 1.4s ease infinite;
-          }
-        }
-      }
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
     }
-  }
 
-  // ── MONTH BADGE ─────────────────────────────────────
-  .month-badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 9px;
-    border-radius: 20px;
-    background: var(--bg-active);
-    color: var(--text-link);
-    border: 1px solid var(--border-strong);
-    vertical-align: middle;
-  }
-
-  // ── DASHBOARD GRID ──────────────────────────────────
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-
-    .dashboard-card {
-      background-color: var(--bg-panel);
-      border: 1px solid var(--border-subtle);
-      border-radius: 25px;
-      padding: 25px;
+    .stat-info {
       display: flex;
       flex-direction: column;
+      gap: 4px;
 
-      .card-header {
-        margin-bottom: 25px;
-        border-bottom: 1px dashed var(--border-strong);
-        padding-bottom: 15px;
-
-        h3 {
-          margin: 0;
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--text-primary);
-          display: flex;
-          align-items: center;
-          gap: 10px;
-
-          .head-icon {
-            color: var(--text-link);
-            font-size: 18px;
-          }
-        }
+      h4 {
+        margin: 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
       }
 
-      .card-body {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-
-        .empty-state-text {
-          text-align: center;
-          color: var(--text-secondary);
-          font-size: 13px;
-          font-weight: 500;
-          padding: 20px 0;
-          margin: 0;
+      .stat-bottom {
+        .value {
+          font-size: 22px;
+          font-weight: 800;
+          color: var(--text-primary);
+          line-height: 1;
         }
-
-        // ── PROGRESS ROW ──────────────────────────────
-        .progress-row {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-
-          .row-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            .info-left {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-
-              .item-icon {
-                font-size: 16px;
-                display: flex;
-              }
-
-              .item-name {
-                font-size: 14px;
-                font-weight: 600;
-                color: var(--text-primary);
-              }
-            }
-
-            .item-count {
-              font-size: 13px;
-              font-weight: 600;
-              color: var(--text-secondary);
-            }
-          }
-
-          .progress-bar-bg {
-            width: 100%;
-            height: 8px;
-            background-color: var(--bg-input);
-            border-radius: 10px;
-            overflow: hidden;
-
-            .progress-fill {
-              height: 100%;
-              border-radius: 10px;
-              transition: width 0.8s ease-in-out;
-            }
-          }
-        }
-
-        // ── LOCATION ROW ──────────────────────────────
-        .location-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 15px;
-          background-color: var(--bg-input);
-          border: 1px solid var(--border-input);
-          border-radius: 15px;
-          transition:
-            background 0.3s,
-            border-color 0.3s;
-
-          &:hover {
-            background-color: var(--bg-hover);
-            border-color: var(--border-input-hover);
-          }
-
-          .loc-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-
-            .loc-icon {
-              width: 36px;
-              height: 36px;
-              border-radius: 10px;
-              background-color: var(--bg-panel);
-              border: 1px solid var(--border-subtle);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: var(--text-link);
-              flex-shrink: 0;
-            }
-
-            .loc-texts {
-              display: flex;
-              flex-direction: column;
-
-              .city {
-                font-size: 14px;
-                font-weight: 700;
-                color: var(--text-primary);
-                line-height: 1.2;
-              }
-
-              .country {
-                font-size: 12px;
-                color: var(--text-secondary);
-              }
-            }
-          }
-
-          .loc-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-
-            .loc-count {
-              font-size: 15px;
-              font-weight: 800;
-              color: var(--text-primary);
-            }
-
-            .loc-percent {
-              font-size: 12px;
-              font-weight: 600;
-              color: var(--badge-success-text);
-            }
-          }
+        .sk-num {
+          display: inline-block;
+          width: 65px;
+          height: 22px;
+          border-radius: 7px;
+          background: var(--bg-input);
+          animation: skShimmer 1.4s ease infinite;
         }
       }
     }
   }
 
-  // ── SKELETON ────────────────────────────────────────
+  // ── DASHBOARD GRID ─────────────────────────────────
+  .dashboard-grid {
+    display: grid;
+    gap: 20px;
+
+    &.three-col { grid-template-columns: repeat(3, 1fr); }
+    &.two-col   { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  // ── DASHBOARD CARD ─────────────────────────────────
+  .dashboard-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 22px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+
+    .card-header {
+      margin-bottom: 20px;
+      border-bottom: 1px dashed var(--border-strong);
+      padding-bottom: 14px;
+
+      h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .head-icon {
+          color: var(--text-link);
+          font-size: 16px;
+        }
+      }
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+
+  // ── PROGRESS ROW ───────────────────────────────────
+  .progress-row {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    .row-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+
+      .info-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+
+        .item-icon { font-size: 15px; display: flex; flex-shrink: 0; }
+
+        .item-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-primary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      .item-count {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-input);
+      border-radius: 10px;
+      overflow: hidden;
+
+      .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.65s ease-in-out;
+      }
+    }
+  }
+
+  // ── PAGINATION ─────────────────────────────────────
+  .pagination-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--border-strong);
+    margin-top: 4px;
+
+    .pg-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-panel);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+
+      &:hover:not(:disabled) {
+        border-color: var(--border-focus);
+        color: var(--text-link);
+        background: var(--bg-active);
+      }
+
+      &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+    }
+
+    .pg-info {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 40px;
+      text-align: center;
+    }
+  }
+
+  // ── EMPTY STATE ────────────────────────────────────
+  .empty-state-text {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 22px 0;
+    margin: 0;
+  }
+
+  // ── SKELETON ───────────────────────────────────────
   .skeleton-wrap {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 
     .skeleton-row {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
     }
 
     .sk-line {
-      border-radius: 8px;
+      border-radius: 7px;
       background: var(--bg-input);
       animation: skShimmer 1.4s ease infinite;
 
-      &.short {
-        height: 13px;
-        width: 40%;
-      }
-      &.long {
-        height: 8px;
-        width: 100%;
-      }
+      &.short { height: 12px; width: 38%; }
+      &.long  { height: 6px;  width: 100%; }
     }
   }
 
-  // ── ANİMASİYALAR ────────────────────────────────────
+  // ── ANİMASİYALAR ───────────────────────────────────
   @keyframes spinAnim {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
   }
 
   @keyframes skShimmer {
-    0%,
-    100% {
-      opacity: 0.4;
-    }
-    50% {
-      opacity: 0.9;
-    }
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.85; }
   }
 
-  // ── RESPONSIVE ──────────────────────────────────────
-  @media screen and (max-width: 1024px) {
-    .dashboard-grid {
-      grid-template-columns: repeat(2, 1fr);
-
-      .location-card {
-        grid-column: span 2;
-      }
-    }
+  // ── RESPONSIVE ─────────────────────────────────────
+  @media screen and (max-width: 1200px) {
+    .summary-cards-row { grid-template-columns: repeat(2, 1fr); }
   }
 
   @media screen and (max-width: 768px) {
     .top-header {
       flex-direction: column;
       align-items: flex-start;
-      gap: 15px;
-
-      .top-header-right {
-        width: 100%;
-        justify-content: space-between;
-
-        .period-filters {
-          flex: 1;
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-
-          button {
-            padding: 8px 5px;
-            font-size: 12px;
-            text-align: center;
-          }
-        }
-      }
     }
 
-    .months-row {
-      gap: 6px;
-
-      .month-btn {
-        min-width: 60px;
-        padding: 8px 10px;
-
-        .month-name {
-          font-size: 11px;
-        }
-        .month-views {
-          font-size: 10px;
-        }
-      }
+    .months-row .month-btn {
+      min-width: 62px;
+      padding: 8px 10px;
+      .month-name { font-size: 11px; }
     }
 
-    .summary-cards-row {
+    .scan-type-row     { grid-template-columns: repeat(2, 1fr); }
+    .summary-cards-row { grid-template-columns: 1fr; }
+
+    .dashboard-grid.two-col {
       grid-template-columns: 1fr;
-      gap: 15px;
-
-      .stat-card {
-        padding: 20px;
-
-        .stat-icon {
-          width: 50px;
-          height: 50px;
-          font-size: 22px;
-        }
-        .stat-info .stat-bottom .value {
-          font-size: 20px;
-        }
-      }
     }
 
-    .dashboard-grid {
-      grid-template-columns: 1fr;
+    .dashboard-card { padding: 18px 14px; }
+  }
 
-      .location-card {
-        grid-column: span 1;
-      }
-      .dashboard-card {
-        padding: 20px 15px;
-      }
-    }
+  @media screen and (max-width: 480px) {
+    .scan-type-row { grid-template-columns: 1fr; }
   }
 }

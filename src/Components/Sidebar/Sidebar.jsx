@@ -10,6 +10,7 @@ import "./Sidebar.scss";
 import { clearSession } from "../../Utils/authUtils";
 
 const FULL_ACCESS_PACKAGES = ["standard", "premium", "pro", "business"];
+const ANALYS_ALLOWED_PLANS = ["pro", "premium"];
 
 function Sidebar({
   isOpen,
@@ -24,6 +25,7 @@ function Sidebar({
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const hasFullAccess = FULL_ACCESS_PACKAGES.includes(packageType);
+  const pkg = packageType.toLowerCase();
 
   const ALL_MENU_ITEMS = [
     {
@@ -37,6 +39,7 @@ function Sidebar({
       path: "/analys",
       icon: <TbBrandGoogleAnalytics />,
       freeVisible: false,
+      allowedPlans: ANALYS_ALLOWED_PLANS,
     },
     {
       name: "Paketlər",
@@ -52,9 +55,11 @@ function Sidebar({
     },
   ];
 
-  const menuItems = hasFullAccess
-    ? ALL_MENU_ITEMS
-    : ALL_MENU_ITEMS.filter((item) => item.freeVisible);
+  const menuItems = ALL_MENU_ITEMS.filter((item) => {
+    if (item.freeVisible) return true;
+    if (item.allowedPlans) return item.allowedPlans.includes(pkg);
+    return hasFullAccess;
+  });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);

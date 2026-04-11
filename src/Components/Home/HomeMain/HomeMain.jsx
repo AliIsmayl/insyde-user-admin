@@ -390,11 +390,10 @@ export default function HomeMain() {
         .filter(Boolean)
         .forEach((s, i) => fd.append(`skills[${i}]`, s));
 
-      const colorToSend = canChangeColor ? phoneColor : DEFAULT_COLOR;
-      fd.append(
-        "system",
-        JSON.stringify({ color: colorToSend, mode: phoneTheme }),
-      );
+      const systemData = canChangeColor
+        ? { color: phoneColor, mode: phoneTheme }
+        : { mode: phoneTheme };
+      fd.append("system", JSON.stringify(systemData));
       if (profileImageFile) fd.append("image", profileImageFile);
 
       const activeLinks = links.filter(

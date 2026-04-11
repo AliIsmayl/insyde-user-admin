@@ -1,351 +1,625 @@
-import React, { useState } from "react";
-import {
-  FiCheck,
-  FiX,
-  FiCheckCircle,
-  FiInfo,
-  FiCalendar,
-} from "react-icons/fi";
+import React, { useState, useEffect, useRef } from "react";
+import { FiCheck, FiX, FiInfo, FiChevronRight, FiChevronLeft } from "react-icons/fi";
+import { API_BASE, authFetch } from "../../../Utils/authUtils";
 import "./PackageMain.scss";
 
-const MobileFeatureRow = ({ title, info, isAvailable, isMonthly, price }) => {
-  const [isOpen, setIsOpen] = useState(false);
+// ─── Sabitlər ─────────────────────────────────────────────
 
-  if (isMonthly) {
+// Fallback: API cavab verməsə bu data istifadə olunur
+const FALLBACK_PACKAGES = [
+  { key: "basic",   name: "Sadə",   cardPrice: "12.90₼", monthlyRate: 1.5, color: "#6b7280", badge: null       },
+  { key: "pro",     name: "Pro",    cardPrice: "27.90₼", monthlyRate: 2.0, color: "#3b82f6", badge: "Populyar" },
+  { key: "premium", name: "Premium",cardPrice: "36.90₼", monthlyRate: 2.0, color: "#f59e0b", badge: "Tam"      },
+];
+
+// Yalnız bu 3 plan göstərilir, qalanı hamısı gizlədilir
+const ALLOWED_PLANS = ["basic", "pro", "premium"];
+
+// API-dan gələn plan obyektini UI strukturuna çevir
+const PKG_COLOR_MAP = { basic: "#6b7280", pro: "#3b82f6", premium: "#f59e0b" };
+const PKG_BADGE_MAP = { basic: null, pro: "Populyar", premium: "Tam" };
+
+// Backend-dən gələn features massivini normallaşdır
+// [ "Feature adı", ... ]  yaxud  [ { name: "..." }, ... ]  yaxud
+// [ { feature: "...", is_available: true }, ... ]
+function parseFeatures(raw) {
+  if (!raw || !Array.isArray(raw) || raw.length === 0) return null;
+  return raw.map(f => {
+    if (typeof f === "string") return { name: f, available: true };
+    return {
+      name:      f.name || f.feature || f.title || f.label || String(f),
+      available: f.is_available ?? f.available ?? f.included ?? true,
+    };
+  });
+}
+
+function mapPlan(p, idx) {
+  // Try explicit key fields first, then infer from name, then fallback to index
+  const rawKey = p.key || p.slug || p.package_type || p.plan_type || "";
+  let key = rawKey.toLowerCase();
+
+  if (!key) {
+    const nm = (p.name || p.display_name || "").toLowerCase();
+    if (nm.includes("premium"))        key = "premium";
+    else if (nm.includes("pro"))       key = "pro";
+    else if (nm.includes("basic") || nm.includes("sadə") || nm.includes("sade")) key = "basic";
+    else                               key = ["basic", "pro", "premium"][idx] || `plan-${idx}`;
+  }
+
+  return {
+    key,
+    id:          p.id ?? null,
+    name:        p.name || p.display_name || key,
+    cardPrice:   p.card_price         ? `${parseFloat(p.card_price).toFixed(2)}₼`
+               : p.price              ? `${parseFloat(p.price).toFixed(2)}₼`
+               : "—",
+    monthlyRate: p.monthly_rate       ? parseFloat(p.monthly_rate)
+               : p.monthly_price      ? parseFloat(p.monthly_price)
+               : p.subscription_price ? parseFloat(p.subscription_price)
+               : 0,
+    color:       p.color   || PKG_COLOR_MAP[key] || "#6b7280",
+    badge:       p.badge   || PKG_BADGE_MAP[key] || null,
+    // Backend features (null = yoxdur, hardcoded istifadə et)
+    features:    parseFeatures(p.features || p.plan_features || p.feature_list),
+  };
+}
+
+const BILLING_OPTIONS = [
+  { key: "monthly",  label: "1 Aylıq",  months: 1  },
+  { key: "biannual", label: "6 Aylıq",  months: 6  },
+  { key: "annual",   label: "12 Aylıq", months: 12 },
+];
+
+const FEATURES = [
+  { name: "Sosial şəbəkə",      basic: true,  pro: true,  premium: true  },
+  { name: "Əlaqə məlumatları",  basic: true,  pro: true,  premium: true  },
+  { name: "Portfel / Kataloq",  basic: true,  pro: true,  premium: true  },
+  { name: "NFC + QR sistem",    basic: true,  pro: true,  premium: true  },
+  { name: "Fiziki kart",        basic: true,  pro: true,  premium: true  },
+  { name: "Sistem analitikası", basic: false, pro: true,  premium: true  },
+  { name: "Xüsusi dizayn",     basic: false, pro: true,  premium: true  },
+  { name: "Qablaşma",          basic: false, pro: true,  premium: true  },
+  { name: "Digital kart",      basic: false, pro: false, premium: true  },
+];
+
+const STEP_LABELS = ["Paket", "Müddət", "Kart", "Ödəniş"];
+
+// ─── QR Placeholder ───────────────────────────────────────
+function QrPlaceholder({ color = "currentColor" }) {
+  const cell = 8, gap = 2;
+  const S = 7 * (cell + gap) - gap;
+  const map = [
+    [1,1,1,1,1,1,1],[1,0,0,0,0,0,1],[1,0,1,1,1,0,1],
+    [1,0,1,0,1,0,1],[1,0,1,1,1,0,1],[1,0,0,0,0,0,1],[1,1,1,1,1,1,1],
+  ];
+  const inner = [[2,2],[2,4],[3,3],[4,2],[4,4],[5,3],[3,5],[5,5],[2,6],[6,2],[6,4]];
+  return (
+    <svg width={S} height={S} viewBox={`0 0 ${S} ${S}`}>
+      {map.map((row, r) => row.map((on, c) => on ? (
+        <rect key={`f-${r}-${c}`} x={c*(cell+gap)} y={r*(cell+gap)} width={cell} height={cell} rx={1} fill={color} />
+      ) : null))}
+      {inner.map(([r, c], i) => (
+        <rect key={`d-${i}`} x={c*(cell+gap)} y={r*(cell+gap)} width={cell} height={cell} rx={1} fill={color} opacity={0.7} />
+      ))}
+    </svg>
+  );
+}
+
+// ─── Kart Preview ─────────────────────────────────────────
+function CardPreview({ theme, logo, name, title, flipped, onFlip }) {
+  const isDark = theme === "dark";
+  const gold = isDark ? "#c9a84c" : "#b8942a";
+  return (
+    <div className={`pkg-scene ${flipped ? "is-flipped" : ""}`} onClick={onFlip}>
+      <div className={`pkg-card theme-${theme}`}>
+        {/* FRONT */}
+        <div className="pkg-face pkg-front">
+          <div className="pkg-front-topbar">
+            <span className="pkg-tagline">İlk təəssürat önəmlidir</span>
+            <span className="pkg-site">insyde.info</span>
+          </div>
+          <div className="pkg-brand-word">Insyde</div>
+        </div>
+        {/* BACK */}
+        <div className="pkg-face pkg-back">
+          <div className="pkg-back-logo">
+            {logo
+              ? <img src={logo} alt="logo" className="pkg-logo-img" />
+              : <span className="pkg-logo-placeholder">LOGO</span>}
+          </div>
+          <div className="pkg-qr-wrap">
+            <QrPlaceholder color={gold} />
+          </div>
+          <div className="pkg-back-info">
+            <span className="pkg-back-name" style={{ color: gold }}>{name || "Ad Soyad"}</span>
+            <span className="pkg-back-title">{title || "Peşə / Vəzifə"}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step Indicator ───────────────────────────────────────
+function StepIndicator({ current }) {
+  return (
+    <div className="step-indicator">
+      {STEP_LABELS.map((label, i) => {
+        const num = i + 1;
+        const done = num < current;
+        const active = num === current;
+        return (
+          <React.Fragment key={num}>
+            <div className={`step-item ${active ? "active" : ""} ${done ? "done" : ""}`}>
+              <div className="step-circle">
+                {done ? <FiCheck /> : num}
+              </div>
+              <span className="step-label">{label}</span>
+            </div>
+            {i < STEP_LABELS.length - 1 && (
+              <div className={`step-line ${done ? "done" : ""}`} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Ana Komponent ────────────────────────────────────────
+function PackageMain() {
+  const fileRef = useRef(null);
+
+  const [step,            setStep]           = useState(1);
+  const [selectedPkg,     setSelectedPkg]    = useState(null);
+  const [selectedBilling, setSelectedBilling]= useState("monthly");
+  const [cardTheme,       setCardTheme]      = useState("dark");
+  const [cardLogo,        setCardLogo]       = useState(null);
+  const [cardLogoFile,    setCardLogoFile]   = useState(null);
+  const [cardName,        setCardName]       = useState("");
+  const [cardTitle,       setCardTitle]      = useState("");
+  const [flipped,         setFlipped]        = useState(false);
+
+  const [packages,   setPackages]   = useState(FALLBACK_PACKAGES.filter(p => ALLOWED_PLANS.includes(p.key)));
+  const [currentSub, setCurrentSub] = useState(null);
+  const [loading,    setLoading]    = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [success,    setSuccess]    = useState(false);
+  const [error,      setError]      = useState("");
+
+  // Paralel: planları + profil məlumatlarını yüklə
+  useEffect(() => {
+    const plansReq   = authFetch(`${API_BASE}/api/plans/`);
+    const profileReq = authFetch(`${API_BASE}/api/v1/profile/me/`);
+
+    Promise.allSettled([plansReq, profileReq]).then(async ([plansRes, profileRes]) => {
+      // ── Planlar ──────────────────────────────────────
+      if (plansRes.status === "fulfilled" && plansRes.value?.ok) {
+        try {
+          const json = await plansRes.value.json();
+          // [ {...}, {...} ]  yaxud  { results: [...] }  yaxud  { plans: [...] }
+          const arr = Array.isArray(json)
+            ? json
+            : Array.isArray(json.results)
+              ? json.results
+              : Array.isArray(json.plans)
+                ? json.plans
+                : null;
+          if (arr && arr.length > 0) {
+            setPackages(arr.slice(0, 3).map((p, i) => mapPlan(p, i)));
+          }
+        } catch { /* fallback-i saxla */ }
+      }
+
+      // ── Profil ───────────────────────────────────────
+      if (profileRes.status === "fulfilled" && profileRes.value?.ok) {
+        try {
+          const data = await profileRes.value.json();
+          const d    = data?.data || data;
+          const info = d?.user_info || {};
+          setCardName(info.name || "");
+          setCardTitle(info.work || "");
+          const sub = d?.subscription || {};
+          setCurrentSub((sub.version_type || sub.packet_type || "free").toLowerCase());
+        } catch { /* ignore */ }
+      }
+    }).finally(() => setLoading(false));
+  }, []);
+
+  // ── Hesablama ─────────────────────────────────────────
+  const pkgData    = packages.find(p => p.key === selectedPkg);
+  const billData   = BILLING_OPTIONS.find(b => b.key === selectedBilling);
+  const totalPrice = pkgData && billData
+    ? +(pkgData.monthlyRate * billData.months).toFixed(2)
+    : 0;
+
+  // ── Logo yüklə ────────────────────────────────────────
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCardLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = ev => setCardLogo(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  // ── Ödəniş ────────────────────────────────────────────
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setError("");
+    try {
+      const form = new FormData();
+      form.append("package_type",    selectedPkg);
+      form.append("plan_id",         pkgData?.id ?? "");
+      form.append("billing_period",  selectedBilling);
+      form.append("months",          billData?.months ?? 1);
+      form.append("card_theme",      cardTheme);
+      form.append("card_name",       cardName);
+      form.append("card_title",      cardTitle);
+      if (cardLogoFile) form.append("card_logo", cardLogoFile);
+
+      const res = await authFetch(`${API_BASE}/api/v1/subscription/purchase/`, {
+        method: "POST",
+        body: form,
+      });
+
+      if (!res) { setError("Sessiya bitib."); return; }
+
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(body?.detail || body?.error || `Xəta: ${res.status}`);
+        return;
+      }
+
+      // Ödəniş URL-i varsa (payment gateway)
+      if (body?.payment_url) {
+        window.location.href = body.payment_url;
+        return;
+      }
+
+      setSuccess(true);
+    } catch {
+      setError("Server ilə əlaqə kəsildi.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ── Uğur ekranı ───────────────────────────────────────
+  if (success) {
     return (
-      <div className="mobile-feat-group">
-        <div
-          className="feat-item monthly-fee"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <div className="icon">
-            <FiCheck className="icon-check" />
-          </div>
-          <div className="feat-text-wrapper">
-            <span>
-              Aylıq aktivlik: <strong>{price}</strong>
-            </span>
-            <FiInfo className={`mobile-info-icon ${isOpen ? "active" : ""}`} />
-          </div>
-        </div>
-        <div className={`mobile-faq-box ${isOpen ? "open" : ""}`}>
-          <div className="faq-inner">{info}</div>
-        </div>
+      <div className="pkg-success-screen">
+        <div className="pkg-success-icon">✓</div>
+        <h2>Ödəniş tamamlandı!</h2>
+        <p>
+          <strong>{pkgData?.name}</strong> paketi uğurla aktivləşdirildi.
+        </p>
+        <button className="pkg-nav-btn primary" onClick={() => { setSuccess(false); setStep(1); setSelectedPkg(null); }}>
+          Paketlərə qayıt
+        </button>
+      </div>
+    );
+  }
+
+  // ── Yüklənir ──────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="pkg-loading">
+        <div className="pkg-spinner" />
       </div>
     );
   }
 
   return (
-    <div className="mobile-feat-group">
-      <div className="feat-item" onClick={() => setIsOpen(!isOpen)}>
-        <div className="icon">
-          {isAvailable ? (
-            <FiCheck className="icon-check" />
-          ) : (
-            <FiX className="icon-cross" />
-          )}
-        </div>
-        <div className="feat-text-wrapper">
-          <span className={!isAvailable ? "disabled-text" : ""}>{title}</span>
-          <FiInfo className={`mobile-info-icon ${isOpen ? "active" : ""}`} />
-        </div>
-      </div>
-      <div className={`mobile-faq-box ${isOpen ? "open" : ""}`}>
-        <div className="faq-inner">{info}</div>
-      </div>
-    </div>
-  );
-};
-
-const packageMonthlyPrice = { basic: 1.5, pro: 2.0, premium: 2.0 };
-const packageCardPrice = { basic: "12.90₼", pro: "27.90₼", premium: "36.90₼" };
-const packageNames = { basic: "Sadə", pro: "Pro", premium: "Premium" };
-
-const billingOptions = [
-  { key: "monthly", label: "1 Aylıq", months: 1 },
-  { key: "biannual", label: "6 Aylıq", months: 6 },
-  { key: "annual", label: "12 Aylıq", months: 12 },
-];
-
-function PackageMain() {
-  const [currentPackage, setCurrentPackage] = useState("pro");
-  const [selectedBilling, setSelectedBilling] = useState("monthly");
-
-  const features = [
-    {
-      name: "Sosial şəbəkə",
-      info: "Bütün sosial şəbəkə hesablarınızı tək bir səhifədə birləşdirin.",
-      basic: true,
-      pro: true,
-      premium: true,
-    },
-    {
-      name: "Əlaqə məlumatları",
-      info: "Telefon, e-poçt və ünvan kimi əlaqə vasitələrini müştərilərlə paylaşın.",
-      basic: true,
-      pro: true,
-      premium: true,
-    },
-    {
-      name: "Portfel, kataloq, menu",
-      info: "İşlərinizi, məhsullarınızı və ya restoran menyusunu nümayiş etdirin.",
-      basic: true,
-      pro: true,
-      premium: true,
-    },
-    {
-      name: "NFC + QR sistem",
-      info: "Məlumatlarınızı həm NFC toxunuşu, həm də QR kod oxudularaq anında paylaşın.",
-      basic: true,
-      pro: true,
-      premium: true,
-    },
-    {
-      name: "Fiziki kart",
-      info: "İçində çip olan xüsusi fiziki vizit kartı ünvana çatdırılır.",
-      basic: true,
-      pro: true,
-      premium: true,
-    },
-    {
-      name: "Sistem analitikası",
-      info: "Profilinizə baxış sayını və hansı linklərə klikləndiyini detallı izləyin.",
-      basic: false,
-      pro: true,
-      premium: true,
-    },
-    {
-      name: "Xüsusi dizayn",
-      info: "Kartınızın üzərində şirkətinizin loqosu və fərdi dizaynı tətbiq olunur.",
-      basic: false,
-      pro: true,
-      premium: true,
-    },
-    {
-      name: "Qablaşma",
-      info: "Fiziki kartınız xüsusi premium qutu və qablaşdırmada təqdim olunur.",
-      basic: false,
-      pro: true,
-      premium: true,
-    },
-    {
-      name: "Digital kart",
-      info: "Apple Wallet və Google Wallet üçün rəqəmsal kart dəstəyi.",
-      basic: false,
-      pro: false,
-      premium: true,
-    },
-  ];
-
-  const monthlyRate = packageMonthlyPrice[currentPackage];
-  const activeBilling = billingOptions.find((b) => b.key === selectedBilling);
-  const totalPrice = +(monthlyRate * activeBilling.months).toFixed(2);
-
-  return (
     <div className="package-main-modern">
-      <div className="top-header">
+      {/* BAŞLIQ */}
+      <div className="pkg-top-header">
         <div>
-          <h2 className="page-title">Ödəniş Planı</h2>
-          <p className="page-subtitle">
-            Ehtiyaclarınıza uyğun ən ideal paketi seçin və idarə edin.
+          <h2 className="pkg-page-title">Ödəniş Planı</h2>
+          <p className="pkg-page-subtitle">
+            Ehtiyaclarınıza uyğun paketi seçin
           </p>
         </div>
       </div>
 
-      <div className="package-content">
-        {/* ===== MASAÜSTÜ CƏDVƏL ===== */}
-        <div className="desktop-only pricing-card">
-          <div className="pricing-table">
-            <div className="table-header-row">
-              <div className="feature-cell empty-cell">Özəlliklər</div>
-              {["basic", "pro", "premium"].map((pkg) => (
-                <div
-                  key={pkg}
-                  className={`package-cell ${pkg} ${currentPackage === pkg ? "is-current" : ""}`}
-                >
-                  <h3>{packageNames[pkg]}</h3>
-                  <div className="price">{packageCardPrice[pkg]}</div>
-                  {currentPackage === pkg ? (
-                    <div className="current-badge">
-                      <FiCheckCircle /> Hazırkı Paket
-                    </div>
-                  ) : (
-                    <button
-                      className="select-btn"
-                      onClick={() => setCurrentPackage(pkg)}
-                    >
-                      Seç
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+      {/* ADDIM İNDİKATORU */}
+      <StepIndicator current={step} />
 
-            <div className="table-body">
-              {features.map((feat, index) => (
-                <div className="table-row" key={index}>
-                  <div className="feature-name has-tooltip">
-                    <span>{feat.name}</span>
-                    <div className="info-icon" tabIndex="0">
-                      <FiInfo />
-                      <div className="tooltip-box">{feat.info}</div>
-                    </div>
-                  </div>
-                  {["basic", "pro", "premium"].map((pkg) => (
-                    <div
-                      key={pkg}
-                      className={`feature-status ${pkg} ${currentPackage === pkg ? "active-col" : ""}`}
-                    >
-                      {feat[pkg] ? (
-                        <FiCheck className="icon-check" />
-                      ) : (
-                        <FiX className="icon-cross" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ))}
+      {/* ══════════ ADDIM 1: PAKET SEÇ ══════════ */}
+      {step === 1 && (
+        <div className="pkg-step-content">
+          <h3 className="pkg-step-title">Paket seçin</h3>
 
-              <div className="table-row highlight-row">
-                <div className="feature-name has-tooltip">
-                  <span>Aylıq aktivlik ödənişi</span>
-                  <div className="info-icon" tabIndex="0">
-                    <FiInfo />
-                    <div className="tooltip-box">
-                      Sistemdə qeydiyyatda qalmaq üçün aylıq ödəniş.
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className={`feature-status basic ${currentPackage === "basic" ? "active-col" : ""}`}
-                >
-                  <strong>1.50₼</strong>
-                </div>
-                <div
-                  className={`feature-status pro ${currentPackage === "pro" ? "active-col" : ""}`}
-                >
-                  <strong>2.00₼</strong>
-                </div>
-                <div
-                  className={`feature-status premium ${currentPackage === "premium" ? "active-col" : ""}`}
-                >
-                  <strong>2.00₼</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ===== MOBİL KARTLAR ===== */}
-        <div className="mobile-only mobile-cards-container">
-          {["basic", "pro", "premium"].map((pkg) => (
-            <div
-              key={pkg}
-              className={`mobile-package-card ${pkg} ${currentPackage === pkg ? "is-current" : ""}`}
-            >
-              <div className="card-top">
-                <h3>{packageNames[pkg]}</h3>
-                <div className="price">{packageCardPrice[pkg]}</div>
-              </div>
-              <div className="card-features">
-                {features.map((feat, i) => (
-                  <MobileFeatureRow
-                    key={i}
-                    title={feat.name}
-                    info={feat.info}
-                    isAvailable={feat[pkg]}
-                  />
-                ))}
-                <MobileFeatureRow
-                  isMonthly={true}
-                  price={pkg === "basic" ? "1.50₼" : "2.00₼"}
-                  info="Xidmətdən fasiləsiz istifadə üçün aylıq abunəlik."
-                />
-              </div>
-              <div className="card-bottom">
-                {currentPackage === pkg ? (
-                  <div className="current-badge">
-                    <FiCheckCircle /> Hazırkı Paket
-                  </div>
-                ) : (
-                  <button
-                    className="select-btn"
-                    onClick={() => setCurrentPackage(pkg)}
-                  >
-                    Seç
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ===== AYLIQ AKTİVLİK BÖLMƏSİ ===== */}
-        <div className="billing-section">
-          <div className="billing-header">
-            <div>
-              <h3 className="billing-title">Aylıq Aktivlik Ödənişi</h3>
-              <p className="billing-subtitle">
-                <strong>{packageNames[currentPackage]}</strong> paketi — aylıq{" "}
-                <strong className="rate-highlight">
-                  {monthlyRate.toFixed(2).replace(".00", "")}₼
-                </strong>
-              </p>
-            </div>
-            <div className="billing-rate-badge">
-              <FiCalendar />
-              <span>{monthlyRate.toFixed(2).replace(".00", "")}₼ / ay</span>
-            </div>
-          </div>
-
-          {/* Müddət tabları — hər birinin qiyməti avtomatik hesablanır */}
-          <div className="billing-tabs">
-            {billingOptions.map((opt) => {
-              const price = +(monthlyRate * opt.months).toFixed(2);
+          <div className="pkg-cards-grid">
+            {packages.map(pkg => {
+              const isCurrent = currentSub === pkg.key;
+              const isSelected = selectedPkg === pkg.key;
               return (
-                <button
-                  key={opt.key}
-                  className={`billing-tab ${selectedBilling === opt.key ? "active" : ""}`}
-                  onClick={() => setSelectedBilling(opt.key)}
+                <div
+                  key={pkg.key}
+                  className={`pkg-option-card ${isSelected ? "selected" : ""} ${isCurrent ? "is-current" : ""}`}
+                  style={{
+                    "--pkg-color": pkg.color,
+                    "--pkg-glow": `${pkg.color}30`,
+                  }}
+                  onClick={() => setSelectedPkg(pkg.key)}
                 >
-                  <span className="tab-label">{opt.label}</span>
-                  <span className="tab-price">{price}₼</span>
-                </button>
+                  {pkg.badge && <span className="pkg-badge" style={{ background: pkg.color }}>{pkg.badge}</span>}
+                  {isCurrent && <span className="pkg-current-badge">Hazırkı Paket</span>}
+
+                  <div className="pkg-card-top">
+                    <h3 className="pkg-card-name" style={{ color: pkg.color }}>{pkg.name}</h3>
+                    <div className="pkg-card-price">{pkg.cardPrice}</div>
+                    <div className="pkg-card-rate">{pkg.monthlyRate.toFixed(2)}₼ / ay</div>
+                  </div>
+
+                  <div className="pkg-features-list">
+                    {(pkg.features
+                      // Backend-dən gəlirsə → birbaşa göstər
+                      ? pkg.features
+                      // Gəlmirsə → hardcoded FEATURES-dən bu plana uyğunu seç
+                      : FEATURES.map(f => ({ name: f.name, available: f[pkg.key] ?? true }))
+                    ).map((feat, fi) => (
+                      <div key={fi} className={`pkg-feat-row ${!feat.available ? "unavailable" : ""}`}>
+                        {feat.available
+                          ? <FiCheck className="feat-icon check" />
+                          : <FiX    className="feat-icon cross" />}
+                        <span>{feat.name}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={`pkg-select-indicator ${isSelected ? "on" : ""}`}>
+                    {isSelected ? <FiCheck /> : null}
+                  </div>
+                </div>
               );
             })}
           </div>
 
-          {/* Yekun məbləğ */}
-          <div className="billing-summary">
-            <div className="summary-item">
-              <span className="summary-label">Paket</span>
-              <span className="summary-value">
-                {packageNames[currentPackage]}
-              </span>
-            </div>
-            <div className="summary-divider" />
-            <div className="summary-item">
-              <span className="summary-label">Müddət</span>
-              <span className="summary-value">{activeBilling.label}</span>
-            </div>
-            <div className="summary-divider" />
-            <div className="summary-item">
-              <span className="summary-label">Aylıq qiymət</span>
-              <span className="summary-value">
-                {monthlyRate.toFixed(2).replace(".00", "")}₼
-              </span>
-            </div>
-            <div className="summary-divider" />
-            <div className="summary-item total-item">
-              <span className="summary-label">Ümumi məbləğ</span>
-              <span className="summary-total">{totalPrice}₼</span>
-            </div>
-            <button className="pay-btn">
-              <FiCheckCircle /> Ödənişi Tamamla
+          <div className="pkg-nav-row">
+            <span />
+            <button
+              className="pkg-nav-btn primary"
+              disabled={!selectedPkg}
+              onClick={() => setStep(2)}
+            >
+              Təsdiq et <FiChevronRight />
             </button>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* ══════════ ADDIM 2: MÜDDƏT SEÇ ══════════ */}
+      {step === 2 && (
+        <div className="pkg-step-content">
+          <h3 className="pkg-step-title">Ödəniş müddətini seçin</h3>
+          <p className="pkg-step-sub">
+            Daha uzun müddət seçdikdə qiymət aşağı düşür
+          </p>
+
+          <div className="billing-options">
+            {BILLING_OPTIONS.map(opt => {
+              const price = pkgData ? +(pkgData.monthlyRate * opt.months).toFixed(2) : 0;
+              const isSelected = selectedBilling === opt.key;
+              return (
+                <div
+                  key={opt.key}
+                  className={`billing-card ${isSelected ? "selected" : ""}`}
+                  onClick={() => setSelectedBilling(opt.key)}
+                >
+                  <div className="billing-card-top">
+                    <span className="billing-label">{opt.label}</span>
+                    {isSelected && <FiCheck className="billing-check" />}
+                  </div>
+                  <div className="billing-total">{price}₼</div>
+                  <div className="billing-rate">
+                    {pkgData?.monthlyRate.toFixed(2)}₼ × {opt.months} ay
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="pkg-nav-row">
+            <button className="pkg-nav-btn ghost" onClick={() => setStep(1)}>
+              <FiChevronLeft /> Geri
+            </button>
+            <button
+              className="pkg-nav-btn primary"
+              onClick={() => { setFlipped(false); setStep(3); }}
+            >
+              Təsdiq et <FiChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════ ADDIM 3: KART DİZAYNI ══════════ */}
+      {step === 3 && (
+        <div className="pkg-step-content">
+          <h3 className="pkg-step-title">Kart dizaynını seçin</h3>
+          <p className="pkg-step-sub">Fiziki kartınızın görünüşünü fərdiləşdirin</p>
+
+          <div className="card-design-workspace">
+            {/* Preview */}
+            <div className="card-preview-panel">
+              <p className="card-preview-label">Kartın önü / arxası</p>
+              <CardPreview
+                theme={cardTheme}
+                logo={cardLogo}
+                name={cardName}
+                title={cardTitle}
+                flipped={flipped}
+                onFlip={() => setFlipped(f => !f)}
+              />
+              <p className="card-preview-hint">Kartı çevirmək üçün klikləyin</p>
+            </div>
+
+            {/* Controls */}
+            <div className="card-controls-panel">
+
+              <div className="card-ctrl-field">
+                <label>Tema</label>
+                <div className="card-theme-toggle">
+                  {["dark", "light"].map(t => (
+                    <button
+                      key={t}
+                      className={cardTheme === t ? "active" : ""}
+                      onClick={() => setCardTheme(t)}
+                    >
+                      <span className={`dot ${t}-dot`} />
+                      {t === "dark" ? "Tünd" : "Açıq"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="card-ctrl-field">
+                <label>Logo / Şəkil</label>
+                <div className="card-upload-area" onClick={() => fileRef.current.click()}>
+                  {cardLogo
+                    ? <img src={cardLogo} alt="logo" className="card-upload-preview" />
+                    : (
+                      <div className="card-upload-placeholder">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="26">
+                          <path d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5" strokeLinecap="round" />
+                          <path d="M12 3v13M8 7l4-4 4 4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>Logo yüklə</span>
+                      </div>
+                    )}
+                </div>
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogoUpload} />
+                {cardLogo && (
+                  <button className="card-remove-btn" onClick={() => { setCardLogo(null); setCardLogoFile(null); }}>
+                    Sil
+                  </button>
+                )}
+              </div>
+
+              <div className="card-ctrl-field">
+                <label>Ad Soyad</label>
+                <input
+                  className="card-ctrl-input"
+                  value={cardName}
+                  onChange={e => setCardName(e.target.value)}
+                  placeholder="Ad Soyad"
+                />
+              </div>
+
+              <div className="card-ctrl-field">
+                <label>Peşə / Vəzifə</label>
+                <input
+                  className="card-ctrl-input"
+                  value={cardTitle}
+                  onChange={e => setCardTitle(e.target.value)}
+                  placeholder="Peşəniz"
+                />
+              </div>
+
+              <button className="card-flip-btn" onClick={() => setFlipped(f => !f)}>
+                {flipped ? "Ön üzü göstər" : "Arxa üzü göstər"}
+              </button>
+            </div>
+          </div>
+
+          <div className="pkg-nav-row">
+            <button className="pkg-nav-btn ghost" onClick={() => setStep(2)}>
+              <FiChevronLeft /> Geri
+            </button>
+            <button className="pkg-nav-btn primary" onClick={() => setStep(4)}>
+              Təsdiq et <FiChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════ ADDIM 4: ÖDƏNİŞ ══════════ */}
+      {step === 4 && (
+        <div className="pkg-step-content">
+          <h3 className="pkg-step-title">Sifarişi təsdiqləyin</h3>
+
+          <div className="checkout-layout">
+            {/* Sol: Xülasə */}
+            <div className="checkout-summary">
+              <div className="checkout-card">
+                <p className="checkout-section-label">Paket məlumatları</p>
+
+                <div className="checkout-row">
+                  <span>Paket</span>
+                  <strong style={{ color: pkgData?.color }}>{pkgData?.name}</strong>
+                </div>
+                <div className="checkout-row">
+                  <span>Ödəniş müddəti</span>
+                  <strong>{billData?.label}</strong>
+                </div>
+                <div className="checkout-row">
+                  <span>Aylıq qiymət</span>
+                  <strong>{pkgData?.monthlyRate.toFixed(2)}₼</strong>
+                </div>
+                <div className="checkout-divider" />
+                <div className="checkout-row total-row">
+                  <span>Ümumi məbləğ</span>
+                  <strong className="total-amount">{totalPrice}₼</strong>
+                </div>
+              </div>
+
+              <div className="checkout-card">
+                <p className="checkout-section-label">Kart məlumatları</p>
+                <div className="checkout-row">
+                  <span>Tema</span>
+                  <strong>{cardTheme === "dark" ? "Tünd" : "Açıq"}</strong>
+                </div>
+                <div className="checkout-row">
+                  <span>Ad</span>
+                  <strong>{cardName || "—"}</strong>
+                </div>
+                <div className="checkout-row">
+                  <span>Peşə</span>
+                  <strong>{cardTitle || "—"}</strong>
+                </div>
+                <div className="checkout-row">
+                  <span>Logo</span>
+                  <strong>{cardLogo ? "Yüklənib" : "Yoxdur"}</strong>
+                </div>
+              </div>
+
+              {error && <div className="checkout-error">{error}</div>}
+
+              <button
+                className="pkg-nav-btn primary full-width"
+                onClick={handleSubmit}
+                disabled={submitting}
+              >
+                {submitting ? <span className="pkg-spinner-sm" /> : null}
+                {submitting ? "Emal olunur..." : `${totalPrice}₼ Ödənişi Tamamla`}
+              </button>
+            </div>
+
+            {/* Sağ: Kart preview */}
+            <div className="checkout-preview">
+              <p className="checkout-section-label">Kartınızın görünüşü</p>
+              <CardPreview
+                theme={cardTheme}
+                logo={cardLogo}
+                name={cardName}
+                title={cardTitle}
+                flipped={flipped}
+                onFlip={() => setFlipped(f => !f)}
+              />
+              <p className="card-preview-hint">Kartı çevirmək üçün klikləyin</p>
+            </div>
+          </div>
+
+          <div className="pkg-nav-row">
+            <button className="pkg-nav-btn ghost" onClick={() => setStep(3)}>
+              <FiChevronLeft /> Geri
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
