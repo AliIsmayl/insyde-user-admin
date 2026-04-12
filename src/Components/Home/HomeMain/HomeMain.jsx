@@ -11,50 +11,84 @@ import Popup from "../../Popup/Popup";
 import { API_BASE, authFetch, getToken, CK } from "../../../Utils/authUtils";
 
 // ─── Trial Modal ──────────────────────────────────────────
-function TrialModal({ onClose }) {
+function TrialModal({ onClose, onGuide }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
 
   return (
-    <div className="trial-modal__overlay">
-      <div className="trial-modal__panel">
-        <button className="trial-modal__close" onClick={onClose} aria-label="Bağla">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          </svg>
-        </button>
+    <div className="tm-overlay" onClick={onClose}>
+      <div className="tm-panel" onClick={e => e.stopPropagation()}>
 
-        <div className="trial-modal__icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="40" height="40">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
+        {/* Üst dekor zolağı */}
+        <div className="tm-header-bar">
+          <div className="tm-header-glow" />
+          <div className="tm-badge">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            Sınaq versiyası
+          </div>
+          <button className="tm-close" onClick={onClose} aria-label="Bağla">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
 
-        <h2 className="trial-modal__title">Siz sınaq versiyanı açdınız!</h2>
-        <p className="trial-modal__subtitle">
-          Sistemi kəşf edin — <strong>3 saat ərzində</strong> bütün imkanlara tam çıxışınız var.
-        </p>
+        {/* Məzmun */}
+        <div className="tm-body">
+          <h2 className="tm-title">Xoş gəldiniz! 🎉</h2>
+          <p className="tm-sub">
+            <strong>3 saat ərzində</strong> bütün imkanlara tam çıxışınız var.
+          </p>
 
-        <div className="trial-modal__info">
-          <div className="trial-modal__info-item">
-            <span className="trial-modal__info-dot" />
-            <span>Profil məlumatlarınızı daxil edin, linklər əlavə edin, sistemin işləyişinə nəzər yetirin.</span>
+          {/* 3 addım kartları */}
+          <div className="tm-steps">
+            <div className="tm-step">
+              <div className="tm-step__num">1</div>
+              <div className="tm-step__text">
+                <strong>Məlumatlarınızı daxil edin</strong>
+                <span>Ad, əlaqə və sosial linklər.</span>
+              </div>
+            </div>
+            <div className="tm-step">
+              <div className="tm-step__num">2</div>
+              <div className="tm-step__text">
+                <strong>Müştəri görünüşünə baxın</strong>
+                <span>Profilinizin canlı önizləməsi.</span>
+              </div>
+            </div>
+            <div className="tm-step">
+              <div className="tm-step__num">3</div>
+              <div className="tm-step__text">
+                <strong>Paket seçin və sifariş verin</strong>
+                <span>Dizayn seçin, ödənişi tamamlayın.</span>
+              </div>
+            </div>
           </div>
-          <div className="trial-modal__info-item">
-            <span className="trial-modal__info-dot" />
-            <span>Məlumat panelinizi real vaxtda izləyin və kartınızın önizləməsini görün.</span>
+
+          {/* Bələdçi hint */}
+          <div className="tm-hint">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+            <span>Haradan başlayacaqsınız? <strong onClick={onGuide} className="tm-hint__link">Bələdçiyə keçin →</strong></span>
           </div>
-          <div className="trial-modal__info-item">
-            <span className="trial-modal__info-dot" />
-            <span><strong>Paketlər</strong> hissəsindən sizə uyğun paketi seçib sistemi daimi aktiv saxlaya bilərsiniz.</span>
+
+          {/* Düymələr */}
+          <div className="tm-actions">
+            <button className="tm-btn tm-btn--ghost" onClick={onGuide}>
+              Bələdçi
+            </button>
+            <button className="tm-btn tm-btn--primary" onClick={onClose}>
+              Kəşfə başla
+            </button>
           </div>
         </div>
 
-        <button className="trial-modal__btn" onClick={onClose}>
-          Kəşfə başla
-        </button>
       </div>
     </div>
   );
@@ -646,7 +680,10 @@ export default function HomeMain() {
   return (
     <div className="home-main-modern-split">
       {showTrialModal && (
-        <TrialModal onClose={() => setShowTrialModal(false)} />
+        <TrialModal
+          onClose={() => setShowTrialModal(false)}
+          onGuide={() => { setShowTrialModal(false); navigate("/guide"); }}
+        />
       )}
       <Popup
         isOpen={popup.isOpen}

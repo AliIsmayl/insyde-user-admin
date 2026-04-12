@@ -16,6 +16,7 @@ import PackagePage from "./Pages/PackagePage";
 import AnalysPage from "./Pages/AnalysPage";
 import LoginPage from "./Pages/LoginPage";
 import OrderPage from "./Pages/OrderPage";
+import GuidePage from "./Pages/GuidePage";
 import ScrollToTop from "./Components/ScroolToTop";
 import { isAuthenticated, authFetch, API_BASE } from "./Utils/authUtils";
 const ANALYS_ALLOWED_PLANS = ["pro", "premium"];
@@ -81,6 +82,7 @@ function App() {
           <Route path="/settings" element={<SettingPage />} />
           <Route path="/packages" element={<PackagePage />} />
           <Route path="/order" element={<OrderPage />} />
+          <Route path="/guide" element={<GuidePage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

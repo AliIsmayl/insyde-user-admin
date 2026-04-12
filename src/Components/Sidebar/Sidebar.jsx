@@ -6,6 +6,7 @@ import { LuSquareArrowOutDownLeft } from "react-icons/lu";
 import { FaRegMessage } from "react-icons/fa6";
 import { PiPackage } from "react-icons/pi";
 import { TbBrandGoogleAnalytics, TbTruckDelivery } from "react-icons/tb";
+import { MdOutlineMenuBook } from "react-icons/md";
 import "./Sidebar.scss";
 import { clearSession } from "../../Utils/authUtils";
 
@@ -51,6 +52,12 @@ function Sidebar({
       name: "Sifarişim",
       path: "/order",
       icon: <TbTruckDelivery />,
+      freeVisible: true,
+    },
+    {
+      name: "Bələdçi",
+      path: "/guide",
+      icon: <MdOutlineMenuBook />,
       freeVisible: true,
     },
     {

@@ -1,0 +1,467 @@
+// ── GuideMain.scss ────────────────────────────────────────
+
+.guide-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  flex: 1;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+// ── Üst rejim seçimi ─────────────────────────────────────
+.guide-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 32px 0;
+  border-bottom: 1px solid var(--border-subtle);
+
+  @media (max-width: 600px) {
+    padding: 16px 16px 0;
+  }
+}
+
+.guide-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 10px 10px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+  bottom: -1px;
+
+  svg { font-size: 17px; }
+
+  @media (max-width: 600px) {
+    font-size: 12.5px;
+    padding: 9px 14px;
+    gap: 6px;
+  }
+
+  &:hover:not(.active) {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  &.active {
+    color: var(--nav-item-active-text);
+    background: var(--bg-panel);
+    border-color: var(--border-subtle);
+    border-bottom-color: var(--bg-panel);
+  }
+}
+
+// ── Panel konteyner ───────────────────────────────────────
+.guide-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+}
+
+// ══════════════════════════════════════════════════════════
+// ADDIM-ADDIM REJİMİ
+// ══════════════════════════════════════════════════════════
+.guide-step-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  padding: 40px 44px;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    padding: 24px 16px;
+    gap: 24px;
+  }
+}
+
+// Progress bar
+.guide-progress {
+  display: flex;
+  align-items: center;
+  max-width: 480px;
+}
+
+.guide-progress__dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+
+  &.done {
+    border-color: var(--btn-primary-bg);
+    background: var(--badge-bg);
+    color: var(--nav-item-active-text);
+  }
+
+  &.active {
+    border-color: var(--btn-primary-bg);
+    background: var(--btn-primary-bg);
+    color: var(--text-on-gold);
+    box-shadow: 0 0 0 5px var(--badge-bg);
+  }
+}
+
+.guide-progress__line {
+  flex: 1;
+  height: 2px;
+  background: var(--border-subtle);
+  min-width: 32px;
+  transition: background 0.2s ease;
+
+  &.done { background: var(--btn-primary-bg); }
+}
+
+// ══════════════════════════════════════════════════════════
+// SƏHIFƏ İZAHI REJİMİ
+// ══════════════════════════════════════════════════════════
+.guide-pages-wrap {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  flex: 1;
+  min-height: 0;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Sol nav
+.guide-nav {
+  padding: 28px 14px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--bg-sidebar);
+
+  @media (max-width: 860px) {
+    padding: 14px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    @media (max-width: 860px) {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: all 0.16s ease;
+
+    @media (max-width: 860px) {
+      width: auto;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    &.active {
+      background: var(--nav-item-active-bg);
+      border-color: var(--border-default);
+      color: var(--nav-item-active-text);
+    }
+  }
+
+  &__item-icon {
+    font-size: 17px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  &__item-label { flex: 1; }
+
+  &__item-arrow {
+    font-size: 14px;
+    opacity: 0.5;
+    flex-shrink: 0;
+
+    @media (max-width: 860px) { display: none; }
+  }
+}
+
+// Sağ məzmun
+.guide-page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 36px 40px;
+  overflow-y: auto;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+  }
+}
+
+.guide-content__top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.guide-content__page-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: var(--badge-bg);
+  color: var(--nav-item-active-text);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.guide-content__page-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--nav-item-active-text);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 4px;
+}
+
+.guide-content__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+
+  @media (max-width: 600px) { font-size: 1.1rem; }
+}
+
+// Alt kateqoriya tabları
+.guide-sub-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guide-sub-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border-input);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.16s ease;
+
+  &:hover {
+    border-color: var(--border-default);
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  &.active {
+    background: var(--nav-item-active-bg);
+    border-color: var(--btn-primary-bg);
+    color: var(--nav-item-active-text);
+  }
+
+  &__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--badge-bg);
+    color: var(--nav-item-active-text);
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// ORTAQ: Məzmun bloku
+// ══════════════════════════════════════════════════════════
+.guide-block {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 40px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.guide-block__text {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.guide-block__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  background: var(--badge-bg);
+  color: var(--nav-item-active-text);
+  font-size: 25px;
+  border: 1px solid var(--border-default);
+}
+
+.guide-block__badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--nav-item-active-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.guide-block__title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.4;
+
+  @media (max-width: 600px) { font-size: 1.05rem; }
+}
+
+.guide-block__desc {
+  font-size: 14.5px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin: 0;
+}
+
+// Naviqasiya
+.guide-block__nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.guide-block__nav-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: center;
+}
+
+.guide-block__nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 9px 18px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border-input);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.16s ease;
+
+  svg { font-size: 15px; }
+
+  &:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  &:not(:disabled):hover {
+    border-color: var(--border-default);
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &--next {
+    background: var(--btn-primary-bg);
+    border-color: var(--btn-primary-bg);
+    color: var(--text-on-gold);
+    font-weight: 600;
+    box-shadow: var(--btn-primary-shadow);
+
+    &:not(:disabled):hover {
+      background: var(--btn-primary-hover);
+      border-color: var(--btn-primary-hover);
+      color: var(--text-on-gold);
+    }
+  }
+}
+
+// ── Şəkil placeholder ─────────────────────────────────────
+.guide-block__img { width: 100%; }
+
+.guide-img-ph {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 16px;
+  border: 1.5px dashed var(--border-default);
+  background: var(--bg-input);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  transition: border-color 0.2s, background 0.2s;
+
+  @media (max-width: 480px) { aspect-ratio: 4 / 3; }
+
+  svg { opacity: 0.4; }
+
+  span {
+    font-size: 12px;
+    opacity: 0.55;
+    text-align: center;
+    max-width: 160px;
+    line-height: 1.5;
+  }
+}
