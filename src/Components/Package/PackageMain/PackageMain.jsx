@@ -45,11 +45,12 @@ function mapPlan(p, idx) {
 
   if (!key) {
     const nm = (p.name || p.display_name || "").toLowerCase();
-    if      (nm.includes("business") || nm.includes("biznes")) key = "business";
-    else if (nm.includes("premium"))                           key = "premium";
-    else if (nm.includes("pro"))                               key = "pro";
-    else if (nm.includes("basic") || nm.includes("sadə") || nm.includes("sade")) key = "basic";
-    else                                                       key = `plan-${idx}`;
+    if      (nm.includes("business") || nm.includes("biznes"))                                          key = "business";
+    else if (nm.includes("premium") || nm.includes("elit"))                                             key = "premium";
+    else if (nm.includes("pro"))                                                                        key = "pro";
+    else if (nm.includes("standart") || nm.includes("standard") || nm.includes("basic")
+          || nm.includes("sadə")     || nm.includes("sade"))                                           key = "basic";
+    else                                                                                                key = `plan-${idx}`;
   }
 
   return {
@@ -291,24 +292,33 @@ function PackageMain() {
       }
 
       // ── MANUAL_MODE: mövcud paketi avtomatik seç ─────
-      // İstifadəçinin hazırkı paketi API planlar siyahısından tapılır,
-      // tapılmasa FALLBACK_PACKAGES-dan, yəni qiymət həmişə düzgün olacaq.
-      if (MANUAL_MODE && detectedSubKey && detectedSubKey !== "free") {
-        const source = allMappedPlans || FALLBACK_PACKAGES;
-        const found  = source.find(p => p.key === detectedSubKey)
-                    || FALLBACK_PACKAGES.find(p => p.key === detectedSubKey);
-        if (found) setCurrentSubData(found);
-        setSelectedPkg(detectedSubKey);
+      // Free istifadəçi üçün paket seçim addımını göstər (step=1)
+      // Ödənişli istifadəçi üçün yalnız müddət+ödəniş (step=2)
+      if (MANUAL_MODE) {
+        if (!detectedSubKey || detectedSubKey === "free") {
+          // Free: paket seçim addımına qayıt
+          setStep(1);
+        } else {
+          const source = allMappedPlans || FALLBACK_PACKAGES;
+          const found  = source.find(p => p.key === detectedSubKey)
+                      || FALLBACK_PACKAGES.find(p => p.key === detectedSubKey);
+          if (found) setCurrentSubData(found);
+          setSelectedPkg(detectedSubKey);
+        }
       }
     }).finally(() => setLoading(false));
   }, []);
 
   // ── Hesablama ─────────────────────────────────────────
   const isBasic    = selectedPkg === "basic";
-  const stepLabels = MANUAL_MODE
+  const isFreeUser = !currentSub || currentSub === "free";
+  // MANUAL_MODE + ödənişli user: yalnız müddət+ödəniş göstər
+  // MANUAL_MODE + free user (və ya normal mode): bütün addımları göstər
+  const effectiveManual = MANUAL_MODE && !isFreeUser;
+  const stepLabels = effectiveManual
     ? ["Müddət", "Ödəniş"]
     : (isBasic ? STEP_LABELS_BASIC : STEP_LABELS_FULL);
-  const uiStep = MANUAL_MODE
+  const uiStep = effectiveManual
     ? (step === 4 ? 2 : 1)
     : (isBasic && step === 4 ? 3 : step);
 
@@ -384,7 +394,7 @@ function PackageMain() {
         <p>
           {pkgData?.name && <strong>{pkgData.name}</strong>}{pkgData?.name ? " paketi" : "Paket"} uğurla aktivləşdirildi.
         </p>
-        <button className="pkg-nav-btn primary" onClick={() => { setSuccess(false); setStep(MANUAL_MODE ? 2 : 1); setSelectedPkg(null); }}>
+        <button className="pkg-nav-btn primary" onClick={() => { setSuccess(false); setStep(1); setSelectedPkg(null); }}>
           Paketlərə qayıt
         </button>
       </div>
@@ -416,7 +426,7 @@ function PackageMain() {
       <StepIndicator current={uiStep} labels={stepLabels} />
 
       {/* ══════════ ADDIM 1: PAKET SEÇ ══════════ */}
-      {!MANUAL_MODE && step === 1 && (
+      {(!MANUAL_MODE || isFreeUser) && step === 1 && (
         <div className="pkg-step-content">
           <h3 className="pkg-step-title">Paket seçin</h3>
 
@@ -528,14 +538,14 @@ function PackageMain() {
           </div>
 
           <div className="pkg-nav-row">
-            {!MANUAL_MODE && (
+            {(!MANUAL_MODE || isFreeUser) && (
               <button className="pkg-nav-btn ghost" onClick={() => setStep(1)}>
                 <FiChevronLeft /> Geri
               </button>
             )}
             <button
               className="pkg-nav-btn primary"
-              onClick={() => { setFlipped(false); setStep(MANUAL_MODE ? 4 : (isBasic ? 4 : 3)); }}
+              onClick={() => { setFlipped(false); setStep(effectiveManual ? 4 : (isBasic ? 4 : 3)); }}
             >
               Təsdiq et <FiChevronRight />
             </button>
@@ -544,7 +554,7 @@ function PackageMain() {
       )}
 
       {/* ══════════ ADDIM 3: KART DİZAYNI (yalnız pro/premium) ══════════ */}
-      {!MANUAL_MODE && step === 3 && !isBasic && (
+      {(!MANUAL_MODE || isFreeUser) && step === 3 && !isBasic && (
         <div className="pkg-step-content">
           <h3 className="pkg-step-title">Kart dizaynını seçin</h3>
           <p className="pkg-step-sub">Fiziki kartınızın görünüşünü fərdiləşdirin</p>
@@ -683,7 +693,7 @@ function PackageMain() {
                 </div>
               </div>
 
-              {!MANUAL_MODE && !isBasic && (
+              {(!MANUAL_MODE || isFreeUser) && !isBasic && (
                 <div className="checkout-card">
                   <p className="checkout-section-label">Kart məlumatları</p>
                   <div className="checkout-row">
@@ -718,33 +728,35 @@ function PackageMain() {
             </div>
 
             {/* Sağ: Kart preview */}
-            {!MANUAL_MODE && <div className="checkout-preview">
-              <p className="checkout-section-label">Kartınızın görünüşü</p>
-              {isBasic ? (
-                <>
-                  <BasicCardPreview />
-                  <p className="checkout-upgrade-hint">
-                    Digər paketləri seçərək kartınızı fərdiləşdirə bilərsiz.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <CardPreview
-                    theme={cardTheme}
-                    logo={cardLogo}
-                    name={cardName}
-                    title={cardTitle}
-                    flipped={flipped}
-                    onFlip={() => setFlipped(f => !f)}
-                  />
-                  <p className="card-preview-hint">Kartı çevirmək üçün klikləyin</p>
-                </>
-              )}
-            </div>}
+            {(!MANUAL_MODE || isFreeUser) && (
+              <div className="checkout-preview">
+                <p className="checkout-section-label">Kartınızın görünüşü</p>
+                {isBasic ? (
+                  <>
+                    <BasicCardPreview />
+                    <p className="checkout-upgrade-hint">
+                      Digər paketləri seçərək kartınızı fərdiləşdirə bilərsiz.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <CardPreview
+                      theme={cardTheme}
+                      logo={cardLogo}
+                      name={cardName}
+                      title={cardTitle}
+                      flipped={flipped}
+                      onFlip={() => setFlipped(f => !f)}
+                    />
+                    <p className="card-preview-hint">Kartı çevirmək üçün klikləyin</p>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="pkg-nav-row">
-            <button className="pkg-nav-btn ghost" onClick={() => setStep(MANUAL_MODE ? 2 : (isBasic ? 2 : 3))}>
+            <button className="pkg-nav-btn ghost" onClick={() => setStep(effectiveManual ? 2 : (isBasic ? 2 : 3))}>
               <FiChevronLeft /> Geri
             </button>
           </div>

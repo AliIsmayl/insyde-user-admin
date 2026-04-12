@@ -10,6 +10,56 @@ import "./HomeMain.scss";
 import Popup from "../../Popup/Popup";
 import { API_BASE, authFetch, getToken, CK } from "../../../Utils/authUtils";
 
+// ─── Trial Modal ──────────────────────────────────────────
+function TrialModal({ onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  return (
+    <div className="trial-modal__overlay">
+      <div className="trial-modal__panel">
+        <button className="trial-modal__close" onClick={onClose} aria-label="Bağla">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+          </svg>
+        </button>
+
+        <div className="trial-modal__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="40" height="40">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+
+        <h2 className="trial-modal__title">Siz sınaq versiyanı açdınız!</h2>
+        <p className="trial-modal__subtitle">
+          Sistemi kəşf edin — <strong>3 saat ərzində</strong> bütün imkanlara tam çıxışınız var.
+        </p>
+
+        <div className="trial-modal__info">
+          <div className="trial-modal__info-item">
+            <span className="trial-modal__info-dot" />
+            <span>Profil məlumatlarınızı daxil edin, linklər əlavə edin, sistemin işləyişinə nəzər yetirin.</span>
+          </div>
+          <div className="trial-modal__info-item">
+            <span className="trial-modal__info-dot" />
+            <span>Məlumat panelinizi real vaxtda izləyin və kartınızın önizləməsini görün.</span>
+          </div>
+          <div className="trial-modal__info-item">
+            <span className="trial-modal__info-dot" />
+            <span><strong>Paketlər</strong> hissəsindən sizə uyğun paketi seçib sistemi daimi aktiv saxlaya bilərsiniz.</span>
+          </div>
+        </div>
+
+        <button className="trial-modal__btn" onClick={onClose}>
+          Kəşfə başla
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const URL_PROFILE = `${API_BASE}/api/v1/profile/me/`;
 const URL_PLATFORMS = `${API_BASE}/api/v1/platforms/`;
 const URL_DELETE_LINK = (id) => `${API_BASE}/api/v1/social-link/${id}/delete/`;
@@ -97,6 +147,7 @@ export default function HomeMain() {
   const [activeTab, setActiveTab] = useState("social");
   const [cardStatus, setCardStatus] = useState("active");
   const [statusSms, setStatusSms] = useState("");
+  const [showTrialModal, setShowTrialModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -188,6 +239,11 @@ export default function HomeMain() {
 
       const pkg = sub.version_type || sub.packet_type || "free";
       setPackageType(pkg);
+
+      // Hər loginidə free hesab üçün trial modal göstər
+      if (pkg === "free") {
+        setShowTrialModal(true);
+      }
 
       const allowColor = COLOR_ALLOWED_PACKAGES.includes(pkg);
       const backendColor = sys.color || DEFAULT_COLOR;
@@ -589,6 +645,9 @@ export default function HomeMain() {
 
   return (
     <div className="home-main-modern-split">
+      {showTrialModal && (
+        <TrialModal onClose={() => setShowTrialModal(false)} />
+      )}
       <Popup
         isOpen={popup.isOpen}
         type={popup.type}
