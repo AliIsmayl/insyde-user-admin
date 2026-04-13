@@ -58,6 +58,10 @@ export function clearSession(navigate) {
   CK.del("hash_id"); // ← əlavə edildi
   CK.del("user_code"); // ← əlavə edildi
   try {
+    sessionStorage.removeItem("insyde_trial_modal_seen");
+    sessionStorage.removeItem("insyde_package_flip_hint_seen");
+  } catch {}
+  try {
     localStorage.removeItem("access_token");
   } catch {}
   try {

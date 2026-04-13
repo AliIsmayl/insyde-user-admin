@@ -10,6 +10,7 @@ import {
 } from "react-icons/fi";
 import "./SettingsMain.scss";
 import Popup from "../../Popup/Popup";
+import { CK } from "../../../Utils/authUtils";
 
 const LANGUAGES = [
   { code: "az", label: "Azərbaycanca", flag: "🇦🇿", short: "AZ" },
@@ -25,10 +26,12 @@ function SettingsMain() {
     () => localStorage.getItem("language") || "az",
   );
   const [popup, setPopup] = useState({ isOpen: false, type: "success" });
+  const [userCode, setUserCode] = useState(() => CK.get("user_code") || "");
   const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    setUserCode(CK.get("user_code") || "");
   }, [theme]);
 
   const handleThemeChange = (selectedTheme) => {
@@ -128,6 +131,10 @@ function SettingsMain() {
                 <h3>Platforma Görünüşü</h3>
                 <p>İşləmək üçün sizə ən uyğun olan mövzunu seçin.</p>
               </div>
+            </div>
+            <div className="user-code-box">
+              <span className="user-code-label">User Code</span>
+              <strong className="user-code-value">{userCode || "—"}</strong>
             </div>
             <div className="theme-options">
               <div

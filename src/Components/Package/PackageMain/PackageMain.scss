@@ -18,6 +18,7 @@ $radius-card: 18px;
       font-weight: 500;
       margin: 0 0 5px;
     }
+
     .pkg-page-subtitle {
       font-size: 13px;
       color: var(--text-secondary);
@@ -70,16 +71,22 @@ $radius-card: 18px;
           background: var(--bg-active);
           color: var(--text-link);
         }
-        .step-label { color: var(--text-link); }
+
+        .step-label {
+          color: var(--text-link);
+        }
       }
 
       &.done {
         .step-circle {
           border-color: #10b981;
-          background: rgba(16,185,129,0.12);
+          background: rgba(16, 185, 129, 0.12);
           color: #10b981;
         }
-        .step-label { color: #10b981; }
+
+        .step-label {
+          color: #10b981;
+        }
       }
     }
 
@@ -92,7 +99,9 @@ $radius-card: 18px;
       border-radius: 2px;
       transition: background 0.3s;
 
-      &.done { background: #10b981; }
+      &.done {
+        background: #10b981;
+      }
     }
   }
 
@@ -101,6 +110,7 @@ $radius-card: 18px;
     display: flex;
     flex-direction: column;
     gap: 24px;
+    position: relative;
 
     .pkg-step-title {
       font-size: 18px;
@@ -121,6 +131,70 @@ $radius-card: 18px;
       opacity: 0.6;
       text-align: center;
     }
+  }
+
+  .pkg-step-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+
+
+  .flip-help-modal {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(320px, 100%);
+    padding: 18px 18px 16px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+    z-index: 4;
+
+    h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+  }
+
+  .flip-help-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 10px;
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .flip-help-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--bg-active);
+    color: var(--text-link);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
   }
 
   // ── NAV ROW ─────────────────────────────────────────
@@ -155,7 +229,11 @@ $radius-card: 18px;
         color: #fff;
         border-color: transparent;
       }
-      &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
     }
 
     &.ghost {
@@ -208,12 +286,14 @@ $radius-card: 18px;
     &.selected {
       border-color: var(--pkg-color, var(--border-focus));
       background: var(--bg-active);
-      box-shadow: 0 0 0 4px var(--pkg-glow, rgba(59,130,246,0.18)),
-                  0 4px 16px rgba(0,0,0,0.12);
+      box-shadow: 0 0 0 4px var(--pkg-glow, rgba(59, 130, 246, 0.18)),
+        0 4px 16px rgba(0, 0, 0, 0.12);
       transform: translateY(-3px);
     }
 
-    &.is-current { border-style: dashed; }
+    &.is-current {
+      border-style: dashed;
+    }
 
     .pkg-badge {
       position: absolute;
@@ -242,9 +322,23 @@ $radius-card: 18px;
     }
 
     .pkg-card-top {
-      .pkg-card-name  { font-size: 20px; font-weight: 800; margin: 0 0 6px; }
-      .pkg-card-price { font-size: 28px; font-weight: 800; color: var(--text-primary); }
-      .pkg-card-rate  { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+      .pkg-card-name {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0 0 6px;
+      }
+
+      .pkg-card-price {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text-primary);
+      }
+
+      .pkg-card-rate {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 3px;
+      }
     }
 
     .pkg-features-list {
@@ -260,13 +354,22 @@ $radius-card: 18px;
         font-size: 13px;
         color: var(--text-primary);
 
-        &.unavailable { color: var(--text-secondary); opacity: 0.45; }
+        &.unavailable {
+          color: var(--text-secondary);
+          opacity: 0.45;
+        }
 
         .feat-icon {
           font-size: 14px;
           flex-shrink: 0;
-          &.check { color: #10b981; }
-          &.cross  { color: var(--text-secondary); }
+
+          &.check {
+            color: #10b981;
+          }
+
+          &.cross {
+            color: var(--text-secondary);
+          }
         }
       }
     }
@@ -308,12 +411,15 @@ $radius-card: 18px;
     flex-direction: column;
     gap: 10px;
 
-    &:hover { border-color: var(--border-focus); transform: translateY(-2px); }
+    &:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+    }
 
     &.selected {
       border-color: var(--border-focus);
       background: var(--bg-active);
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
       transform: translateY(-2px);
     }
 
@@ -322,11 +428,19 @@ $radius-card: 18px;
       justify-content: space-between;
       align-items: center;
 
-      .billing-label { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-      .billing-check { color: var(--text-link); font-size: 18px; }
+      .billing-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .billing-check {
+        color: var(--text-link);
+        font-size: 18px;
+      }
 
       .billing-discount-badge {
-        background: rgba(16,185,129,0.14);
+        background: rgba(16, 185, 129, 0.14);
         color: #10b981;
         border-radius: 8px;
         padding: 2px 9px;
@@ -343,10 +457,30 @@ $radius-card: 18px;
       gap: 8px;
     }
 
-    .billing-total    { font-size: 30px; font-weight: 800; color: var(--text-primary); }
-    .billing-original { font-size: 16px; font-weight: 500; color: var(--text-secondary); text-decoration: line-through; opacity: 0.6; }
-    .billing-rate     { font-size: 12px; color: var(--text-secondary); }
-    .billing-save-note { color: #4ade80; font-weight: 600; margin-left: 4px; }
+    .billing-total {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .billing-original {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .billing-rate {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .billing-save-note {
+      color: #4ade80;
+      font-weight: 600;
+      margin-left: 4px;
+    }
   }
 
   .billing-summary-mini {
@@ -360,8 +494,14 @@ $radius-card: 18px;
     font-size: 14px;
     color: var(--text-secondary);
 
-    strong { color: var(--text-primary); font-weight: 700; }
-    .bill-sum-sep { color: var(--border-strong); }
+    strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .bill-sum-sep {
+      color: var(--border-strong);
+    }
   }
 
   // ── ADDIM 3: KART DİZAYNI ───────────────────────────
@@ -381,6 +521,34 @@ $radius-card: 18px;
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: 22px;
+    position: relative;
+
+    .card-flip-icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-panel);
+      color: var(--text-link);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: absolute;
+      top: 30px;
+      right: 30px;
+
+      &:hover {
+        background: var(--bg-active);
+        border-color: var(--border-focus);
+        color: var(--text-link-hover);
+      }
+
+      svg {
+        font-size: 18px;
+      }
+    }
   }
 
   .card-preview-label {
@@ -402,11 +570,13 @@ $radius-card: 18px;
   // ── 3D kart səhnəsi ─────────────────────────────────
   .pkg-scene {
     width: min(420px, 100%);
-    aspect-ratio: 856 / 540;   // kredit kartı nisbəti
+    aspect-ratio: 856 / 540; // kredit kartı nisbəti
     perspective: 1400px;
     cursor: pointer;
 
-    &.is-flipped .pkg-card { transform: rotateY(180deg); }
+    &.is-flipped .pkg-card {
+      transform: rotateY(180deg);
+    }
   }
 
   .pkg-card {
@@ -432,7 +602,9 @@ $radius-card: 18px;
   .pkg-front {
     .pkg-front-topbar {
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -448,11 +620,13 @@ $radius-card: 18px;
       white-space: nowrap;
     }
 
-    // Böyük "Insyde" brand yazısı — aşağıda, mərkəzdə
+    // Böyük brand yazısı — aşağıda, mərkəzdə
     .pkg-brand-word {
       position: absolute;
       bottom: -14px;
-      left: 0; right: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
       text-align: center;
       font-family: "Bitter", serif;
       font-size: 118px;
@@ -461,6 +635,37 @@ $radius-card: 18px;
       color: var(--card-gold, #c9a84c);
       letter-spacing: -0.02em;
       user-select: none;
+      transition: font-size 0.3s ease, bottom 0.3s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
+
+      // Fərdi yazı seçildikdə — daha kiçik, düzgün yerləşir
+      &.pkg-brand-custom {
+        font-size: 68px;
+        bottom: 10px;
+        letter-spacing: 0.02em;
+      }
+    }
+  }
+
+  // ── ÖN ÜZ — Insyde kölgəsi (həmişə görünür) ─────────
+  .pkg-front {
+    .pkg-wm-front {
+      position: absolute;
+      bottom: -14px;
+      left: 0;
+      right: 0;
+      z-index: 1;
+      text-align: center;
+      font-family: "Bitter", serif;
+      font-size: 118px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      user-select: none;
+      pointer-events: none;
+      // rəng inline style ilə verilir (frontWmClr)
     }
   }
 
@@ -472,13 +677,14 @@ $radius-card: 18px;
     .pkg-wm {
       position: absolute;
       bottom: -14px;
-      left: 0; right: 0;
+      left: 0;
+      right: 0;
       text-align: center;
       font-family: "Bitter", serif;
       font-size: 118px;
       font-weight: 900;
       line-height: 1;
-      color: var(--card-wm, rgba(201,168,76,0.07));
+      color: var(--card-wm, rgba(201, 168, 76, 0.07));
       letter-spacing: -0.02em;
       user-select: none;
       pointer-events: none;
@@ -492,7 +698,7 @@ $radius-card: 18px;
     }
 
     .pkg-logo-img {
-      width:  70px;
+      width: 70px;
       height: 46px;
       object-fit: contain;
       border-radius: 6px;
@@ -504,8 +710,8 @@ $radius-card: 18px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--card-text2, rgba(255,255,255,0.35));
-      border: 1.5px dashed var(--card-text2, rgba(255,255,255,0.25));
+      color: var(--card-text2, rgba(255, 255, 255, 0.35));
+      border: 1.5px dashed var(--card-text2, rgba(255, 255, 255, 0.25));
       border-radius: 6px;
       padding: 6px 14px;
       white-space: nowrap;
@@ -519,7 +725,7 @@ $radius-card: 18px;
       color: var(--card-gold, #c9a84c);
 
       svg {
-        width:  72px;
+        width: 72px;
         height: 72px;
       }
     }
@@ -548,7 +754,7 @@ $radius-card: 18px;
         font-family: "Poppins", sans-serif;
         font-size: 14px;
         font-weight: 400;
-        color: var(--card-text2, rgba(255,255,255,0.45));
+        color: var(--card-text2, rgba(255, 255, 255, 0.45));
         margin-top: 4px;
         white-space: nowrap;
         overflow: hidden;
@@ -606,13 +812,67 @@ $radius-card: 18px;
       cursor: pointer;
       transition: all 0.2s;
 
-      &:hover { color: var(--text-primary); }
-      &.active { background: var(--bg-active); border-color: var(--border-strong); color: var(--text-link); }
+      &:hover {
+        color: var(--text-primary);
+      }
+
+      &.active {
+        background: var(--bg-active);
+        border-color: var(--border-strong);
+        color: var(--text-link);
+      }
 
       .dot {
-        width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
-        &.dark-dot  { background: #0d0d0d; border: 2px solid rgba(255,255,255,0.2); }
-        &.light-dot { background: #f5f2ec; border: 2px solid rgba(0,0,0,0.18); }
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        flex-shrink: 0;
+
+        &.dark-dot {
+          background: #0d0d0d;
+          border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        &.light-dot {
+          background: #f5f2ec;
+          border: 2px solid rgba(0, 0, 0, 0.18);
+        }
+      }
+    }
+  }
+
+  .card-brand-toggle {
+    display: flex;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px;
+
+    button {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: "Poppins", sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        color: var(--text-primary);
+      }
+
+      &.active {
+        background: var(--bg-active);
+        border-color: var(--border-strong);
+        color: var(--text-link);
       }
     }
   }
@@ -629,7 +889,10 @@ $radius-card: 18px;
     cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
 
-    &:hover { border-color: var(--border-focus); background: var(--bg-hover); }
+    &:hover {
+      border-color: var(--border-focus);
+      background: var(--bg-hover);
+    }
   }
 
   .card-upload-placeholder {
@@ -638,7 +901,11 @@ $radius-card: 18px;
     align-items: center;
     gap: 8px;
     color: var(--text-secondary);
-    span { font-size: 13px; font-weight: 500; }
+
+    span {
+      font-size: 13px;
+      font-weight: 500;
+    }
   }
 
   .card-upload-preview {
@@ -650,7 +917,7 @@ $radius-card: 18px;
 
   .card-remove-btn {
     align-self: flex-start;
-    background: rgba(239,68,68,0.1);
+    background: rgba(239, 68, 68, 0.1);
     border: none;
     border-radius: 10px;
     color: #fca5a5;
@@ -660,7 +927,10 @@ $radius-card: 18px;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
-    &:hover { background: rgba(239,68,68,0.22); }
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.22);
+    }
   }
 
   .card-ctrl-input {
@@ -674,8 +944,15 @@ $radius-card: 18px;
     color: var(--text-primary);
     outline: none;
     transition: border-color 0.2s;
-    &::placeholder { color: var(--text-secondary); opacity: 0.45; }
-    &:focus { border-color: var(--border-focus); }
+
+    &::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.45;
+    }
+
+    &:focus {
+      border-color: var(--border-focus);
+    }
   }
 
   .card-flip-btn {
@@ -690,7 +967,12 @@ $radius-card: 18px;
     cursor: pointer;
     transition: all 0.2s;
     width: 100%;
-    &:hover { background: var(--border-focus); color: #fff; border-color: transparent; }
+
+    &:hover {
+      background: var(--border-focus);
+      color: #fff;
+      border-color: transparent;
+    }
   }
 
   // ── ADDIM 4: CHECKOUT ───────────────────────────────
@@ -733,9 +1015,14 @@ $radius-card: 18px;
     font-size: 14px;
     color: var(--text-secondary);
 
-    strong { color: var(--text-primary); font-weight: 700; }
+    strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
 
-    .checkout-save { color: #10b981 !important; }
+    .checkout-save {
+      color: #10b981 !important;
+    }
 
     &.total-row {
       font-size: 15px;
@@ -771,8 +1058,8 @@ $radius-card: 18px;
   }
 
   .checkout-error {
-    background: rgba(239,68,68,0.08);
-    border: 1px solid rgba(239,68,68,0.22);
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.22);
     border-radius: 14px;
     padding: 12px 16px;
     color: #fca5a5;
@@ -824,6 +1111,7 @@ $radius-card: 18px;
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: 22px;
+    position: relative;
 
     .checkout-section-label {
       margin: 0;
@@ -832,6 +1120,29 @@ $radius-card: 18px;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--text-secondary);
+    }
+  }
+
+  .checkout-flip-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-active);
+    color: var(--text-link);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--border-focus);
+      color: #fff;
+      border-color: transparent;
     }
   }
 
@@ -855,7 +1166,7 @@ $radius-card: 18px;
     display: inline-block;
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: #fff;
     border-radius: 50%;
     animation: pkgSpin 0.8s linear infinite;
@@ -873,7 +1184,7 @@ $radius-card: 18px;
       width: 70px;
       height: 70px;
       border-radius: 50%;
-      background: rgba(16,185,129,0.12);
+      background: rgba(16, 185, 129, 0.12);
       border: 2px solid #10b981;
       display: flex;
       align-items: center;
@@ -882,35 +1193,82 @@ $radius-card: 18px;
       color: #10b981;
     }
 
-    h2 { font-size: 22px; font-weight: 700; margin: 0; }
-    p  { font-size: 14px; color: var(--text-secondary); margin: 0; }
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
   }
 
   @keyframes pkgSpin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   // ── RESPONSIVE ──────────────────────────────────────
   @media (max-width: 1024px) {
-    .pkg-cards-grid        { grid-template-columns: 1fr 1fr; }
-    .card-design-workspace { grid-template-columns: 1fr; }
-    .checkout-layout       { grid-template-columns: 1fr; }
+    .pkg-cards-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .card-design-workspace {
+      grid-template-columns: 1fr;
+    }
+
+    .checkout-layout {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 768px) {
     .step-indicator {
       padding: 16px 12px;
-      .step-label  { display: none; }
-      .step-circle { width: 30px; height: 30px; font-size: 13px; }
-      .step-line   { margin-bottom: 0; }
+
+      .step-label {
+        display: none;
+      }
+
+      .step-circle {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+      }
+
+      .step-line {
+        margin-bottom: 0;
+      }
     }
 
-    .pkg-cards-grid  { grid-template-columns: 1fr; }
-    .billing-options { grid-template-columns: 1fr; }
+    .pkg-cards-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .billing-options {
+      grid-template-columns: 1fr;
+    }
+
+    .flip-help-modal {
+      position: static;
+      width: 100%;
+      margin-bottom: -8px;
+    }
   }
 
   @media (max-width: 480px) {
-    .pkg-nav-btn { padding: 11px 18px; font-size: 13px; }
+    .pkg-nav-btn {
+      padding: 11px 18px;
+      font-size: 13px;
+    }
   }
 }

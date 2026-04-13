@@ -14,6 +14,7 @@ const URL_VERIFY_OTP = `${API_BASE}/api/dash/auth/verify_otp/`;
 
 const REG_TOKEN_KEY = "insyde_reg_token";
 const LOGIN_TOKEN_KEY = "insyde_login_token";
+const TRIAL_MODAL_SESSION_KEY = "insyde_trial_modal_seen";
 
 // ── OTP hook ────────────────────────────────────────────
 function useOtp() {
@@ -113,6 +114,9 @@ function saveSessionAndRedirect(data, tokenKey) {
 
   if (hashId) CK.set("hash_id", hashId);
   if (userCode) CK.set("user_code", userCode);
+  try {
+    sessionStorage.removeItem(TRIAL_MODAL_SESSION_KEY);
+  } catch {}
 
   // hash_id varsa onunla get, yoxdursa sadə /home
   window.location.href = hashId ? `/home/${hashId}` : "/home";

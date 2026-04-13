@@ -10,8 +10,32 @@ import "./HomeMain.scss";
 import Popup from "../../Popup/Popup";
 import { API_BASE, authFetch, getToken, CK } from "../../../Utils/authUtils";
 
+const TRIAL_MODAL_SESSION_KEY = "insyde_trial_modal_seen";
+const PROFILE_DRAFT_KEY = "insyde_profile_draft";
+
+function readProfileDraft() {
+  try {
+    const raw = localStorage.getItem(PROFILE_DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeProfileDraft(payload) {
+  try {
+    localStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(payload));
+  } catch { }
+}
+
+function clearProfileDraft() {
+  try {
+    localStorage.removeItem(PROFILE_DRAFT_KEY);
+  } catch { }
+}
+
 // ─── Trial Modal ──────────────────────────────────────────
-function TrialModal({ onClose, onGuide }) {
+function LegacyTrialModal({ onClose, onGuide }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
@@ -26,22 +50,22 @@ function TrialModal({ onClose, onGuide }) {
           <div className="tm-header-glow" />
           <div className="tm-badge">
             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
             </svg>
             Sınaq versiyası
           </div>
           <button className="tm-close" onClick={onClose} aria-label="Bağla">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
           </button>
         </div>
 
         {/* Məzmun */}
         <div className="tm-body">
-          <h2 className="tm-title">Xoş gəldiniz! 🎉</h2>
+          <h2 className="tm-title">Xoş gəldiniz!</h2>
           <p className="tm-sub">
-            <strong>3 saat ərzində</strong> bütün imkanlara tam çıxışınız var.
+            <strong>1 gün ərzində</strong> hesabınız aktivdir və əsas imkanlardan istifadə edə bilərsiniz.
           </p>
 
           {/* 3 addım kartları */}
@@ -49,22 +73,22 @@ function TrialModal({ onClose, onGuide }) {
             <div className="tm-step">
               <div className="tm-step__num">1</div>
               <div className="tm-step__text">
-                <strong>Məlumatlarınızı daxil edin</strong>
-                <span>Ad, əlaqə və sosial linklər.</span>
+                <strong>Profilinizi tamamlayın</strong>
+                <span>Ad, peşə və əsas linkləri əlavə edin.</span>
               </div>
             </div>
             <div className="tm-step">
               <div className="tm-step__num">2</div>
               <div className="tm-step__text">
-                <strong>Müştəri görünüşünə baxın</strong>
-                <span>Profilinizin canlı önizləməsi.</span>
+                <strong>Profil görünüşünü yoxlayın</strong>
+                <span>Müştərinin görəcəyi səhifəyə baxın.</span>
               </div>
             </div>
             <div className="tm-step">
               <div className="tm-step__num">3</div>
               <div className="tm-step__text">
-                <strong>Paket seçin və sifariş verin</strong>
-                <span>Dizayn seçin, ödənişi tamamlayın.</span>
+                <strong>Uyğun paketi seçin</strong>
+                <span>1 günlük istifadədən sonra rahat davam edin.</span>
               </div>
             </div>
           </div>
@@ -72,8 +96,8 @@ function TrialModal({ onClose, onGuide }) {
           {/* Bələdçi hint */}
           <div className="tm-hint">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
             <span>Haradan başlayacaqsınız? <strong onClick={onGuide} className="tm-hint__link">Bələdçiyə keçin →</strong></span>
           </div>
@@ -89,6 +113,86 @@ function TrialModal({ onClose, onGuide }) {
           </div>
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+function TrialModal({ onClose, onGuide }) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  return (
+    <div className="tm-overlay" onClick={onClose}>
+      <div className="tm-panel" onClick={(e) => e.stopPropagation()}>
+        <button className="tm-close" onClick={onClose} aria-label="Bağla">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        <div className="tm-showcase">
+          <div className="tm-badge">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            Sınaq versiyası
+          </div>
+
+          <div className="tm-demo-copy">
+            <h2 className="tm-title">Xoş gəldiniz!</h2>
+            <p className="tm-sub">
+              <strong>1 gün ərzində</strong> hesabınız aktivdir. Profilinizi doldurub, görünüşü yoxlayıb, hazır olduqda uyğun paketi seçə bilərsiniz.
+            </p>
+          </div>
+        </div>
+
+        <div className="tm-body">
+          <div className="tm-steps">
+            <div className="tm-step">
+              <div className="tm-step__num">1</div>
+              <div className="tm-step__text">
+                <strong>Profilinizi tamamlayın</strong>
+                <span>Ad, peşə və əsas linkləri əlavə edin.</span>
+              </div>
+            </div>
+            <div className="tm-step">
+              <div className="tm-step__num">2</div>
+              <div className="tm-step__text">
+                <strong>Profil görünüşünü yoxlayın</strong>
+                <span>Müştərinin görəcəyi səhifəyə baxın.</span>
+              </div>
+            </div>
+            <div className="tm-step">
+              <div className="tm-step__num">3</div>
+              <div className="tm-step__text">
+                <strong>Uyğun paketi seçin</strong>
+                <span>Hazır olanda davam edib sifarişi tamamlayın.</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="tm-hint">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+            <span>Haradan başlayacaqsınız? <strong onClick={onGuide} className="tm-hint__link">Bələdçiyə keçin →</strong></span>
+          </div>
+
+          <div className="tm-actions">
+            <button className="tm-btn tm-btn--ghost" onClick={onGuide}>
+              Bələdçi
+            </button>
+            <button className="tm-btn tm-btn--primary" onClick={onClose}>
+              Kəşfə başla
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -120,7 +224,6 @@ const COLORS = [
   "#d4a017",
 ];
 
-const COLOR_ALLOWED_PACKAGES = ["premium", "pro" /*, "business" */];
 const DEFAULT_COLOR = "#d4af37";
 
 function getIcon(icon_code) {
@@ -154,7 +257,7 @@ function parseSkills(raw) {
       try {
         const p = JSON.parse(t);
         if (Array.isArray(p)) return p.map(String).filter(Boolean);
-      } catch {}
+      } catch { }
       return t
         .replace(/^\[|\]$/g, "")
         .split(",")
@@ -169,10 +272,32 @@ function parseSkills(raw) {
   return [];
 }
 
+function parseServices(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(String).filter(Boolean);
+  if (typeof raw === "string") {
+    const t = raw.trim();
+    if (t.startsWith("[")) {
+      try {
+        const p = JSON.parse(t);
+        if (Array.isArray(p)) return p.map(String).filter(Boolean);
+      } catch { }
+      return t
+        .replace(/^\[|\]$/g, "")
+        .split(",")
+        .map((s) => s.trim().replace(/^["']|["']$/g, ""))
+        .filter(Boolean);
+    }
+    return t.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+  return [];
+}
+
 export default function HomeMain() {
   const navigate = useNavigate();
   const isNavigating = useRef(false);
   const abortRef = useRef(null);
+  const draftHydratedRef = useRef(false);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -185,8 +310,8 @@ export default function HomeMain() {
 
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
     profession: "",
+    workplace: "",
     skill1: "",
     skill2: "",
     skill3: "",
@@ -195,7 +320,6 @@ export default function HomeMain() {
 
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
-  const [userCode, setUserCode] = useState("");
   const [hash_id, setHashId] = useState("");
   const [totalViews, setTotalViews] = useState(0);
   const [packageType, setPackageType] = useState("free");
@@ -216,7 +340,6 @@ export default function HomeMain() {
 
   const hasUnsaved = links.some((l) => l.isNew || l.isDirty || l.isDeleted);
   const isBlocked = cardStatus === "blocked";
-  const canChangeColor = COLOR_ALLOWED_PACKAGES.includes(packageType);
 
   const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
@@ -274,33 +397,46 @@ export default function HomeMain() {
       const pkg = sub.version_type || sub.packet_type || "free";
       setPackageType(pkg);
 
-      // Hər loginidə free hesab üçün trial modal göstər
-      if (pkg === "free") {
+      if (
+        pkg === "free" &&
+        typeof window !== "undefined" &&
+        !sessionStorage.getItem(TRIAL_MODAL_SESSION_KEY)
+      ) {
+        sessionStorage.setItem(TRIAL_MODAL_SESSION_KEY, "true");
         setShowTrialModal(true);
       }
 
-      const allowColor = COLOR_ALLOWED_PACKAGES.includes(pkg);
       const backendColor = sys.color || DEFAULT_COLOR;
-      setPhoneColor(allowColor ? backendColor : DEFAULT_COLOR);
+      setPhoneColor(backendColor);
 
-      setFormData({
+      const nextFormData = {
         name: info.name || "",
-        email: info.email || "",
         profession: info.work || "",
+        workplace: info.workplace || "",
         skill1: skills[0] || "",
         skill2: skills[1] || "",
         skill3: skills[2] || "",
         about: info.about || "",
-      });
+      };
+      const rawLinks = Array.isArray(d.link_side) ? d.link_side : [];
+      const nextLinks = rawLinks.map((l) => parseLink(l));
+      const draft = readProfileDraft();
+      const draftLinks = Array.isArray(draft?.links)
+        ? draft.links.map((link) => ({
+          ...link,
+          icon: getIcon(link.icon_code),
+        }))
+        : null;
 
-      setUserCode(info.user_code || CK.get("user_code") || "");
+      setFormData(draft?.formData ? { ...nextFormData, ...draft.formData } : nextFormData);
+
       setHashId(info.hash_id || "");
       setTotalViews(info.look ?? 0);
       if (info.image) setProfileImage(info.image);
       if (sys.mode) setPhoneTheme(sys.mode);
 
-      const rawLinks = Array.isArray(d.link_side) ? d.link_side : [];
-      setLinks(rawLinks.map((l) => parseLink(l)));
+      setLinks(draftLinks || nextLinks);
+      draftHydratedRef.current = true;
     },
     [parseLink],
   );
@@ -443,11 +579,19 @@ export default function HomeMain() {
     if (!linkId) return;
     try {
       await fetch(URL_CLICK_LINK(linkId), { method: "POST" });
-    } catch {}
+    } catch { }
   }, []);
 
   const togglePhoneTheme = () =>
     setPhoneTheme((p) => (p === "dark" ? "light" : "dark"));
+
+  useEffect(() => {
+    if (loading || !draftHydratedRef.current) return;
+    writeProfileDraft({
+      formData,
+      links: links.map(({ icon, ...rest }) => rest),
+    });
+  }, [formData, links, loading]);
 
   const handleSave = useCallback(async () => {
     if (saving) return;
@@ -473,16 +617,13 @@ export default function HomeMain() {
 
       const fd = new FormData();
       fd.append("name", formData.name);
-      fd.append("email", formData.email);
       fd.append("work", formData.profession);
+      fd.append("workplace", formData.workplace);
       fd.append("about", formData.about);
       [formData.skill1, formData.skill2, formData.skill3]
         .filter(Boolean)
         .forEach((s, i) => fd.append(`skills[${i}]`, s));
-
-      const systemData = canChangeColor
-        ? { color: phoneColor, mode: phoneTheme }
-        : { mode: phoneTheme };
+      const systemData = { color: phoneColor, mode: phoneTheme };
       fd.append("system", JSON.stringify(systemData));
       if (profileImageFile) fd.append("image", profileImageFile);
 
@@ -520,14 +661,23 @@ export default function HomeMain() {
 
       const fresh = await res.json().catch(() => null);
       if (fresh) applyProfileData(fresh);
+      clearProfileDraft();
       setProfileImageFile(null);
       setPopup({
         isOpen: true,
         type: "success",
         title: "Uğurla saxlanıldı!",
-        message: "Bütün dəyişikliklər tətbiq edildi.",
-        confirmText: "Tamam",
-        onConfirm: null,
+        message: "Dəyişikliklər tətbiq edildi. Profil səhifənizə keçə bilərsiniz.",
+        confirmText: "Səhifəmə keç",
+        onConfirm: () => {
+          const nextProfileUrl =
+            hash_id || CK.get("hash_id")
+              ? `http://localhost:5174/person/${hash_id || CK.get("hash_id")}`
+              : "#";
+          if (nextProfileUrl !== "#") {
+            window.location.href = nextProfileUrl;
+          }
+        },
       });
     } catch {
       setPopup({
@@ -551,7 +701,7 @@ export default function HomeMain() {
     profileImageFile,
     phoneColor,
     phoneTheme,
-    canChangeColor,
+    hash_id,
   ]);
 
   const profileUrl =
@@ -706,13 +856,13 @@ export default function HomeMain() {
       <div className="form-section">
         <div className="top-header">
           <div>
-            <h2 className="page-title">İdarəetmə Sistemi</h2>
+            <h2 className="page-title">Profil</h2>
             <span className="badge premium">{packageLabel} Paket</span>
           </div>
         </div>
 
         <div className="modern-card form-card">
-          {/* Şəkil + Ad + Stats */}
+          {/* Şəkil + Ad Soyad + Peşə + Ümumi Baxış */}
           <div className="row-1">
             <div className="upload-box">
               <input
@@ -748,11 +898,11 @@ export default function HomeMain() {
                 />
               </div>
               <div className="input-group">
-                <label>Email</label>
+                <label>Peşə</label>
                 <input
                   type="text"
-                  name="email"
-                  value={formData.email}
+                  name="profession"
+                  value={formData.profession}
                   onChange={handleChange}
                 />
               </div>
@@ -763,53 +913,9 @@ export default function HomeMain() {
                 <label>Ümumi Baxış</label>
                 <div className="val green">{totalViews}</div>
               </div>
-              <div className="stat-box">
-                <label>User Code</label>
-                <div className="val code">{userCode || "—"}</div>
-              </div>
             </div>
           </div>
-
-          {/* Peşə + Bacarıqlar */}
-          <div className="row-2">
-            <div className="input-group flex-1">
-              <label>Peşə</label>
-              <input
-                type="text"
-                name="profession"
-                value={formData.profession}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="skills-group">
-              <label>Bacarıqlar (Max 3)</label>
-              <div className="skills-inputs">
-                <input
-                  type="text"
-                  name="skill1"
-                  value={formData.skill1}
-                  onChange={handleChange}
-                  placeholder="Bacarıq 1"
-                />
-                <input
-                  type="text"
-                  name="skill2"
-                  value={formData.skill2}
-                  onChange={handleChange}
-                  placeholder="Bacarıq 2"
-                />
-                <input
-                  type="text"
-                  name="skill3"
-                  value={formData.skill3}
-                  onChange={handleChange}
-                  placeholder="Bacarıq 3"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Haqqında */}
+        {/* Haqqında */}
           <div className="input-group full-width">
             <label>Haqqında məlumat</label>
             <textarea
@@ -819,6 +925,47 @@ export default function HomeMain() {
               onChange={handleChange}
             />
           </div>
+          {/* Bacarıqlar */}
+          <div className="skills-group full-width">
+            <label>Bacarıqlar (istəyə bağlı, max 3)</label>
+            <div className="skills-inputs">
+              <input
+                type="text"
+                name="skill1"
+                value={formData.skill1}
+                onChange={handleChange}
+                placeholder="Bacarıq 1"
+              />
+              <input
+                type="text"
+                name="skill2"
+                value={formData.skill2}
+                onChange={handleChange}
+                placeholder="Bacarıq 2"
+              />
+              <input
+                type="text"
+                name="skill3"
+                value={formData.skill3}
+                onChange={handleChange}
+                placeholder="Bacarıq 3"
+              />
+            </div>
+          </div>
+
+          {/* İş yeri */}
+          <div className="input-group full-width">
+            <label>İş yeri (istəyə bağlı)</label>
+            <input
+              type="text"
+              name="workplace"
+              value={formData.workplace}
+              onChange={handleChange}
+              placeholder="Şirkət və ya təşkilat adı"
+            />
+          </div>
+
+  
 
           {/* Linklər */}
           <div className="links-section">
@@ -849,13 +996,12 @@ export default function HomeMain() {
         <div className="bottom-actions">
           {/* Status badge — icon + başlıq + status_sms yan yana */}
           <div
-            className={`status-badge ${
-              isBlocked
+            className={`status-badge ${isBlocked
                 ? "status-badge--blocked"
                 : hasUnsaved
                   ? "status-badge--unsaved"
                   : ""
-            }`}
+              }`}
           >
             {isBlocked ? (
               <>
@@ -883,7 +1029,7 @@ export default function HomeMain() {
                 <FaIcons.FaCheckCircle className="status-badge-icon" />
                 <div className="status-badge-content">
                   <span className="status-badge-title">
-                    3 saatlıq yoxlama hesabınız aktivdir
+                    1 günlük hesabınız aktivdir
                   </span>
                 </div>
               </>
@@ -977,6 +1123,9 @@ export default function HomeMain() {
             <p className="preview-profession">
               {formData.profession || "Peşə"}
             </p>
+            {formData.workplace && (
+              <p className="preview-workplace">{formData.workplace}</p>
+            )}
           </div>
 
           <div className="phone-body">
@@ -1005,6 +1154,7 @@ export default function HomeMain() {
                 ))}
             </div>
 
+
             {CATEGORIES.map((cat) => {
               const catLinks = links.filter(
                 (l) => l.category === cat.key && l.url && !l.isDeleted,
@@ -1031,29 +1181,19 @@ export default function HomeMain() {
           </div>
         </div>
 
-        {/* Rəng paneli: yalnız premium/pro/business */}
-        {canChangeColor ? (
-          <div className="theme-color-section">
-            <label>Profil Rəngi / Tema Rəngi</label>
-            <div className="color-palette">
-              {COLORS.map((color, i) => (
-                <div
-                  key={i}
-                  className={`color-box ${phoneColor === color ? "active" : ""}`}
-                  style={{ backgroundColor: color }}
-                  onClick={() => setPhoneColor(color)}
-                />
-              ))}
-            </div>
+        <div className="theme-color-section">
+          <label>Profil Rəngi / Tema Rəngi</label>
+          <div className="color-palette">
+            {COLORS.map((color, i) => (
+              <div
+                key={i}
+                className={`color-box ${phoneColor === color ? "active" : ""}`}
+                style={{ backgroundColor: color }}
+                onClick={() => setPhoneColor(color)}
+              />
+            ))}
           </div>
-        ) : (
-          <div className="theme-color-section theme-color-section--locked">
-            <FaIcons.FaLock className="locked-icon" />
-            <p className="locked-text">
-              Rəng dəyişdirmə digər versiyalarda mövcuddur.
-            </p>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

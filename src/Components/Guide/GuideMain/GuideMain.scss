@@ -18,6 +18,8 @@
   gap: 4px;
   padding: 20px 32px 0;
   border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-panel);
+
 
   @media (max-width: 600px) {
     padding: 16px 16px 0;
@@ -119,7 +121,6 @@
     border-color: var(--btn-primary-bg);
     background: var(--btn-primary-bg);
     color: var(--text-on-gold);
-    box-shadow: 0 0 0 5px var(--badge-bg);
   }
 }
 
@@ -151,7 +152,7 @@
 .guide-nav {
   padding: 28px 14px;
   border-right: 1px solid var(--border-subtle);
-  background: var(--bg-sidebar);
+    background: var(--bg-panel);
 
   @media (max-width: 860px) {
     padding: 14px 16px;
@@ -426,7 +427,6 @@
     border-color: var(--btn-primary-bg);
     color: var(--text-on-gold);
     font-weight: 600;
-    box-shadow: var(--btn-primary-shadow);
 
     &:not(:disabled):hover {
       background: var(--btn-primary-hover);

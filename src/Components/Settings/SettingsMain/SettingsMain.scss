@@ -111,6 +111,31 @@
 
   /* ================== MÖVZU KARTI ================== */
   .theme-card {
+    .user-code-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 16px;
+
+      .user-code-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      .user-code-value {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.04em;
+      }
+    }
+
     .theme-options {
       display: flex;
       gap: 20px;

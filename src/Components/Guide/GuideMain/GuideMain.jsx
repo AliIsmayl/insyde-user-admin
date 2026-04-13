@@ -14,9 +14,9 @@ const STEPS = [
   {
     num: 1,
     icon: <HiOutlineHome />,
-    title: "Ana Səhifədə məlumatlarınızı daxil edin",
-    desc: "Ana səhifəyə keçid edib adınızı, vəzifənizi, şirkətinizi, telefon, e-poçt və sosial media linklərini daxil edin. Doldurduqdan sonra yadda saxlayın — bütün məlumatlar kartınızda avtomatik görünəcək.",
-    imageAlt: "Ana səhifə — məlumat forması",
+    title: "Profil bölməsində məlumatlarınızı daxil edin",
+    desc: "Profil bölməsinə keçib adınızı, vəzifənizi, şirkətinizi, telefon və sosial media linklərini daxil edin. Doldurduqdan sonra yadda saxlayın — bütün məlumatlar kartınızda avtomatik görünəcək.",
+    imageAlt: "Profil — məlumat forması",
   },
   {
     num: 2,
@@ -46,19 +46,19 @@ const PAGES = [
   {
     id: "home",
     icon: <HiOutlineHome />,
-    label: "Ana Səhifə",
+    label: "Profil",
     subs: [
       {
         id: "home-info",
         title: "Məlumatlarınızı daxil edin",
-        desc: "Ana səhifəyə daxil olub adınızı, vəzifənizi, şirkətinizi və əlaqə məlumatlarınızı daxil edin. Dəyişiklikləri yadda saxlayın — kartınızda dərhal görünəcək.",
-        imageAlt: "Ana səhifə — məlumat forması",
+        desc: "Profil bölməsinə daxil olub adınızı, vəzifənizi, şirkətinizi və əlaqə məlumatlarınızı daxil edin. Dəyişiklikləri yadda saxlayın — kartınızda dərhal görünəcək.",
+        imageAlt: "Profil — məlumat forması",
       },
       {
         id: "home-links",
         title: "Sosial və əlaqə linkləri",
         desc: "Instagram, WhatsApp, Telegram, vebsayt və digər linklərini əlavə edin. Hər link kartınızda tıklanabilir şəkildə görünəcək.",
-        imageAlt: "Ana səhifə — link paneli",
+        imageAlt: "Profil — link paneli",
       },
     ],
   },

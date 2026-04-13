@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FiCheck, FiX, FiInfo, FiChevronRight, FiChevronLeft } from "react-icons/fi";
+import { FiCheck, FiX, FiInfo, FiChevronRight, FiChevronLeft, FiRefreshCw } from "react-icons/fi";
 import { API_BASE, authFetch } from "../../../Utils/authUtils";
 import "./PackageMain.scss";
+
+const FLIP_HINT_SESSION_KEY = "insyde_package_flip_hint_seen";
+const CARD_DRAFT_KEY = "insyde_card_draft";
+
+function readCardDraft() {
+  try { const r = localStorage.getItem(CARD_DRAFT_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
+}
+function writeCardDraft(data) {
+  try { localStorage.setItem(CARD_DRAFT_KEY, JSON.stringify(data)); } catch {}
+}
 
 // ─── Sabitlər ─────────────────────────────────────────────
 
@@ -126,12 +136,24 @@ function QrPlaceholder({ color = "currentColor" }) {
 }
 
 // ─── Kart Preview ─────────────────────────────────────────
-function CardPreview({ theme, logo, name, title, flipped, onFlip }) {
-  const isDark = theme !== "light";
-  const gold   = isDark ? "#c9a84c" : "#b8942a";
-  const bg     = isDark ? "#0b0b0b" : "#f5f2ec";
-  const text2  = isDark ? "rgba(255,255,255,0.45)" : "rgba(17,17,17,0.5)";
-  const wmClr  = isDark ? "rgba(201,168,76,0.07)"  : "rgba(184,148,42,0.09)";
+function CardPreview({ theme, logo, name, title, slogan, brandMode, brandName, flipped, onFlip }) {
+  const isDark    = theme !== "light";
+  const gold      = isDark ? "#c9a84c" : "#b8942a";
+  const bg        = isDark ? "#0b0b0b" : "#f5f2ec";
+  const text2     = isDark ? "rgba(255,255,255,0.45)" : "rgba(17,17,17,0.5)";
+  const wmClr     = isDark ? "rgba(201,168,76,0.07)"  : "rgba(184,148,42,0.09)";
+  // Ön üz üçün bir qədər daha görünən kölgə rəngi
+  const frontWmClr = isDark ? "rgba(201,168,76,0.13)" : "rgba(184,148,42,0.14)";
+
+  const isQelib   = brandMode !== "ferdi";
+  const isFerdi   = brandMode === "ferdi";
+  const frontSlogan = isQelib
+    ? "İlk təəssürat önəmlidir"
+    : (slogan?.trim() || "Öz şüarınız");
+  const displayBrand = isFerdi && brandName?.trim()
+    ? brandName.trim()
+    : "Insyde";
+  const isBrandCustom = isFerdi && brandName?.trim();
 
   return (
     <div className={`pkg-scene ${flipped ? "is-flipped" : ""}`} onClick={onFlip}>
@@ -139,18 +161,24 @@ function CardPreview({ theme, logo, name, title, flipped, onFlip }) {
 
         {/* ── ÖN ÜZ ──────────────────────────── */}
         <div className="pkg-face pkg-front">
-          {/* yuxarı sətir */}
+          {/* Insyde kölgəsi — ön üzdə həmişə görünür */}
+          <div className="pkg-wm pkg-wm-front" aria-hidden style={{ color: frontWmClr }}>Insyde</div>
+
+          {/* Yuxarı sətir */}
           <div className="pkg-front-topbar">
-            <span className="pkg-tagline">İlk təəssürat önəmlidir</span>
-            <span className="pkg-site">İnsyde.info</span>
+            <span className="pkg-tagline">{frontSlogan}</span>
+            {isQelib && <span className="pkg-site">İnsyde.info</span>}
           </div>
-          {/* böyük brand sözü */}
-          <div className="pkg-brand-word">Insyde</div>
+
+          {/* Böyük brand yazısı — Qəlibdə solid "Insyde", Fərdidə istifadəçi mətni */}
+          <div className={`pkg-brand-word${isBrandCustom ? " pkg-brand-custom" : ""}`}>
+            {displayBrand}
+          </div>
         </div>
 
         {/* ── ARXA ÜZ ────────────────────────── */}
         <div className="pkg-face pkg-back">
-          {/* Watermark */}
+          {/* Insyde kölgəsi */}
           <div className="pkg-wm" aria-hidden>Insyde</div>
 
           {/* Sol yuxarı: Logo */}
@@ -228,12 +256,16 @@ function PackageMain() {
   const [step,            setStep]           = useState(MANUAL_MODE ? 2 : 1);
   const [selectedPkg,     setSelectedPkg]    = useState(null);
   const [selectedBilling, setSelectedBilling]= useState("monthly");
-  const [cardTheme,       setCardTheme]      = useState("dark");
+  const [cardTheme,       setCardTheme]      = useState(() => readCardDraft()?.cardTheme    ?? "dark");
   const [cardLogo,        setCardLogo]       = useState(null);
   const [cardLogoFile,    setCardLogoFile]   = useState(null);
-  const [cardName,        setCardName]       = useState("");
-  const [cardTitle,       setCardTitle]      = useState("");
+  const [cardName,        setCardName]       = useState(() => readCardDraft()?.cardName     ?? "");
+  const [cardTitle,       setCardTitle]      = useState(() => readCardDraft()?.cardTitle    ?? "");
+  const [cardSlogan,      setCardSlogan]     = useState(() => readCardDraft()?.cardSlogan   ?? "");
+  const [cardBrandMode,   setCardBrandMode]  = useState(() => readCardDraft()?.cardBrandMode ?? "qelib");
+  const [cardBrandName,   setCardBrandName]  = useState(() => readCardDraft()?.cardBrandName ?? "");
   const [flipped,         setFlipped]        = useState(false);
+  const [showFlipHint,    setShowFlipHint]   = useState(false);
 
   const [packages,        setPackages]       = useState(FALLBACK_PACKAGES.filter(p => ALLOWED_PLANS.includes(p.key)));
   // MANUAL_MODE üçün: istifadəçinin mövcud paketinin tam məlumatı (API-dan)
@@ -283,8 +315,10 @@ function PackageMain() {
           const data = await profileRes.value.json();
           const d    = data?.data || data;
           const info = d?.user_info || {};
-          setCardName(info.name || "");
-          setCardTitle(info.work || "");
+          const draft = readCardDraft();
+          // Yalnız draft yoxdursa API məlumatını istifadə et
+          if (!draft?.cardName)  setCardName(info.name  || "");
+          if (!draft?.cardTitle) setCardTitle(info.work || "");
           const sub = d?.subscription || {};
           detectedSubKey = (sub.version_type || sub.packet_type || "free").toLowerCase();
           setCurrentSub(detectedSubKey);
@@ -322,6 +356,27 @@ function PackageMain() {
     ? (step === 4 ? 2 : 1)
     : (isBasic && step === 4 ? 3 : step);
 
+  useEffect(() => {
+    if ((!MANUAL_MODE || isFreeUser) && step === 3 && !isBasic) {
+      const seen = sessionStorage.getItem(FLIP_HINT_SESSION_KEY);
+      if (!seen) {
+        sessionStorage.setItem(FLIP_HINT_SESSION_KEY, "true");
+        setShowFlipHint(true);
+      }
+    }
+  }, [step, isFreeUser, isBasic]);
+
+  useEffect(() => {
+    if (!showFlipHint) return undefined;
+    const timer = setTimeout(() => setShowFlipHint(false), 5000);
+    return () => clearTimeout(timer);
+  }, [showFlipHint]);
+
+  // Kart inputlarını localStorage-a yaz (geri qayıtdıqda qalsın)
+  useEffect(() => {
+    writeCardDraft({ cardTheme, cardName, cardTitle, cardSlogan, cardBrandMode, cardBrandName });
+  }, [cardTheme, cardName, cardTitle, cardSlogan, cardBrandMode, cardBrandName]);
+
   // MANUAL_MODE-da: paketlər siyahısından tap, yoxdursa currentSubData (backend-dən) istifadə et
   const pkgData = MANUAL_MODE
     ? (packages.find(p => p.key === selectedPkg) || currentSubData)
@@ -355,6 +410,9 @@ function PackageMain() {
       form.append("card_theme",      cardTheme);
       form.append("card_name",       cardName);
       form.append("card_title",      cardTitle);
+      form.append("card_slogan",     cardSlogan || "İlk təəssürat önəmlidir");
+      form.append("card_brand_mode", cardBrandMode);
+      form.append("card_brand_name", cardBrandName);
       if (cardLogoFile) form.append("card_logo", cardLogoFile);
 
       const res = await authFetch(`${API_BASE}/api/v1/subscription/purchase/`, {
@@ -556,22 +614,53 @@ function PackageMain() {
       {/* ══════════ ADDIM 3: KART DİZAYNI (yalnız pro/premium) ══════════ */}
       {(!MANUAL_MODE || isFreeUser) && step === 3 && !isBasic && (
         <div className="pkg-step-content">
-          <h3 className="pkg-step-title">Kart dizaynını seçin</h3>
+          {showFlipHint && (
+            <div className="flip-help-modal" role="dialog" aria-modal="false">
+              <button
+                className="flip-help-close"
+                onClick={() => setShowFlipHint(false)}
+                aria-label="Bağla"
+              >
+                <FiX />
+              </button>
+              <div className="flip-help-icon">
+                <FiRefreshCw />
+              </div>
+              <h4>Kartı fırladın</h4>
+              <p>Yuxarı sağdakı ikonla və ya kartın üzərinə klik edib ön və arxa üzü görün.</p>
+            </div>
+          )}
+
+          <div className="pkg-step-heading">
+            <h3 className="pkg-step-title">Kart dizaynını seçin</h3>
+           
+          </div>
           <p className="pkg-step-sub">Fiziki kartınızın görünüşünü fərdiləşdirin</p>
 
           <div className="card-design-workspace">
             {/* Preview */}
             <div className="card-preview-panel">
+               <button
+              className="card-flip-icon-btn"
+              onClick={() => setFlipped((f) => !f)}
+              aria-label="Kartı fırla"
+              title="Kartı fırla"
+            >
+              <FiRefreshCw />
+            </button>
               <p className="card-preview-label">Kartın önü / arxası</p>
               <CardPreview
                 theme={cardTheme}
                 logo={cardLogo}
                 name={cardName}
                 title={cardTitle}
+                slogan={cardSlogan}
+                brandMode={cardBrandMode}
+                brandName={cardBrandName}
                 flipped={flipped}
                 onFlip={() => setFlipped(f => !f)}
               />
-              <p className="card-preview-hint">Kartı çevirmək üçün klikləyin</p>
+              <p className="card-preview-hint">Flip ikonuna və ya kartın üzərinə klik edib çevirin</p>
             </div>
 
             {/* Controls */}
@@ -594,7 +683,50 @@ function PackageMain() {
               </div>
 
               <div className="card-ctrl-field">
-                <label>Logo / Şəkil</label>
+                <label>Dizayn rejimi</label>
+                <div className="card-brand-toggle">
+                  <button
+                    className={cardBrandMode === "qelib" ? "active" : ""}
+                    onClick={() => setCardBrandMode("qelib")}
+                  >
+                    Qəlib
+                  </button>
+                  <button
+                    className={cardBrandMode === "ferdi" ? "active" : ""}
+                    onClick={() => setCardBrandMode("ferdi")}
+                  >
+                    Fərdi
+                  </button>
+                </div>
+              </div>
+
+              {cardBrandMode === "ferdi" && (
+                <>
+                  <div className="card-ctrl-field">
+                    <label>Şüar (ön üz)</label>
+                    <input
+                      className="card-ctrl-input"
+                      value={cardSlogan}
+                      onChange={e => setCardSlogan(e.target.value)}
+                      placeholder="İlk təəssürat önəmlidir"
+                      maxLength={40}
+                    />
+                  </div>
+                  <div className="card-ctrl-field">
+                    <label>Kart yazısı (ön üz)</label>
+                    <input
+                      className="card-ctrl-input"
+                      value={cardBrandName}
+                      onChange={e => setCardBrandName(e.target.value)}
+                      placeholder="Biznesinizin adı və ya adınız"
+                      maxLength={20}
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="card-ctrl-field">
+                <label>Logo / Şəkil (arxa üz)</label>
                 <div className="card-upload-area" onClick={() => fileRef.current.click()}>
                   {cardLogo
                     ? <img src={cardLogo} alt="logo" className="card-upload-preview" />
@@ -617,7 +749,7 @@ function PackageMain() {
               </div>
 
               <div className="card-ctrl-field">
-                <label>Ad Soyad</label>
+                <label>Ad Soyad (arxa üz)</label>
                 <input
                   className="card-ctrl-input"
                   value={cardName}
@@ -627,7 +759,7 @@ function PackageMain() {
               </div>
 
               <div className="card-ctrl-field">
-                <label>Peşə / Vəzifə</label>
+                <label>Peşə / Vəzifə (arxa üz)</label>
                 <input
                   className="card-ctrl-input"
                   value={cardTitle}
@@ -701,6 +833,22 @@ function PackageMain() {
                     <strong>{cardTheme === "dark" ? "Tünd" : "Açıq"}</strong>
                   </div>
                   <div className="checkout-row">
+                    <span>Dizayn rejimi</span>
+                    <strong>{cardBrandMode === "ferdi" ? "Fərdi" : "Qəlib"}</strong>
+                  </div>
+                  {cardBrandMode === "ferdi" && (
+                    <>
+                      <div className="checkout-row">
+                        <span>Şüar</span>
+                        <strong>{cardSlogan || "—"}</strong>
+                      </div>
+                      <div className="checkout-row">
+                        <span>Kart yazısı</span>
+                        <strong>{cardBrandName || "—"}</strong>
+                      </div>
+                    </>
+                  )}
+                  <div className="checkout-row">
                     <span>Ad</span>
                     <strong>{cardName || "—"}</strong>
                   </div>
@@ -740,15 +888,27 @@ function PackageMain() {
                   </>
                 ) : (
                   <>
+                    <button
+                      className="checkout-flip-btn"
+                      onClick={() => setFlipped((f) => !f)}
+                      type="button"
+                      aria-label="Kartı fırla"
+                      title="Kartı fırla"
+                    >
+                      <FiRefreshCw />
+                    </button>
                     <CardPreview
                       theme={cardTheme}
                       logo={cardLogo}
                       name={cardName}
                       title={cardTitle}
+                      slogan={cardSlogan}
+                      brandMode={cardBrandMode}
+                      brandName={cardBrandName}
                       flipped={flipped}
                       onFlip={() => setFlipped(f => !f)}
                     />
-                    <p className="card-preview-hint">Kartı çevirmək üçün klikləyin</p>
+                    <p className="card-preview-hint">Kartın içindəki ikonla və ya kartın üzərinə klik edib çevirin</p>
                   </>
                 )}
               </div>

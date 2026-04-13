@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { FiSettings, FiChevronDown, FiMenu } from "react-icons/fi";
+import { FiSettings, FiChevronDown, FiMenu, FiLogOut } from "react-icons/fi";
 import { HiOutlineHome } from "react-icons/hi2";
-import { LuSquareArrowOutDownLeft } from "react-icons/lu";
 import { FaRegMessage } from "react-icons/fa6";
 import { PiPackage } from "react-icons/pi";
 import { TbBrandGoogleAnalytics, TbTruckDelivery } from "react-icons/tb";
@@ -30,7 +29,7 @@ function Sidebar({
 
   const ALL_MENU_ITEMS = [
     {
-      name: "Ana səhifə",
+      name: "Profil",
       path: "/home",
       icon: <HiOutlineHome />,
       freeVisible: true,
@@ -211,7 +210,7 @@ function Sidebar({
             style={{ cursor: "pointer" }}
           >
             <div className="icon-container">
-              <LuSquareArrowOutDownLeft />
+              <FiLogOut />
             </div>
             <span className="menu-text">Çıxış</span>
           </div>
