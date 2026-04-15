@@ -41,7 +41,7 @@ const PlanRoute = () => {
         if (!data) { setStatus("denied"); return; }
         const d = data?.data || data;
         const sub = d?.subscription || {};
-        const pkg = (sub.version_type || sub.packet_type || "free").toLowerCase();
+        const pkg = (sub.plan?.name || "free").toLowerCase();
         setStatus(ANALYS_ALLOWED_PLANS.includes(pkg) ? "allowed" : "denied");
       })
       .catch(() => setStatus("denied"));

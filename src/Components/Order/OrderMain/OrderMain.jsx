@@ -118,7 +118,17 @@ function OrderMain() {
     setSubmitError("");
 
     const isMetro = deliveryTab === "metro";
-    const cleanPhone = phone.replace(/\D/g, "");
+
+    // Telefonu təmizlə: yalnız rəqəmlər, başdakı 0-ları sil
+    const cleanPhone = phone.replace(/\D/g, "").replace(/^0+/, "");
+
+    // Telefon doldurulubsa amma yanlışdırsa xəta göstər
+    if (phone.trim() && cleanPhone.length !== 9) {
+      setSubmitError("Telefon nömrəsi düzgün deyil. Nümunə: 50 123 45 67");
+      setSubmitLoading(false);
+      return;
+    }
+
     const body = {
       order_id: cardId,
       delivery_type: isMetro ? "metro" : "address",
@@ -127,8 +137,8 @@ function OrderMain() {
         ? { metro_station: selectedStation?.label }
         : { address: address.trim() || "—" }
       ),
-      ...(cleanPhone ? { phone: `+994${cleanPhone}` } : {}),
-      ...(note.trim() ? { note: note.trim() } : {}),
+      phone: cleanPhone.length === 9 ? `+994${cleanPhone}` : "",
+      note: note.trim(),
     };
 
     try {
@@ -140,7 +150,19 @@ function OrderMain() {
 
       if (!res?.ok) {
         const err = await res?.json().catch(() => ({}));
-        setSubmitError(err?.detail || err?.error || "Xəta baş verdi.");
+        // DRF field-level xətaları ({"phone": [...], "note": [...]}) emal et
+        if (err && typeof err === "object" && !err.detail && !err.error) {
+          const fieldErrors = Object.entries(err)
+            .map(([field, msgs]) => {
+              const label = field === "phone" ? "Telefon" : field === "note" ? "Qeyd" : field;
+              const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+              return `${label}: ${msg}`;
+            })
+            .join(" | ");
+          setSubmitError(fieldErrors || "Xəta baş verdi.");
+        } else {
+          setSubmitError(err?.detail || err?.error || "Xəta baş verdi.");
+        }
         return;
       }
 
@@ -277,6 +299,20 @@ function OrderMain() {
                 </div>
               )}
 
+              {delivery.phone && (
+                <div className="delivery-detail-row">
+                  <span className="delivery-detail-label">Nömrə</span>
+                  <span className="delivery-detail-val">{delivery.phone}</span>
+                </div>
+              )}
+
+              {delivery.note && (
+                <div className="delivery-detail-row">
+                  <span className="delivery-detail-label">Qeyd</span>
+                  <span className="delivery-detail-val">{delivery.note}</span>
+                </div>
+              )}
+
               <div className="delivery-note">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                   <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
@@ -292,9 +328,8 @@ function OrderMain() {
 
   // ── Delivery yoxdur: forma göstər ─────────────────────────
   const { sat, sun } = getDeliveryWeekend(null);
-  const cleanPhone = phone.replace(/\D/g, "");
-  const canConfirmMetro = selectedStation && selectedSlot && cleanPhone.length >= 9;
-  const canConfirmAddress = address.trim() && cleanPhone.length >= 9 && selectedSlot;
+  const canConfirmMetro = selectedStation && selectedSlot;
+  const canConfirmAddress = address.trim() && selectedSlot;
 
   if (confirmed) {
     return (
@@ -388,8 +423,11 @@ function OrderMain() {
                 className="phone-input"
                 placeholder="50 123 45 67"
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
-                maxLength={12}
+                onChange={e => {
+                  const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+                  setPhone(digits);
+                }}
+                maxLength={9}
               />
             </div>
 
@@ -426,19 +464,6 @@ function OrderMain() {
               onChange={e => setAddress(e.target.value)}
             />
 
-            <p className="field-label">Əlaqə nömrəsi</p>
-            <div className="phone-input-wrap">
-              <span className="phone-prefix">+994</span>
-              <input
-                type="tel"
-                className="phone-input"
-                placeholder="50 123 45 67"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                maxLength={12}
-              />
-            </div>
-
             <p className="field-label">Vaxt intervalı</p>
             <div className="slot-list">
               {TIME_SLOTS.map(slot => (
@@ -451,6 +476,22 @@ function OrderMain() {
                   {slot.label}
                 </button>
               ))}
+            </div>
+
+            <p className="field-label">Əlaqə nömrəsi</p>
+            <div className="phone-input-wrap">
+              <span className="phone-prefix">+994</span>
+              <input
+                type="tel"
+                className="phone-input"
+                placeholder="50 123 45 67"
+                value={phone}
+                onChange={e => {
+                  const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+                  setPhone(digits);
+                }}
+                maxLength={9}
+              />
             </div>
 
             <p className="field-label">Qeyd (istəyə bağlı)</p>

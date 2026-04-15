@@ -370,6 +370,40 @@
   // =====================================================
   // CARDS & INPUTS
   // =====================================================
+  .profile-mode-switch {
+    display: flex;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px;
+    width: fit-content;
+
+    .mode-switch-btn {
+      padding: 8px 20px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: "Poppins", sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.22s;
+      white-space: nowrap;
+
+      &:hover {
+        color: var(--text-primary);
+      }
+
+      &.active {
+        background: var(--bg-active);
+        border-color: var(--border-strong);
+        color: var(--text-link);
+      }
+    }
+  }
+
   .modern-card {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-subtle);
@@ -483,6 +517,10 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 15px;
+
+        &--single {
+          grid-template-columns: 1fr;
+        }
       }
 
       .stats-boxes {

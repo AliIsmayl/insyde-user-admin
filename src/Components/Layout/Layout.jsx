@@ -27,7 +27,7 @@ function Layout() {
         if (!data) return;
         const d = data?.data || data;
         const sub = d?.subscription || {};
-        const pkg = sub.version_type || sub.packet_type || "free";
+        const pkg = sub.plan?.name?.toLowerCase() || "free";
         setPackageType(pkg);
 
         const code =

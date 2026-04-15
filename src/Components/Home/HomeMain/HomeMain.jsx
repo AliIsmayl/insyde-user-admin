@@ -304,6 +304,7 @@ export default function HomeMain() {
   const [error, setError] = useState("");
   const [popup, setPopup] = useState({ isOpen: false });
   const [activeTab, setActiveTab] = useState("social");
+  const [profileMode, setProfileMode] = useState("ferdi");
   const [cardStatus, setCardStatus] = useState("active");
   const [statusSms, setStatusSms] = useState("");
   const [showTrialModal, setShowTrialModal] = useState(false);
@@ -321,8 +322,9 @@ export default function HomeMain() {
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [hash_id, setHashId] = useState("");
+  const [profilePath, setProfilePath] = useState(null);
   const [totalViews, setTotalViews] = useState(0);
-  const [packageType, setPackageType] = useState("free");
+  const [planName, setPlanName] = useState("");
   const [phoneTheme, setPhoneTheme] = useState("dark");
   const [phoneColor, setPhoneColor] = useState(DEFAULT_COLOR);
 
@@ -339,7 +341,7 @@ export default function HomeMain() {
   const [links, setLinks] = useState([]);
 
   const hasUnsaved = links.some((l) => l.isNew || l.isDirty || l.isDeleted);
-  const isBlocked = cardStatus === "blocked";
+  const isBlocked = cardStatus === "blocked" || cardStatus === "inactive";
 
   const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
@@ -394,11 +396,11 @@ export default function HomeMain() {
       setCardStatus(cardSt);
       setStatusSms(d.card?.status_sms || "");
 
-      const pkg = sub.version_type || sub.packet_type || "free";
-      setPackageType(pkg);
+      const name = sub.plan?.name || "";
+      setPlanName(name);
 
       if (
-        pkg === "free" &&
+        (!name || name.toLowerCase() === "free") &&
         typeof window !== "undefined" &&
         !sessionStorage.getItem(TRIAL_MODAL_SESSION_KEY)
       ) {
@@ -412,7 +414,7 @@ export default function HomeMain() {
       const nextFormData = {
         name: info.name || "",
         profession: info.work || "",
-        workplace: info.workplace || "",
+        workplace: info.company || "",
         skill1: skills[0] || "",
         skill2: skills[1] || "",
         skill3: skills[2] || "",
@@ -433,6 +435,7 @@ export default function HomeMain() {
       setHashId(info.hash_id || "");
       setTotalViews(info.look ?? 0);
       if (info.image) setProfileImage(info.image);
+      if (info.profile_path) setProfilePath(info.profile_path);
       if (sys.mode) setPhoneTheme(sys.mode);
 
       setLinks(draftLinks || nextLinks);
@@ -618,7 +621,7 @@ export default function HomeMain() {
       const fd = new FormData();
       fd.append("name", formData.name);
       fd.append("work", formData.profession);
-      fd.append("workplace", formData.workplace);
+      fd.append("company", formData.workplace);
       fd.append("about", formData.about);
       [formData.skill1, formData.skill2, formData.skill3]
         .filter(Boolean)
@@ -671,9 +674,10 @@ export default function HomeMain() {
         confirmText: "Səhifəmə keç",
         onConfirm: () => {
           const nextProfileUrl =
-            hash_id || CK.get("hash_id")
+            profilePath ||
+            (hash_id || CK.get("hash_id")
               ? `http://localhost:5174/person/${hash_id || CK.get("hash_id")}`
-              : "#";
+              : "#");
           if (nextProfileUrl !== "#") {
             window.location.href = nextProfileUrl;
           }
@@ -705,17 +709,11 @@ export default function HomeMain() {
   ]);
 
   const profileUrl =
-    hash_id || CK.get("hash_id")
+    profilePath ||
+    (hash_id || CK.get("hash_id")
       ? `http://localhost:5174/person/${hash_id || CK.get("hash_id")}`
-      : "#";
-  const packageLabel =
-    {
-      free: "Free",
-      standard: "Standard",
-      premium: "Premium",
-      pro: "Pro",
-      // business: "Business",
-    }[packageType] || packageType;
+      : "#");
+  const packageLabel = planName || "Free";
 
   if (loading)
     return (
@@ -862,7 +860,24 @@ export default function HomeMain() {
         </div>
 
         <div className="modern-card form-card">
-          {/* Şəkil + Ad Soyad + Peşə + Ümumi Baxış */}
+
+          {/* ── Rejim switchi ── */}
+          <div className="profile-mode-switch">
+            <button
+              className={`mode-switch-btn ${profileMode === "ferdi" ? "active" : ""}`}
+              onClick={() => setProfileMode("ferdi")}
+            >
+              Fərdi
+            </button>
+            <button
+              className={`mode-switch-btn ${profileMode === "biznes" ? "active" : ""}`}
+              onClick={() => setProfileMode("biznes")}
+            >
+              Biznesim üçün
+            </button>
+          </div>
+
+          {/* Şəkil + Ad/Brend + Peşə(fərdi) + Baxış */}
           <div className="row-1">
             <div className="upload-box">
               <input
@@ -887,25 +902,28 @@ export default function HomeMain() {
               </label>
             </div>
 
-            <div className="inputs-grid">
+            <div className={`inputs-grid ${profileMode === "biznes" ? "inputs-grid--single" : ""}`}>
               <div className="input-group">
-                <label>Ad Soyad</label>
+                <label>{profileMode === "biznes" ? "Brend Adı" : "Ad Soyad"}</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
+                  placeholder={profileMode === "biznes" ? "Brend və ya şirkət adı" : "Ad Soyad"}
                 />
               </div>
-              <div className="input-group">
-                <label>Peşə</label>
-                <input
-                  type="text"
-                  name="profession"
-                  value={formData.profession}
-                  onChange={handleChange}
-                />
-              </div>
+              {profileMode === "ferdi" && (
+                <div className="input-group">
+                  <label>Peşə</label>
+                  <input
+                    type="text"
+                    name="profession"
+                    value={formData.profession}
+                    onChange={handleChange}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="stats-boxes">
@@ -915,7 +933,8 @@ export default function HomeMain() {
               </div>
             </div>
           </div>
-        {/* Haqqında */}
+
+          {/* Haqqında */}
           <div className="input-group full-width">
             <label>Haqqında məlumat</label>
             <textarea
@@ -925,47 +944,52 @@ export default function HomeMain() {
               onChange={handleChange}
             />
           </div>
-          {/* Bacarıqlar */}
+
+          {/* Bacarıqlar / Üstünlüklər */}
           <div className="skills-group full-width">
-            <label>Bacarıqlar (istəyə bağlı, max 3)</label>
+            <label>
+              {profileMode === "biznes"
+                ? "Üstünlüklər (istəyə bağlı, max 3)"
+                : "Bacarıqlar (istəyə bağlı, max 3)"}
+            </label>
             <div className="skills-inputs">
               <input
                 type="text"
                 name="skill1"
                 value={formData.skill1}
                 onChange={handleChange}
-                placeholder="Bacarıq 1"
+                placeholder={profileMode === "biznes" ? "Üstünlük 1" : "Bacarıq 1"}
               />
               <input
                 type="text"
                 name="skill2"
                 value={formData.skill2}
                 onChange={handleChange}
-                placeholder="Bacarıq 2"
+                placeholder={profileMode === "biznes" ? "Üstünlük 2" : "Bacarıq 2"}
               />
               <input
                 type="text"
                 name="skill3"
                 value={formData.skill3}
                 onChange={handleChange}
-                placeholder="Bacarıq 3"
+                placeholder={profileMode === "biznes" ? "Üstünlük 3" : "Bacarıq 3"}
               />
             </div>
           </div>
 
-          {/* İş yeri */}
-          <div className="input-group full-width">
-            <label>İş yeri (istəyə bağlı)</label>
-            <input
-              type="text"
-              name="workplace"
-              value={formData.workplace}
-              onChange={handleChange}
-              placeholder="Şirkət və ya təşkilat adı"
-            />
-          </div>
-
-  
+          {/* İş yeri — yalnız fərdi rejimdə */}
+          {profileMode === "ferdi" && (
+            <div className="input-group full-width">
+              <label>İş yeri (istəyə bağlı)</label>
+              <input
+                type="text"
+                name="workplace"
+                value={formData.workplace}
+                onChange={handleChange}
+                placeholder="Şirkət və ya təşkilat adı"
+              />
+            </div>
+          )}
 
           {/* Linklər */}
           <div className="links-section">
@@ -1024,7 +1048,7 @@ export default function HomeMain() {
                   </span>
                 </div>
               </>
-            ) : packageType === "free" ? (
+            ) : (!planName || planName.toLowerCase() === "free") ? (
               <>
                 <FaIcons.FaCheckCircle className="status-badge-icon" />
                 <div className="status-badge-content">

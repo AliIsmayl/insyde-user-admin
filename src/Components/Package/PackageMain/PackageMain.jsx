@@ -140,7 +140,7 @@ const FEATURES = [
 ];
 
 const STEP_LABELS_FULL = ["Paket", "Müddət", "Kart", "Ödəniş"];
-const STEP_LABELS_BASIC = ["Paket", "Müddət", "Ödəniş"];
+const STEP_LABELS_BASIC = ["Paket", "Müddət", "Rəng", "Ödəniş"];
 
 function QrPlaceholder({ color = "currentColor" }) {
   const cell = 8;
@@ -261,11 +261,13 @@ function CardPreview({ theme, logo, name, title, slogan, brandMode, brandName, f
   );
 }
 
-function BasicCardPreview() {
-  const gold = "#c9a84c";
+function BasicCardPreview({ theme = "dark" }) {
+  const isDark = theme !== "light";
+  const gold = isDark ? "#c9a84c" : "#b8942a";
+  const bg = isDark ? "#0b0b0b" : "#f5f2ec";
   return (
     <div className="pkg-scene">
-      <div className="pkg-card" style={{ "--card-bg": "#0b0b0b", "--card-gold": gold }}>
+      <div className="pkg-card" style={{ "--card-bg": bg, "--card-gold": gold }}>
         <div className="pkg-face pkg-front">
           <div className="pkg-front-topbar">
             <span className="pkg-tagline">İlk təəssürat önəmlidir</span>
@@ -407,7 +409,7 @@ function PackageMain() {
   const isFreeUser = !currentSub || currentSub === "free";
   const effectiveManual = MANUAL_MODE && !isFreeUser;
   const stepLabels = effectiveManual ? ["Müddət", "Ödəniş"] : isBasic ? STEP_LABELS_BASIC : STEP_LABELS_FULL;
-  const uiStep = effectiveManual ? (step === 4 ? 2 : 1) : isBasic && step === 4 ? 3 : step;
+  const uiStep = effectiveManual ? (step === 4 ? 2 : 1) : step;
 
   useEffect(() => {
     if ((!MANUAL_MODE || isFreeUser) && step === 3 && !isBasic) {
@@ -663,9 +665,58 @@ function PackageMain() {
               className="pkg-nav-btn primary"
               onClick={() => {
                 setFlipped(false);
-                setStep(effectiveManual ? 4 : isBasic ? 4 : 3);
+                setStep(effectiveManual ? 4 : 3);
               }}
             >
+              Təsdiq et <FiChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {(!MANUAL_MODE || isFreeUser) && step === 3 && isBasic && (
+        <div className="pkg-step-content">
+          <h3 className="pkg-step-title">Kart rəngini seçin</h3>
+          <p className="pkg-step-sub">Standart paketdə kartınız qara və ya ağ rəngdə olacaq</p>
+
+          <div className="basic-color-layout">
+            <div className="basic-color-preview">
+              <BasicCardPreview theme={cardTheme} />
+              <p className="card-preview-hint">Seçilmiş rəng</p>
+            </div>
+
+            <div className="basic-color-options">
+              <button
+                className={`basic-color-btn ${cardTheme === "dark" ? "active" : ""}`}
+                onClick={() => setCardTheme("dark")}
+              >
+                <div className="basic-color-swatch basic-swatch-dark" />
+                <div className="basic-color-text">
+                  <span className="basic-color-name">Qara</span>
+                  <span className="basic-color-desc">Tünd fon, qızılı detal</span>
+                </div>
+                {cardTheme === "dark" && <FiCheck className="basic-color-check" />}
+              </button>
+
+              <button
+                className={`basic-color-btn ${cardTheme === "light" ? "active" : ""}`}
+                onClick={() => setCardTheme("light")}
+              >
+                <div className="basic-color-swatch basic-swatch-light" />
+                <div className="basic-color-text">
+                  <span className="basic-color-name">Ağ</span>
+                  <span className="basic-color-desc">Açıq fon, qızılı detal</span>
+                </div>
+                {cardTheme === "light" && <FiCheck className="basic-color-check" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="pkg-nav-row">
+            <button className="pkg-nav-btn ghost" onClick={() => setStep(2)}>
+              <FiChevronLeft /> Geri
+            </button>
+            <button className="pkg-nav-btn primary" onClick={() => setStep(4)}>
               Təsdiq et <FiChevronRight />
             </button>
           </div>
@@ -891,6 +942,16 @@ function PackageMain() {
                 </div>
               </div>
 
+              {(!MANUAL_MODE || isFreeUser) && isBasic && (
+                <div className="checkout-card">
+                  <p className="checkout-section-label">Kart rəngi</p>
+                  <div className="checkout-row">
+                    <span>Seçilmiş rəng</span>
+                    <strong>{cardTheme === "dark" ? "Qara" : "Ağ"}</strong>
+                  </div>
+                </div>
+              )}
+
               {(!MANUAL_MODE || isFreeUser) && !isBasic && (
                 <div className="checkout-card">
                   <p className="checkout-section-label">Kart məlumatları</p>
@@ -930,7 +991,14 @@ function PackageMain() {
 
                   <div className="checkout-row">
                     <span>Logo</span>
-                    <strong>{cardLogo ? "Yüklənib" : "Yoxdur"}</strong>
+                    {cardLogo ? (
+                      <div className="checkout-logo-wrap">
+                        <img src={cardLogo} alt="logo" className="checkout-logo-thumb" />
+                        <strong>Yüklənib</strong>
+                      </div>
+                    ) : (
+                      <strong>Yoxdur</strong>
+                    )}
                   </div>
                 </div>
               )}
@@ -949,8 +1017,8 @@ function PackageMain() {
 
                 {isBasic ? (
                   <>
-                    <BasicCardPreview />
-                    <p className="checkout-upgrade-hint">Digər paketləri seçərək kartınızı fərdiləşdirə bilərsiz.</p>
+                    <BasicCardPreview theme={cardTheme} />
+                    <p className="checkout-upgrade-hint">Kartın dizaynını digər paketdə xüsusiləşdirə bilərsiniz.</p>
                   </>
                 ) : (
                   <>
@@ -984,7 +1052,7 @@ function PackageMain() {
           </div>
 
           <div className="pkg-nav-row">
-            <button className="pkg-nav-btn ghost" onClick={() => setStep(effectiveManual ? 2 : isBasic ? 2 : 3)}>
+            <button className="pkg-nav-btn ghost" onClick={() => setStep(effectiveManual ? 2 : 3)}>
               <FiChevronLeft /> Geri
             </button>
           </div>

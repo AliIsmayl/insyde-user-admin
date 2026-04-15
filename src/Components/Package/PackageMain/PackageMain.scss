@@ -901,6 +901,26 @@ $radius-card: 18px;
       color: #10b981 !important;
     }
 
+    .checkout-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      strong {
+        color: var(--text-primary);
+      }
+    }
+
+    .checkout-logo-thumb {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      padding: 3px;
+    }
+
     &.total-row {
       font-size: 15px;
       font-weight: 600;
@@ -1202,4 +1222,103 @@ $radius-card: 18px;
       }
     }
   }
+}
+
+// ── STANDARD PLAN — RƏNG SEÇİMİ ─────────────────────────────
+.basic-color-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-top: 8px;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.basic-color-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+}
+
+.basic-color-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.basic-color-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 2px solid var(--border-subtle);
+  background: var(--bg-panel);
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  text-align: left;
+  transition: all 0.22s;
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  &.active {
+    border-color: var(--border-focus);
+    background: var(--bg-active);
+  }
+}
+
+.basic-color-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.basic-swatch-dark {
+  background: #0d0d0d;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+}
+
+.basic-swatch-light {
+  background: #f5f2ec;
+  border: 2px solid rgba(0, 0, 0, 0.14);
+}
+
+.basic-color-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.basic-color-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.basic-color-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.basic-color-check {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-link);
+  width: 18px;
+  height: 18px;
 }
