@@ -1,8 +1,5 @@
-// src/Utils/authUtils.js
-
 export const API_BASE = import.meta.env.VITE_API_BASE;
 
-/* ── Cookie yardımçıları ── */
 const isSecure = location.protocol === "https:";
 
 export const CK = {
@@ -15,17 +12,22 @@ export const CK = {
     const match = document.cookie
       .split("; ")
       .find((row) => row.startsWith(name + "="));
-    return match ? decodeURIComponent(match.split("=")[1]) : "";
+    if (!match) return "";
+    const raw = match.split("=").slice(1).join("=");
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
   },
   del: (name) => {
     const secure = isSecure ? "; Secure" : "";
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${secure}`;
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax${secure}`;
   },
 };
 
 export const LS = { set: CK.set, get: CK.get, del: CK.del };
 
-/* ── Token oxu ── */
 export function getToken() {
   const fromCookie = CK.get("access_token");
   if (fromCookie) return fromCookie;
@@ -36,27 +38,16 @@ export function getToken() {
   return "";
 }
 
-export function getRefreshToken() {
-  const fromCookie = CK.get("refresh_token");
-  if (fromCookie) return fromCookie;
-  try {
-    const fromLS = localStorage.getItem("refresh_token");
-    if (fromLS) return fromLS;
-  } catch {}
-  return "";
-}
-
 export function isAuthenticated() {
   return !!getToken();
 }
 
-/* ── Session təmizlə ── */
 export function clearSession(navigate) {
   CK.del("access_token");
   CK.del("refresh_token");
   CK.del("isAuthenticated");
-  CK.del("hash_id"); // ← əlavə edildi
-  CK.del("user_code"); // ← əlavə edildi
+  CK.del("hash_id");
+  CK.del("user_code");
   try {
     sessionStorage.removeItem("insyde_trial_modal_seen");
     sessionStorage.removeItem("insyde_package_flip_hint_seen");
@@ -73,122 +64,55 @@ export function clearSession(navigate) {
   if (navigate) navigate("/login", { replace: true });
 }
 
-/* ── Token saxla ── */
-export function saveTokens(access, refresh) {
+export function saveTokens(access) {
   CK.set("access_token", access, 1);
-  CK.set("refresh_token", refresh, 7);
   try {
     localStorage.setItem("access_token", access);
   } catch {}
-  try {
-    localStorage.setItem("refresh_token", refresh);
-  } catch {}
 }
 
-/* ── Refresh singleton ── */
-let _refreshPromise = null;
-
-async function refreshAccessToken() {
-  if (_refreshPromise) return _refreshPromise;
-
-  _refreshPromise = (async () => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) return null;
-
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/token/refresh/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh: refreshToken }),
-      });
-
-      if (!res.ok) return null;
-
-      const data = await res.json().catch(() => null);
-      if (!data?.access) return null;
-
-      const newAccess = data.access;
-
-      CK.set("access_token", newAccess, 1);
-      try {
-        localStorage.setItem("access_token", newAccess);
-      } catch {}
-
-      if (data?.refresh) {
-        CK.set("refresh_token", data.refresh, 7);
-        try {
-          localStorage.setItem("refresh_token", data.refresh);
-        } catch {}
-      }
-
-      return newAccess;
-    } catch {
-      return null;
-    } finally {
-      setTimeout(() => {
-        _refreshPromise = null;
-      }, 100);
-    }
-  })();
-
-  return _refreshPromise;
+function getCsrfToken() {
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("csrftoken="));
+  return match ? decodeURIComponent(match.split("=")[1]) : "";
 }
 
-/* ── Authenticated fetch ── */
 export async function authFetch(url, options = {}, navigate) {
-  let token = getToken();
-
+  const token = getToken();
   if (!token) {
-    token = await refreshAccessToken();
-    if (!token) {
-      clearSession(navigate);
-      return null;
-    }
+    clearSession(navigate);
+    return null;
   }
 
   const isFormData = options.body instanceof FormData;
+  const method = (options.method || "GET").toUpperCase();
+  const needsCsrf = !["GET", "HEAD", "OPTIONS", "TRACE"].includes(method);
 
-  const buildHeaders = (t) => {
-    const headers = { Authorization: `Bearer ${t}` };
-    if (!isFormData) headers["Content-Type"] = "application/json";
-    if (options.headers) {
-      Object.entries(options.headers).forEach(([k, v]) => {
-        if (isFormData && k.toLowerCase() === "content-type") return;
-        headers[k] = v;
-      });
-    }
-    return headers;
+  const headers = {
+    Accept: "application/json",
+    Authorization: `Bearer ${token}`,
   };
 
-  const { headers: _drop, ...restOptions } = options;
+  if (!isFormData) headers["Content-Type"] = "application/json";
 
-  try {
-    let res = await fetch(url, {
-      ...restOptions,
-      headers: buildHeaders(token),
-    });
-
-    if (res.status === 401) {
-      const newToken = await refreshAccessToken();
-
-      if (!newToken) {
-        clearSession(navigate);
-        return null;
-      }
-
-      res = await fetch(url, {
-        ...restOptions,
-        headers: buildHeaders(newToken),
-      });
-
-      if (res.status === 401) {
-        clearSession(navigate);
-        return null;
-      }
-    }
-
-    return res;
-  } catch (err) {
-    throw err;
+  if (needsCsrf) {
+    const csrf = getCsrfToken();
+    if (csrf) headers["X-CSRFToken"] = csrf;
   }
+
+  if (options.headers) {
+    Object.entries(options.headers).forEach(([key, value]) => {
+      if (isFormData && key.toLowerCase() === "content-type") return;
+      headers[key] = value;
+    });
+  }
+
+  const { headers: _ignoredHeaders, ...restOptions } = options;
+
+  return fetch(url, {
+    ...restOptions,
+    credentials: "include",
+    headers,
+  });
 }

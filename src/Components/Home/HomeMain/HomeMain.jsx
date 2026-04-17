@@ -11,28 +11,6 @@ import Popup from "../../Popup/Popup";
 import { API_BASE, authFetch, getToken, CK } from "../../../Utils/authUtils";
 
 const TRIAL_MODAL_SESSION_KEY = "insyde_trial_modal_seen";
-const PROFILE_DRAFT_KEY = "insyde_profile_draft";
-
-function readProfileDraft() {
-  try {
-    const raw = localStorage.getItem(PROFILE_DRAFT_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeProfileDraft(payload) {
-  try {
-    localStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(payload));
-  } catch { }
-}
-
-function clearProfileDraft() {
-  try {
-    localStorage.removeItem(PROFILE_DRAFT_KEY);
-  } catch { }
-}
 
 // ─── Trial Modal ──────────────────────────────────────────
 function LegacyTrialModal({ onClose, onGuide }) {
@@ -297,7 +275,6 @@ export default function HomeMain() {
   const navigate = useNavigate();
   const isNavigating = useRef(false);
   const abortRef = useRef(null);
-  const draftHydratedRef = useRef(false);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -422,15 +399,7 @@ export default function HomeMain() {
       };
       const rawLinks = Array.isArray(d.link_side) ? d.link_side : [];
       const nextLinks = rawLinks.map((l) => parseLink(l));
-      const draft = readProfileDraft();
-      const draftLinks = Array.isArray(draft?.links)
-        ? draft.links.map((link) => ({
-          ...link,
-          icon: getIcon(link.icon_code),
-        }))
-        : null;
-
-      setFormData(draft?.formData ? { ...nextFormData, ...draft.formData } : nextFormData);
+      setFormData(nextFormData);
 
       setHashId(info.hash_id || "");
       setTotalViews(info.look ?? 0);
@@ -438,8 +407,7 @@ export default function HomeMain() {
       if (info.profile_path) setProfilePath(info.profile_path);
       if (sys.mode) setPhoneTheme(sys.mode);
 
-      setLinks(draftLinks || nextLinks);
-      draftHydratedRef.current = true;
+      setLinks(nextLinks);
     },
     [parseLink],
   );
@@ -588,14 +556,6 @@ export default function HomeMain() {
   const togglePhoneTheme = () =>
     setPhoneTheme((p) => (p === "dark" ? "light" : "dark"));
 
-  useEffect(() => {
-    if (loading || !draftHydratedRef.current) return;
-    writeProfileDraft({
-      formData,
-      links: links.map(({ icon, ...rest }) => rest),
-    });
-  }, [formData, links, loading]);
-
   const handleSave = useCallback(async () => {
     if (saving) return;
     if (!getToken()) {
@@ -618,44 +578,86 @@ export default function HomeMain() {
         );
       }
 
+      const skills = [formData.skill1, formData.skill2, formData.skill3]
+        .filter(Boolean);
+      const systemData = { color: phoneColor, mode: phoneTheme };
+
+      const profilePayload = {
+        name: formData.name,
+        work: formData.profession,
+        company: formData.workplace,
+        about: formData.about,
+        skills,
+        system: systemData,
+      };
+
       const fd = new FormData();
-      fd.append("name", formData.name);
-      fd.append("work", formData.profession);
-      fd.append("company", formData.workplace);
-      fd.append("about", formData.about);
+      fd.append("name", profilePayload.name);
+      fd.append("work", profilePayload.work);
+      fd.append("company", profilePayload.company);
+      fd.append("about", profilePayload.about);
       [formData.skill1, formData.skill2, formData.skill3]
         .filter(Boolean)
         .forEach((s, i) => fd.append(`skills[${i}]`, s));
-      const systemData = { color: phoneColor, mode: phoneTheme };
       fd.append("system", JSON.stringify(systemData));
       if (profileImageFile) fd.append("image", profileImageFile);
 
       const activeLinks = links.filter(
         (l) => !l.isDeleted && l.url.trim() !== "",
       );
-      fd.append(
-        "sosial_media",
-        JSON.stringify(
-          activeLinks.map((l) => ({
-            platform_id: l.platform_id,
-            url: l.url,
-          })),
-        ),
-      );
+      const socialMedia = activeLinks.map((l) => ({
+        platform_id: l.platform_id,
+        url: l.url,
+      }));
+      profilePayload.sosial_media = socialMedia;
+      fd.append("sosial_media", JSON.stringify(socialMedia));
 
-      const res = await authFetch(
-        URL_PROFILE,
-        { method: "PATCH", body: fd },
-        navigate,
-      );
+      const token = getToken();
+      if (!token) {
+        handleUnauthorized();
+        return;
+      }
+
+      const requestOptions = profileImageFile
+        ? {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: fd,
+          }
+        : {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(profilePayload),
+          };
+
+      const res = await fetch(URL_PROFILE, requestOptions);
+
+      if (!res) {
+        handleUnauthorized();
+        return;
+      }
 
       if (!res?.ok) {
-        const err = await res?.json().catch(() => ({}));
+        const text = await res?.text().catch(() => "");
+        let errMsg = "Məlumatlar saxlanılmadı.";
+        try {
+          const err = JSON.parse(text);
+          errMsg = err?.detail || err?.error || errMsg;
+        } catch {
+          if (text?.trim()) errMsg = text.trim();
+        }
         setPopup({
           isOpen: true,
           type: "error",
           title: "Xəta",
-          message: err?.detail || err?.error || "Məlumatlar saxlanılmadı.",
+          message: errMsg,
           confirmText: "Bağla",
           onConfirm: null,
         });
@@ -664,7 +666,6 @@ export default function HomeMain() {
 
       const fresh = await res.json().catch(() => null);
       if (fresh) applyProfileData(fresh);
-      clearProfileDraft();
       setProfileImageFile(null);
       setPopup({
         isOpen: true,
@@ -863,18 +864,23 @@ export default function HomeMain() {
 
           {/* ── Rejim switchi ── */}
           <div className="profile-mode-switch">
-            <button
-              className={`mode-switch-btn ${profileMode === "ferdi" ? "active" : ""}`}
-              onClick={() => setProfileMode("ferdi")}
-            >
-              Fərdi
-            </button>
-            <button
-              className={`mode-switch-btn ${profileMode === "biznes" ? "active" : ""}`}
-              onClick={() => setProfileMode("biznes")}
-            >
-              Biznesim üçün
-            </button>
+            <div className="mode-switch-buttons">
+              <button
+                className={`mode-switch-btn ${profileMode === "ferdi" ? "active" : ""}`}
+                onClick={() => setProfileMode("ferdi")}
+              >
+                Fərdi
+              </button>
+              <button
+                className={`mode-switch-btn ${profileMode === "biznes" ? "active" : ""}`}
+                onClick={() => setProfileMode("biznes")}
+              >
+                Biznes
+              </button>
+            </div>
+            <span className="mode-switch-hint">
+              Yalnız <strong>{profileMode === "ferdi" ? "Fərdi" : "Biznes"}</strong> rejiminin məzmunu göstərilir
+            </span>
           </div>
 
           {/* Şəkil + Ad/Brend + Peşə(fərdi) + Baxış */}

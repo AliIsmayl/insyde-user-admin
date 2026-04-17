@@ -6,7 +6,7 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import "./LoginMain.scss";
-import { CK, API_BASE } from "../../../Utils/authUtils";
+import { CK, API_BASE, saveTokens } from "../../../Utils/authUtils";
 
 const URL_REGISTER = `${API_BASE}/api/dash/auth/register/`;
 const URL_LOGIN = `${API_BASE}/api/dash/auth/login/`;
@@ -104,10 +104,12 @@ function OtpBoxes({ ctrl, disabled }) {
 
 // ── Verify sonrası cookie yazma + redirect (ortaq funksiya) ──
 function saveSessionAndRedirect(data, tokenKey) {
-  if (data.tokens?.access) CK.set("access_token", data.tokens.access);
-  if (data.tokens?.refresh) CK.set("refresh_token", data.tokens.refresh);
+  if (data.tokens?.access) saveTokens(data.tokens.access);
   CK.set("isAuthenticated", "true");
   CK.del(tokenKey);
+  try {
+    localStorage.setItem("isAuthenticated", "true");
+  } catch {}
 
   const hashId = data.data?.hash_id || "";
   const userCode = data.data?.user_code || "";
@@ -620,3 +622,4 @@ function LoginMain() {
 }
 
 export default LoginMain;
+
