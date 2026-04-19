@@ -20,13 +20,19 @@ const TRIAL_MODAL_SESSION_KEY = "insyde_trial_modal_seen";
 function useOtp() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const refs = useRef([]);
+  const onCompleteRef = useRef(null);
 
   const onChange = (i, value) => {
     const digit = value.replace(/\D/g, "").slice(-1);
     const n = [...otp];
     n[i] = digit;
     setOtp(n);
-    if (digit && i < 5) refs.current[i + 1]?.focus();
+    if (digit && i < 5) {
+      refs.current[i + 1]?.focus();
+    } else if (digit && i === 5) {
+      const fullCode = n.join("");
+      if (fullCode.length === 6) setTimeout(() => onCompleteRef.current?.(), 0);
+    }
   };
 
   const onKeyDown = (i, e) => {
@@ -51,11 +57,12 @@ function useOtp() {
     for (let i = 0; i < p.length; i++) n[i] = p[i];
     setOtp(n);
     refs.current[Math.min(p.length, 5)]?.focus();
+    if (p.length === 6) setTimeout(() => onCompleteRef.current?.(), 0);
   };
 
   const reset = () => setOtp(["", "", "", "", "", ""]);
   const code = otp.join("");
-  return { otp, refs, onChange, onKeyDown, onPaste, reset, code };
+  return { otp, refs, onChange, onKeyDown, onPaste, reset, code, onCompleteRef };
 }
 
 // ── Resend timer hook ────────────────────────────────────
@@ -239,6 +246,7 @@ function NewCardView({ onBack }) {
       setLoading(false);
     }
   };
+  otpCtrl.onCompleteRef.current = handleVerify;
 
   const handleBack = () => {
     setStep("form");
@@ -486,6 +494,7 @@ function LoginMain() {
       setLoading(false);
     }
   };
+  otpCtrl.onCompleteRef.current = handleVerify;
 
   const handleBackToEmail = () => {
     setStep("email");

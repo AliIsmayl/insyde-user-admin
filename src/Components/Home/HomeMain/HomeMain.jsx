@@ -271,10 +271,37 @@ function parseServices(raw) {
   return [];
 }
 
+function extractApiErrorMessage(raw, fallback = "Məlumatlar saxlanılmadı.") {
+  if (!raw) return fallback;
+  if (typeof raw === "string") {
+    return raw.trim() || fallback;
+  }
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      const message = extractApiErrorMessage(item, "");
+      if (message) return message;
+    }
+    return fallback;
+  }
+  if (typeof raw === "object") {
+    const priorityKeys = ["detail", "message", "error", "non_field_errors"];
+    for (const key of priorityKeys) {
+      const message = extractApiErrorMessage(raw[key], "");
+      if (message) return message;
+    }
+    for (const value of Object.values(raw)) {
+      const message = extractApiErrorMessage(value, "");
+      if (message) return message;
+    }
+  }
+  return fallback;
+}
+
 export default function HomeMain() {
   const navigate = useNavigate();
   const isNavigating = useRef(false);
   const abortRef = useRef(null);
+  const serverDataRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -302,6 +329,7 @@ export default function HomeMain() {
   const [profilePath, setProfilePath] = useState(null);
   const [totalViews, setTotalViews] = useState(0);
   const [planName, setPlanName] = useState("");
+  const [planFeatures, setPlanFeatures] = useState([]);
   const [phoneTheme, setPhoneTheme] = useState("dark");
   const [phoneColor, setPhoneColor] = useState(DEFAULT_COLOR);
 
@@ -317,7 +345,16 @@ export default function HomeMain() {
   });
   const [links, setLinks] = useState([]);
 
-  const hasUnsaved = links.some((l) => l.isNew || l.isDirty || l.isDeleted);
+  const hasUnsaved = (() => {
+    const s = serverDataRef.current;
+    if (!s) return false;
+    const formChanged = Object.keys(s.formData).some((k) => formData[k] !== s.formData[k]);
+    const modeChanged = profileMode !== (s.profileMode || "ferdi");
+    const colorChanged = phoneColor !== s.phoneColor;
+    const themeChanged = phoneTheme !== s.phoneTheme;
+    const linksChanged = links.some((l) => l.isNew || l.isDirty || l.isDeleted);
+    return formChanged || modeChanged || colorChanged || themeChanged || linksChanged;
+  })();
   const isBlocked = cardStatus === "blocked" || cardStatus === "inactive";
 
   const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
@@ -368,6 +405,18 @@ export default function HomeMain() {
       const sys = d.system || {};
       const sub = d.subscription || {};
       const skills = parseSkills(info.skills);
+      const businessFlag =
+        typeof d.is_business === "boolean"
+          ? d.is_business
+          : typeof info.is_business === "boolean"
+            ? info.is_business
+            : null;
+      const nextProfileMode =
+        businessFlag === null
+          ? serverDataRef.current?.profileMode || "ferdi"
+          : businessFlag
+            ? "biznes"
+            : "ferdi";
 
       const cardSt = d.card?.status || "active";
       setCardStatus(cardSt);
@@ -375,6 +424,7 @@ export default function HomeMain() {
 
       const name = sub.plan?.name || "";
       setPlanName(name);
+      setPlanFeatures(Array.isArray(sub.plan?.features) ? sub.plan.features : []);
 
       if (
         (!name || name.toLowerCase() === "free") &&
@@ -384,9 +434,6 @@ export default function HomeMain() {
         sessionStorage.setItem(TRIAL_MODAL_SESSION_KEY, "true");
         setShowTrialModal(true);
       }
-
-      const backendColor = sys.color || DEFAULT_COLOR;
-      setPhoneColor(backendColor);
 
       const nextFormData = {
         name: info.name || "",
@@ -399,13 +446,26 @@ export default function HomeMain() {
       };
       const rawLinks = Array.isArray(d.link_side) ? d.link_side : [];
       const nextLinks = rawLinks.map((l) => parseLink(l));
+
+      const nextTheme = sys.mode || "dark";
+      const nextColor = sys.color || DEFAULT_COLOR;
+
+      serverDataRef.current = {
+        formData: nextFormData,
+        profileMode: nextProfileMode,
+        phoneTheme: nextTheme,
+        phoneColor: nextColor,
+      };
+
       setFormData(nextFormData);
+      setPhoneTheme(nextTheme);
+      setPhoneColor(nextColor);
 
       setHashId(info.hash_id || "");
       setTotalViews(info.look ?? 0);
       if (info.image) setProfileImage(info.image);
+      setProfileMode(nextProfileMode);
       if (info.profile_path) setProfilePath(info.profile_path);
-      if (sys.mode) setPhoneTheme(sys.mode);
 
       setLinks(nextLinks);
     },
@@ -424,7 +484,7 @@ export default function HomeMain() {
       try {
         const [rProfile, rPlatforms] = await Promise.all([
           authFetch(URL_PROFILE, { signal }, navigate).catch(() => null),
-          fetch(URL_PLATFORMS, { signal }).catch(() => null),
+          authFetch(URL_PLATFORMS, { signal }, navigate).catch(() => null),
         ]);
 
         if (signal.aborted) return;
@@ -549,19 +609,30 @@ export default function HomeMain() {
   const handleLinkClick = useCallback(async (linkId) => {
     if (!linkId) return;
     try {
-      await fetch(URL_CLICK_LINK(linkId), { method: "POST" });
+      await authFetch(URL_CLICK_LINK(linkId), { method: "POST" }, navigate);
     } catch { }
+  }, [navigate]);
+
+  const handleDiscard = useCallback(() => {
+    const s = serverDataRef.current;
+    if (!s) return;
+    setFormData(s.formData);
+    setProfileMode(s.profileMode || "ferdi");
+    setPhoneTheme(s.phoneTheme);
+    setPhoneColor(s.phoneColor);
+    setLinks((prev) => prev.filter((l) => !l.isNew).map((l) => ({ ...l, isDirty: false, isDeleted: false })));
+    setProfileImageFile(null);
   }, []);
 
   const togglePhoneTheme = () =>
     setPhoneTheme((p) => (p === "dark" ? "light" : "dark"));
 
+  const handleModeChange = (mode) => {
+    setProfileMode(mode);
+  };
+
   const handleSave = useCallback(async () => {
     if (saving) return;
-    if (!getToken()) {
-      handleUnauthorized();
-      return;
-    }
     setSaving(true);
 
     try {
@@ -580,27 +651,11 @@ export default function HomeMain() {
 
       const skills = [formData.skill1, formData.skill2, formData.skill3]
         .filter(Boolean);
-      const systemData = { color: phoneColor, mode: phoneTheme };
 
-      const profilePayload = {
-        name: formData.name,
-        work: formData.profession,
-        company: formData.workplace,
-        about: formData.about,
-        skills,
-        system: systemData,
-      };
-
-      const fd = new FormData();
-      fd.append("name", profilePayload.name);
-      fd.append("work", profilePayload.work);
-      fd.append("company", profilePayload.company);
-      fd.append("about", profilePayload.about);
-      [formData.skill1, formData.skill2, formData.skill3]
-        .filter(Boolean)
-        .forEach((s, i) => fd.append(`skills[${i}]`, s));
-      fd.append("system", JSON.stringify(systemData));
-      if (profileImageFile) fd.append("image", profileImageFile);
+      const hasCustomDesign = planFeatures.includes("custom_design");
+      const systemData = hasCustomDesign
+        ? { color: phoneColor, mode: phoneTheme }
+        : { mode: phoneTheme };
 
       const activeLinks = links.filter(
         (l) => !l.isDeleted && l.url.trim() !== "",
@@ -609,35 +664,24 @@ export default function HomeMain() {
         platform_id: l.platform_id,
         url: l.url,
       }));
-      profilePayload.sosial_media = socialMedia;
-      fd.append("sosial_media", JSON.stringify(socialMedia));
 
-      const token = getToken();
-      if (!token) {
-        handleUnauthorized();
-        return;
-      }
-
-      const requestOptions = profileImageFile
-        ? {
-            method: "PATCH",
-            credentials: "include",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: fd,
-          }
-        : {
-            method: "PATCH",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(profilePayload),
-          };
-
-      const res = await fetch(URL_PROFILE, requestOptions);
+      const res = await authFetch(
+        URL_PROFILE,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            name: formData.name,
+            work: formData.profession,
+            company: formData.workplace,
+            about: formData.about,
+            skills,
+            system: systemData,
+            sosial_media: socialMedia,
+            is_business: profileMode === "biznes",
+          }),
+        },
+        navigate,
+      );
 
       if (!res) {
         handleUnauthorized();
@@ -649,9 +693,9 @@ export default function HomeMain() {
         let errMsg = "Məlumatlar saxlanılmadı.";
         try {
           const err = JSON.parse(text);
-          errMsg = err?.detail || err?.error || errMsg;
+          errMsg = extractApiErrorMessage(err, errMsg);
         } catch {
-          if (text?.trim()) errMsg = text.trim();
+          errMsg = extractApiErrorMessage(text, errMsg);
         }
         setPopup({
           isOpen: true,
@@ -664,8 +708,23 @@ export default function HomeMain() {
         return;
       }
 
+      if (profileImageFile) {
+        const fd = new FormData();
+        fd.append("image", profileImageFile);
+        await authFetch(URL_PROFILE, { method: "PATCH", body: fd }, navigate).catch(() => null);
+      }
+
       const fresh = await res.json().catch(() => null);
-      if (fresh) applyProfileData(fresh);
+      if (fresh) {
+        applyProfileData({
+          ...fresh,
+          is_business: profileMode === "biznes",
+          user_info: {
+            ...(fresh.user_info || {}),
+            is_business: profileMode === "biznes",
+          },
+        });
+      }
       setProfileImageFile(null);
       setPopup({
         isOpen: true,
@@ -674,11 +733,10 @@ export default function HomeMain() {
         message: "Dəyişikliklər tətbiq edildi. Profil səhifənizə keçə bilərsiniz.",
         confirmText: "Səhifəmə keç",
         onConfirm: () => {
+          const hid = hash_id || CK.get("hash_id");
           const nextProfileUrl =
             profilePath ||
-            (hash_id || CK.get("hash_id")
-              ? `http://localhost:5174/person/${hash_id || CK.get("hash_id")}`
-              : "#");
+            (hid ? `http://localhost:5174/profile/${hid}/` : "#");
           if (nextProfileUrl !== "#") {
             window.location.href = nextProfileUrl;
           }
@@ -707,12 +765,15 @@ export default function HomeMain() {
     phoneColor,
     phoneTheme,
     hash_id,
+    profilePath,
+    planFeatures,
+    profileMode,
   ]);
 
   const profileUrl =
     profilePath ||
     (hash_id || CK.get("hash_id")
-      ? `http://localhost:5174/person/${hash_id || CK.get("hash_id")}`
+      ? `http://localhost:5174/profile/${hash_id || CK.get("hash_id")}/`
       : "#");
   const packageLabel = planName || "Free";
 
@@ -867,13 +928,13 @@ export default function HomeMain() {
             <div className="mode-switch-buttons">
               <button
                 className={`mode-switch-btn ${profileMode === "ferdi" ? "active" : ""}`}
-                onClick={() => setProfileMode("ferdi")}
+                onClick={() => handleModeChange("ferdi")}
               >
                 Fərdi
               </button>
               <button
                 className={`mode-switch-btn ${profileMode === "biznes" ? "active" : ""}`}
-                onClick={() => setProfileMode("biznes")}
+                onClick={() => handleModeChange("biznes")}
               >
                 Biznes
               </button>
@@ -1083,6 +1144,16 @@ export default function HomeMain() {
           >
             <FaIcons.FaExternalLinkAlt /> Səhifəmə Keçid
           </a>
+
+          {hasUnsaved && !isBlocked && (
+            <button
+              className="discard-btn"
+              disabled={saving}
+              onClick={handleDiscard}
+            >
+              <FaIcons.FaUndo /> Ləğv et
+            </button>
+          )}
 
           <button
             className={`save-btn ${hasUnsaved ? "save-btn--unsaved" : ""}`}

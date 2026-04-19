@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiCheck, FiX, FiChevronRight, FiChevronLeft, FiRefreshCw } from "react-icons/fi";
 import { API_BASE, authFetch } from "../../../Utils/authUtils";
 import "./PackageMain.scss";
@@ -303,6 +304,7 @@ function StepIndicator({ current, labels }) {
 }
 
 function PackageMain() {
+  const navigate = useNavigate();
   const fileRef = useRef(null);
 
   const cardDraft = readCardDraft();
@@ -329,9 +331,12 @@ function PackageMain() {
   const [packages, setPackages] = useState(FALLBACK_PACKAGES.filter((p) => ALLOWED_PLANS.includes(p.key)));
   const [currentSubData, setCurrentSubData] = useState(null);
   const [currentSub, setCurrentSub] = useState(null);
+  const [nextPaymentDate, setNextPaymentDate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [successState, setSuccessState] = useState(null);
+  const [redirectCount, setRedirectCount] = useState(3);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -377,6 +382,18 @@ function PackageMain() {
             const sub = d?.subscription || {};
             detectedSubKey = (sub.version_type || sub.packet_type || "free").toLowerCase();
             setCurrentSub(detectedSubKey);
+
+            // Next payment date — try common field names
+            const rawDate = sub.next_billing_date || sub.end_date || sub.expires_at
+              || sub.renewal_date || sub.next_payment || sub.valid_until || null;
+            if (rawDate) {
+              try {
+                const dt = new Date(rawDate);
+                const MONTHS = ["yanvar","fevral","mart","aprel","may","iyun",
+                                "iyul","avqust","sentyabr","oktyabr","noyabr","dekabr"];
+                setNextPaymentDate(`${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`);
+              } catch { /* ignore */ }
+            }
           } catch { }
         }
 
@@ -404,6 +421,16 @@ function PackageMain() {
   useEffect(() => {
     writeCardDraft({ cardTheme, cardName, cardTitle, cardSlogan, cardBrandMode, cardBrandName });
   }, [cardTheme, cardName, cardTitle, cardSlogan, cardBrandMode, cardBrandName]);
+
+  useEffect(() => {
+    if (!success || !successState) return;
+    if (redirectCount <= 0) {
+      navigate("/order", { state: successState });
+      return;
+    }
+    const t = setTimeout(() => setRedirectCount((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [success, redirectCount, successState, navigate]);
 
   const isBasic = selectedPkg === "basic";
   const isFreeUser = !currentSub || currentSub === "free";
@@ -451,20 +478,24 @@ function PackageMain() {
 
     try {
       const form = new FormData();
-      form.append("package_type", selectedPkg);
       form.append("plan_id", pkgData?.id ?? "");
-      form.append("billing_period", selectedBilling);
-      form.append("months", billData?.months ?? 1);
-      form.append("card_theme", cardTheme);
-      form.append("card_name", cardName);
-      form.append("card_title", cardTitle);
-      form.append("card_slogan", cardSlogan || "İlk təəssürat önəmlidir");
-      form.append("card_brand_mode", cardBrandMode);
-      form.append("card_brand_name", cardBrandName);
+      form.append("duration_months", billData?.months ?? 1);
+      form.append("card_color", cardTheme === "light" ? "white" : "black");
 
-      if (cardLogoFile) form.append("card_logo", cardLogoFile);
+      if (!isBasic) {
+        form.append("theme", cardTheme);
+        form.append("card_full_name", cardName);
+        form.append("card_position", cardTitle);
+        const isTemplate = cardBrandMode === "qelib";
+        form.append("is_template", isTemplate);
+        if (!isTemplate) {
+          form.append("slogan", cardSlogan || "");
+          form.append("card_text", cardBrandName || "");
+          if (cardLogoFile) form.append("card_logo", cardLogoFile);
+        }
+      }
 
-      const res = await authFetch(`${API_BASE}/api/v1/subscription/purchase/`, {
+      const res = await authFetch(`${API_BASE}/api/v1/orders/my/create/`, {
         method: "POST",
         body: form,
       });
@@ -481,13 +512,18 @@ function PackageMain() {
         return;
       }
 
-      if (body?.payment_url) {
-        window.location.href = body.payment_url;
-        return;
-      }
-
       clearStepDraft();
       localStorage.removeItem(CARD_DRAFT_KEY);
+      setSuccessState({
+        isNew: true,
+        order_number: body?.order_number || body?.number || "",
+        package_name: pkgData?.name || "",
+        package_color: pkgData?.color || "#d4af37",
+        billing_label: billData?.label || "",
+        billing_months: billData?.months || 1,
+        card_total: body?.card_price ?? body?.card_total ?? 0,
+        monthly_total: totalPrice,
+      });
       setSuccess(true);
     } catch {
       setError("Server ilə əlaqə kəsildi.");
@@ -516,15 +552,70 @@ function PackageMain() {
   if (success) {
     return (
       <div className="pkg-success-screen">
-        <div className="pkg-success-icon">✓</div>
-        <h2>Ödəniş tamamlandı!</h2>
-        <p>
-          {pkgData?.name && <strong>{pkgData.name}</strong>}
-          {pkgData?.name ? " paketi" : "Paket"} uğurla aktivləşdirildi.
-        </p>
-        <button className="pkg-nav-btn primary" onClick={handleReset}>
-          Paketlərə qayıt
-        </button>
+        <div className="pkg-success-card">
+          <div className="pkg-success-glow" />
+
+          <div className="pkg-success-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="34" height="34">
+              <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+
+          <div className="pkg-success-badge">Sifariş qəbul edildi</div>
+
+          <div className="pkg-success-heading">
+            <h2>Ödəniş tamamlandı!</h2>
+            <p className="pkg-success-sub">
+              {successState?.package_name
+                ? <><strong>{successState.package_name}</strong> paketi uğurla aktivləşdirildi.</>
+                : "Paket uğurla aktivləşdirildi."}
+            </p>
+          </div>
+
+          {successState?.order_number && (
+            <div className="pkg-success-order-num">
+              <span>Sifariş №</span>
+              <strong>{successState.order_number}</strong>
+            </div>
+          )}
+
+          <div className="pkg-success-details">
+            {successState?.billing_label && (
+              <div className="pkg-success-detail-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+                <span>Müddət</span>
+                <strong>{successState.billing_label}</strong>
+              </div>
+            )}
+            {successState?.monthly_total > 0 && (
+              <div className="pkg-success-detail-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                </svg>
+                <span>Ödənildi</span>
+                <strong>{parseFloat(successState.monthly_total).toFixed(2)}₼</strong>
+              </div>
+            )}
+          </div>
+
+          <div className="pkg-success-divider" />
+
+          <p className="pkg-success-redirect">
+            {redirectCount} saniyə sonra sifarişlərinizə yönləndirilirsiniz...
+          </p>
+
+          <button
+            className="pkg-success-btn"
+            onClick={() => navigate("/order", { state: successState })}
+          >
+            Sifarişlərimə keç
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+              <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
     );
   }
@@ -537,6 +628,189 @@ function PackageMain() {
     );
   }
 
+  // ── SUBSCRIBED USER LAYOUT ────────────────────────────────
+  if (effectiveManual) {
+    const currentPkg = currentSubData || packages.find((p) => p.key === currentSub);
+    const otherPackages = packages.filter((p) => p.key !== currentSub);
+    const currentFeatures = currentPkg?.features
+      ? currentPkg.features
+      : FEATURES.map((f) => ({ name: f.name, available: f[currentPkg?.key] ?? true }));
+
+    // next payment date: selected billing months * 30 + 3 buffer days
+    const calcNextPayDate = (months) => {
+      const d = new Date();
+      d.setDate(d.getDate() + months * 30 + 3);
+      const MO = ["yanvar","fevral","mart","aprel","may","iyun","iyul","avqust","sentyabr","oktyabr","noyabr","dekabr"];
+      return `${d.getDate()} ${MO[d.getMonth()]} ${d.getFullYear()}`;
+    };
+
+    const renewBillData = BILLING_OPTIONS.find((b) => b.key === selectedBilling);
+    const renewRaw      = currentPkg ? calcRaw(currentPkg.monthlyRate, renewBillData?.months ?? 1) : 0;
+    const renewTotal    = currentPkg ? calcTotal(currentPkg.monthlyRate, renewBillData?.months ?? 1, renewBillData?.discountRate ?? 0) : 0;
+    const renewSaved    = +(renewRaw - renewTotal).toFixed(2);
+    const nextPayDate   = calcNextPayDate(renewBillData?.months ?? 1);
+
+    return (
+      <div className="package-main-modern">
+        <div className="pkg-top-header">
+          <div>
+            <h2 className="pkg-page-title">Ödəniş Planı</h2>
+            <p className="pkg-page-subtitle">Abunəlik məlumatlarınız</p>
+          </div>
+        </div>
+
+        <div className="pkg-subscribed-layout">
+          {/* ── Sol: cari paket məlumatları ── */}
+          <div className="pkg-subscribed-left">
+            <div className="pkg-section">
+              <h3 className="pkg-section-title">Sizin Paketiniz</h3>
+              <div className="pkg-active-card" style={{ "--pkg-color": currentPkg?.color || "#d4af37" }}>
+                <div className="pkg-active-header">
+                  <div className="pkg-active-header-left">
+                    <span className="pkg-is-badge">Aktiv paket</span>
+                    <h2 className="pkg-active-name" style={{ color: currentPkg?.color }}>
+                      {currentPkg?.name || "—"}
+                    </h2>
+                  </div>
+                  <div className="pkg-active-price">
+                    <span className="pkg-active-rate">{currentPkg?.monthlyRate?.toFixed(2) ?? "—"}₼</span>
+                    <span className="pkg-active-rate-label">/ ay</span>
+                  </div>
+                </div>
+
+                {nextPaymentDate && (
+                  <div className="pkg-next-payment">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                    </svg>
+                    Növbəti ödəniş: <strong>{nextPaymentDate}</strong>
+                  </div>
+                )}
+
+                <div className="pkg-active-divider" />
+
+                <div className="pkg-features-list">
+                  {currentFeatures.map((feat, fi) => (
+                    <div key={fi} className={`pkg-feat-row ${!feat.available ? "unavailable" : ""}`}>
+                      {feat.available
+                        ? <FiCheck className="feat-icon check" />
+                        : <FiX className="feat-icon cross" />}
+                      <span>{feat.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Digər paketlər */}
+            {otherPackages.length > 0 && (
+              <div className="pkg-section">
+                <h3 className="pkg-section-title">Digər Paketlər</h3>
+                <div className="pkg-cards-grid">
+                  {otherPackages.map((pkg) => (
+                    <div key={pkg.key} className="pkg-option-card pkg-info-only"
+                      style={{ "--pkg-color": pkg.color, "--pkg-glow": `${pkg.color}30` }}>
+                      {pkg.badge && <span className="pkg-badge" style={{ background: pkg.color }}>{pkg.badge}</span>}
+                      <div className="pkg-card-top">
+                        <h3 className="pkg-card-name" style={{ color: pkg.color }}>{pkg.name}</h3>
+                        <div className="pkg-card-price">{pkg.cardPrice}</div>
+                        <div className="pkg-card-rate">{pkg.monthlyRate.toFixed(2)}₼ / ay</div>
+                      </div>
+                      <div className="pkg-features-list">
+                        {(pkg.features
+                          ? pkg.features
+                          : FEATURES.map((f) => ({ name: f.name, available: f[pkg.key] ?? true }))
+                        ).map((feat, fi) => (
+                          <div key={fi} className={`pkg-feat-row ${!feat.available ? "unavailable" : ""}`}>
+                            {feat.available ? <FiCheck className="feat-icon check" /> : <FiX className="feat-icon cross" />}
+                            <span>{feat.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Sağ: ödənişi uzat ── */}
+          <div className="pkg-subscribed-right">
+            <div className="pkg-renew-card">
+              <h3 className="pkg-renew-title">Ödənişi Uzat</h3>
+              <p className="pkg-renew-sub">
+                Müddət seçin — ödəniş aktivliyin üzərinə əlavə olunur
+              </p>
+
+              <div className="billing-options">
+                {BILLING_OPTIONS.map((opt) => {
+                  const raw        = currentPkg ? calcRaw(currentPkg.monthlyRate, opt.months) : 0;
+                  const discounted = currentPkg ? calcTotal(currentPkg.monthlyRate, opt.months, opt.discountRate) : 0;
+                  const saved      = +(raw - discounted).toFixed(2);
+                  const isSelected = selectedBilling === opt.key;
+                  return (
+                    <div key={opt.key} className={`billing-card ${isSelected ? "selected" : ""}`}
+                      onClick={() => setSelectedBilling(opt.key)}>
+                      <div className="billing-card-top">
+                        <span className="billing-label">{opt.label}</span>
+                        {opt.discountRate > 0 && (
+                          <span className="billing-discount-badge">-{Math.round(opt.discountRate * 100)}%</span>
+                        )}
+                        {isSelected && <FiCheck className="billing-check" />}
+                      </div>
+                      <div className="billing-price-row">
+                        <div className="billing-total">{currentPkg ? discounted : "—"}₼</div>
+                        {saved > 0 && <div className="billing-original">{raw}₼</div>}
+                      </div>
+                      <div className="billing-rate">
+                        {currentPkg ? currentPkg.monthlyRate.toFixed(2) : "—"}₼ × {opt.months} ay
+                        {saved > 0 && <span className="billing-save-note"> ({saved.toFixed(2)}₼ qənaət)</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Summary */}
+              <div className="pkg-renew-summary">
+                <div className="pkg-renew-summary-row">
+                  <span>Müddət</span>
+                  <strong>{renewBillData?.label}</strong>
+                </div>
+                {renewSaved > 0 && (
+                  <div className="pkg-renew-summary-row">
+                    <span>Endirim</span>
+                    <strong className="pkg-renew-save">-{renewSaved.toFixed(2)}₼</strong>
+                  </div>
+                )}
+                <div className="pkg-renew-summary-row">
+                  <span>Ödəniləcək məbləğ</span>
+                  <strong className="pkg-renew-total">{renewTotal.toFixed(2)}₼</strong>
+                </div>
+                <div className="pkg-renew-divider" />
+                <div className="pkg-renew-date-row">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                  </svg>
+                  <span>Son ödəniş tarixi</span>
+                  <strong>{nextPayDate}</strong>
+                </div>
+              </div>
+
+              {error && <div className="checkout-error">{error}</div>}
+
+              <button className="pkg-nav-btn primary full-width" onClick={handleSubmit} disabled={submitting}>
+                {submitting ? <span className="pkg-spinner-sm" /> : null}
+                {submitting ? "Emal olunur..." : `${renewTotal.toFixed(2)}₼ Ödə`}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── FREE USER LAYOUT (unchanged) ──────────────────────────
   return (
     <div className="package-main-modern">
       <div className="pkg-top-header">
