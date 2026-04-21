@@ -157,6 +157,12 @@ $radius-card: 18px;
     transition: all 0.2s;
     border: 1px solid transparent;
 
+    svg {
+      font-size: 18px;
+      flex-shrink: 0;
+      opacity: 0.92;
+    }
+
     &.primary {
       background: var(--bg-active);
       border-color: var(--border-focus);
@@ -855,6 +861,43 @@ $radius-card: 18px;
     grid-template-columns: 1fr 1fr;
     gap: 28px;
     align-items: start;
+
+    &.checkout-layout-with-card {
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 420px);
+      align-items: start;
+    }
+  }
+
+  .checkout-card-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    position: sticky;
+    top: 24px;
+
+    .checkout-flip-btn {
+      margin-top: 0;
+    }
+  }
+
+  .checkout-preview-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 22px 20px;
+  }
+
+  .checkout-preview-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
 
   .checkout-summary {
@@ -1012,6 +1055,11 @@ $radius-card: 18px;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
+    padding: 0;
+
+    svg {
+      font-size: 18px;
+    }
 
     &:hover {
       background: var(--border-focus);
@@ -1071,6 +1119,19 @@ $radius-card: 18px;
 
     .checkout-layout {
       grid-template-columns: 1fr;
+
+      &.checkout-layout-with-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .checkout-card-preview {
+      position: static;
+    }
+
+    .checkout-preview-head {
+      flex-direction: column;
+      align-items: stretch;
     }
   }
 
@@ -1295,6 +1356,35 @@ $radius-card: 18px;
 .pkg-active-rate-label {
   font-size: 13px;
   color: var(--text-secondary, #94a3b8);
+}
+
+.pkg-payment-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.pkg-pay-date-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-secondary, #94a3b8);
+  background: var(--bg-input, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  padding: 7px 13px;
+  width: fit-content;
+
+  svg { color: var(--text-secondary, #94a3b8); flex-shrink: 0; }
+
+  strong { color: var(--text-primary, #f1f5f9); font-weight: 600; }
+
+  &.pkg-pay-date-next {
+    svg { color: #d4af37; }
+    strong { color: #d4af37; }
+  }
 }
 
 .pkg-next-payment {
@@ -1702,3 +1792,61 @@ $radius-card: 18px;
   }
 }
 
+// ── Subscribed user: cari paket banneri ──────────────────────
+.pkg-current-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--pkg-color, #d4af37);
+  border-radius: 14px;
+  flex-wrap: wrap;
+
+  .pkg-current-banner-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .pkg-is-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    .pkg-current-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+  }
+
+  .pkg-current-banner-right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: right;
+
+    span {
+      font-size: 12px;
+      color: var(--text-secondary);
+      strong { color: var(--text-primary); margin-left: 4px; }
+    }
+  }
+}
+
+// ── Kart rəngi seçici ─────────────────────────────────────────
+// ── Subscribed user: xüsusiyyətlər mini panel ────────────────
+.pkg-features-mini {
+  margin-top: 16px;
+
+  .checkout-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 0 0 10px;
+  }
+}
