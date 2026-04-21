@@ -1,16 +1,104 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  FiLock,
-  FiEye,
-  FiEyeOff,
+  FiMail,
+  FiArrowLeft,
   FiCheckCircle,
   FiSun,
   FiMoon,
-  FiGlobe,
 } from "react-icons/fi";
 import "./SettingsMain.scss";
 import Popup from "../../Popup/Popup";
-import { CK } from "../../../Utils/authUtils";
+import { CK, API_BASE, authFetch } from "../../../Utils/authUtils";
+
+const URL_REQUEST_EMAIL_CHANGE = `${API_BASE}/api/dash/auth/update_email/`;
+const URL_CONFIRM_EMAIL_CHANGE = `${API_BASE}/api/dash/auth/verify_update_email/`;
+
+function useOtp() {
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const refs = useRef([]);
+  const onCompleteRef = useRef(null);
+
+  const onChange = (i, value) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const n = [...otp];
+    n[i] = digit;
+    setOtp(n);
+    if (digit && i < 5) {
+      refs.current[i + 1]?.focus();
+    } else if (digit && i === 5) {
+      const fullCode = n.join("");
+      if (fullCode.length === 6) setTimeout(() => onCompleteRef.current?.(), 0);
+    }
+  };
+
+  const onKeyDown = (i, e) => {
+    if (e.key === "Backspace") {
+      const n = [...otp];
+      if (otp[i]) {
+        n[i] = "";
+        setOtp(n);
+      } else if (i > 0) {
+        n[i - 1] = "";
+        setOtp(n);
+        refs.current[i - 1]?.focus();
+      }
+    } else if (e.key === "ArrowLeft" && i > 0) refs.current[i - 1]?.focus();
+    else if (e.key === "ArrowRight" && i < 5) refs.current[i + 1]?.focus();
+  };
+
+  const onPaste = (e) => {
+    e.preventDefault();
+    const p = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const n = ["", "", "", "", "", ""];
+    for (let i = 0; i < p.length; i++) n[i] = p[i];
+    setOtp(n);
+    refs.current[Math.min(p.length, 5)]?.focus();
+    if (p.length === 6) setTimeout(() => onCompleteRef.current?.(), 0);
+  };
+
+  const reset = () => setOtp(["", "", "", "", "", ""]);
+  const code = otp.join("");
+  return { otp, refs, onChange, onKeyDown, onPaste, reset, code, onCompleteRef };
+}
+
+function useResendTimer() {
+  const [timer, setTimer] = useState(0);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (timer > 0) {
+      ref.current = setTimeout(() => setTimer((t) => t - 1), 1000);
+    }
+    return () => clearTimeout(ref.current);
+  }, [timer]);
+
+  const start = (seconds = 45) => setTimer(seconds);
+  const reset = () => { clearTimeout(ref.current); setTimer(0); };
+  return { timer, start, reset };
+}
+
+function OtpBoxes({ ctrl, disabled }) {
+  return (
+    <div className="email-otp-inputs">
+      {ctrl.otp.map((digit, i) => (
+        <input
+          key={i}
+          ref={(el) => (ctrl.refs.current[i] = el)}
+          className={`email-otp-box ${digit ? "filled" : ""}`}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={digit}
+          onChange={(e) => ctrl.onChange(i, e.target.value)}
+          onKeyDown={(e) => ctrl.onKeyDown(i, e)}
+          onPaste={i === 0 ? ctrl.onPaste : undefined}
+          autoFocus={i === 0}
+          disabled={disabled}
+        />
+      ))}
+    </div>
+  );
+}
 
 const LANGUAGES = [
   { code: "az", label: "Azərbaycanca", flag: "🇦🇿", short: "AZ" },
@@ -56,36 +144,102 @@ function SettingsMain() {
     });
   };
 
-  const [passwords, setPasswords] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [showPassword, setShowPassword] = useState({
-    current: false,
-    new: false,
-    confirm: false,
-  });
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [emailStep, setEmailStep] = useState("form");
+  const [newEmail, setNewEmail] = useState("");
+  const [emailFormError, setEmailFormError] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [changeToken, setChangeToken] = useState("");
 
-  const handleChange = (e) =>
-    setPasswords({ ...passwords, [e.target.name]: e.target.value });
-  const toggleVisibility = (field) =>
-    setShowPassword({ ...showPassword, [field]: !showPassword[field] });
+  const otpCtrl = useOtp();
+  const resend = useResendTimer();
 
-  const handleSubmit = (e) => {
+  const handleEmailRequest = async (e) => {
     e.preventDefault();
-    if (passwords.newPassword === passwords.confirmPassword) {
-      setIsSuccess(true);
-      setTimeout(() => setIsSuccess(false), 3000);
-      setPasswords({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+    setEmailFormError("");
+    if (!newEmail) { setEmailFormError("E-poçt ünvanını daxil edin!"); return; }
+    setEmailLoading(true);
+    try {
+      const res = await authFetch(URL_REQUEST_EMAIL_CHANGE, {
+        method: "POST",
+        body: JSON.stringify({ new_email: newEmail }),
       });
-    } else {
-      alert("Yeni şifrələr uyğun gəlmir!");
+      if (!res) return;
+      const data = await res.json();
+      if (!res.ok) {
+        setEmailFormError(data?.error || data?.detail || data?.new_email?.[0] || "Xəta baş verdi.");
+        return;
+      }
+      setChangeToken(data.change_token || data.registration_token || "");
+      resend.start(data.resend_after_seconds || 45);
+      setEmailStep("otp");
+    } catch {
+      setEmailFormError("Serverə qoşulmaq mümkün olmadı.");
+    } finally {
+      setEmailLoading(false);
     }
+  };
+
+  const handleEmailResend = async () => {
+    if (resend.timer > 0) return;
+    setOtpError("");
+    setEmailLoading(true);
+    try {
+      const res = await authFetch(URL_REQUEST_EMAIL_CHANGE, {
+        method: "POST",
+        body: JSON.stringify({ new_email: newEmail }),
+      });
+      if (!res) return;
+      const data = await res.json();
+      if (res.ok) {
+        setChangeToken(data.change_token || data.registration_token || "");
+        resend.start(data.resend_after_seconds || 45);
+        otpCtrl.reset();
+        otpCtrl.refs.current[0]?.focus();
+      } else {
+        setOtpError(data?.error || data?.detail || "Kod yenidən göndərilmədi.");
+      }
+    } catch {
+      setOtpError("Serverə qoşulmaq mümkün olmadı.");
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleEmailVerify = async () => {
+    if (otpCtrl.code.length < 6) { setOtpError("Bütün 6 xananı doldurun."); return; }
+    setEmailLoading(true);
+    setOtpError("");
+    try {
+      const res = await authFetch(URL_CONFIRM_EMAIL_CHANGE, {
+        method: "POST",
+        body: JSON.stringify({
+          otp_code: otpCtrl.code,
+          new_email: newEmail,
+          change_token: changeToken,
+        }),
+      });
+      if (!res) return;
+      const data = await res.json();
+      if (!res.ok) {
+        setOtpError(data?.error || data?.detail || data?.otp_code?.[0] || data?.non_field_errors?.[0] || "Kod yanlışdır.");
+        return;
+      }
+      setEmailStep("done");
+    } catch {
+      setOtpError("Serverə qoşulmaq mümkün olmadı.");
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+  otpCtrl.onCompleteRef.current = handleEmailVerify;
+
+  const handleEmailBack = () => {
+    setEmailStep("form");
+    otpCtrl.reset();
+    setOtpError("");
+    resend.reset();
+    setChangeToken("");
   };
 
   return (
@@ -203,117 +357,95 @@ function SettingsMain() {
           </div> */}
         </div>
 
-        {/* SAĞ SÜTUN — PAROL */}
+        {/* SAĞ SÜTUN — EMAİL YENİLƏ */}
         <div className="settings-col right-col">
-          <div className="modern-card password-card">
+          <div className="modern-card email-update-card">
             <div className="card-header">
               <div className="header-icon">
-                <FiLock />
+                <FiMail />
               </div>
               <div>
-                <h3>Şifrəni Yenilə</h3>
-                <p>
-                  Hesabınızın təhlükəsizliyini qorumaq üçün güclü şifrə istifadə
-                  edin.
-                </p>
+                <h3>E-poçtu Yenilə</h3>
+                <p>Hesabınıza bağlı e-poçt ünvanını dəyişin.</p>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="password-form">
-              <div className="input-group">
-                <label>Mövcud Şifrə</label>
-                <div className="input-wrapper">
-                  <input
-                    type={showPassword.current ? "text" : "password"}
-                    name="currentPassword"
-                    placeholder="Hazırkı şifrənizi daxil edin"
-                    value={passwords.currentPassword}
-                    onChange={handleChange}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="eye-btn"
-                    onClick={() => toggleVisibility("current")}
-                  >
-                    {showPassword.current ? <FiEyeOff /> : <FiEye />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="divider" />
-
-              <div className="input-group">
-                <label>Yeni Şifrə</label>
-                <div className="input-wrapper">
-                  <input
-                    type={showPassword.new ? "text" : "password"}
-                    name="newPassword"
-                    placeholder="Yeni şifrə yaradın"
-                    value={passwords.newPassword}
-                    onChange={handleChange}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="eye-btn"
-                    onClick={() => toggleVisibility("new")}
-                  >
-                    {showPassword.new ? <FiEyeOff /> : <FiEye />}
-                  </button>
-                </div>
-                <ul className="password-rules">
-                  <li>Ən azı 8 simvol</li>
-                  <li>Böyük və kiçik hərflər</li>
-                  <li>Rəqəm və ya xüsusi simvol</li>
-                </ul>
-              </div>
-
-              <div className="input-group">
-                <label>Yeni Şifrə (Təkrar)</label>
-                <div className="input-wrapper">
-                  <input
-                    type={showPassword.confirm ? "text" : "password"}
-                    name="confirmPassword"
-                    placeholder="Yeni şifrəni təsdiqləyin"
-                    value={passwords.confirmPassword}
-                    onChange={handleChange}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="eye-btn"
-                    onClick={() => toggleVisibility("confirm")}
-                  >
-                    {showPassword.confirm ? <FiEyeOff /> : <FiEye />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-actions">
-                {isSuccess && (
-                  <div className="success-msg">
-                    <FiCheckCircle /> Şifrəniz uğurla yeniləndi!
+            {/* FORM ADDIMI */}
+            {emailStep === "form" && (
+              <form onSubmit={handleEmailRequest} className="email-update-form">
+                <div className="input-group">
+                  <label>Yeni E-poçt Ünvanı</label>
+                  <div className="input-wrapper">
+                    <FiMail className="input-icon-left" />
+                    <input
+                      type="email"
+                      placeholder="yeni@email.com"
+                      value={newEmail}
+                      onChange={(e) => { setNewEmail(e.target.value); setEmailFormError(""); }}
+                      disabled={emailLoading}
+                      autoComplete="email"
+                    />
                   </div>
-                )}
+                  {emailFormError && (
+                    <div className="email-error-msg">{emailFormError}</div>
+                  )}
+                </div>
+                <div className="form-actions">
+                  <button type="submit" className="save-btn" disabled={emailLoading}>
+                    {emailLoading ? (
+                      <span className="btn-loading"><span className="spinner" /> Göndərilir...</span>
+                    ) : "OTP Göndər"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* OTP ADDIMI */}
+            {emailStep === "otp" && (
+              <div className="email-otp-section">
+                <p className="otp-desc">
+                  <strong>{newEmail}</strong> ünvanına göndərilən 6 rəqəmli kodu daxil edin.
+                </p>
+                {otpError && <div className="email-error-msg">{otpError}</div>}
+                <OtpBoxes ctrl={otpCtrl} disabled={emailLoading} />
                 <button
-                  type="submit"
                   className="save-btn"
-                  onClick={() =>
-                    setPopup({
-                      isOpen: true,
-                      type: "success",
-                      title: "Uğurlu!",
-                      message: "Məlumatlarınız yeniləndi.",
-                      confirmText: "Əla",
-                      onConfirm: null,
-                    })
-                  }
+                  onClick={handleEmailVerify}
+                  disabled={emailLoading || otpCtrl.code.length < 6}
                 >
-                  Yadda Saxla
+                  {emailLoading ? (
+                    <span className="btn-loading"><span className="spinner" /> Yoxlanılır...</span>
+                  ) : "Təsdiqlə"}
+                </button>
+                <div className="email-resend-wrap">
+                  {resend.timer > 0 ? (
+                    <span className="email-resend-timer">Yenidən göndər — <strong>{resend.timer}s</strong></span>
+                  ) : (
+                    <button className="email-resend-btn" onClick={handleEmailResend} disabled={emailLoading}>
+                      Kodu yenidən göndər
+                    </button>
+                  )}
+                </div>
+                <button className="email-back-btn" onClick={handleEmailBack} disabled={emailLoading}>
+                  <FiArrowLeft /> Geri qayıt
                 </button>
               </div>
-            </form>
+            )}
+
+            {/* UĞUR ADDIMI */}
+            {emailStep === "done" && (
+              <div className="email-done-section">
+                <div className="email-done-icon"><FiCheckCircle /></div>
+                <h4>E-poçt uğurla yeniləndi!</h4>
+                <p className="email-done-addr">{newEmail}</p>
+                <button
+                  className="save-btn"
+                  onClick={() => { setEmailStep("form"); setNewEmail(""); otpCtrl.reset(); }}
+                >
+                  Bağla
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
