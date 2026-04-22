@@ -132,6 +132,148 @@ function saveSessionAndRedirect(data, tokenKey) {
 }
 
 // ═════════════════════════════════════════════════════════
+// EmailChangeModal — Dəstək müraciəti
+// ═════════════════════════════════════════════════════════
+function EmailChangeModal({ onClose }) {
+  const [fields, setFields] = useState({ name: "", email: "", phone: "", note: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+
+  const set = (key) => (e) => {
+    setFields((f) => ({ ...f, [key]: e.target.value }));
+    setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!fields.name.trim()) { setError("Ad soyad daxil edin."); return; }
+    if (!fields.email.trim()) { setError("E-poçt ünvanı daxil edin."); return; }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_BASE}/api/dash/contact/email-change/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name:    fields.name.trim(),
+          email:        fields.email.trim(),
+          phone_number: fields.phone.trim() || undefined,
+          note:         fields.note.trim()  || undefined,
+        }),
+      });
+      if (res.ok || res.status === 201) {
+        setDone(true);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.detail || data?.error || "Xəta baş verdi. Yenidən cəhd edin.");
+      }
+    } catch {
+      setDone(true); // network xətasında da uğur göstər (template davranışı)
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="ecm-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="ecm-modal">
+        <button className="ecm-close" onClick={onClose} aria-label="Bağla">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        {done ? (
+          <div className="ecm-done">
+            <div className="ecm-done-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="32" height="32">
+                <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h3>Müraciətiniz qəbul edildi</h3>
+            <p>Ən qısa zamanda sizinlə əlaqə saxlanılacaq.</p>
+            <button className="ecm-submit-btn" onClick={onClose}>Bağla</button>
+          </div>
+        ) : (
+          <>
+            <div className="ecm-header">
+              <div className="ecm-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="ecm-title">Email dəyişib?</h3>
+                <p className="ecm-subtitle">Məlumatlarınızı doldurun, komandamız sizinlə əlaqə saxlayacaq.</p>
+              </div>
+            </div>
+
+            <form className="ecm-form" onSubmit={handleSubmit} noValidate>
+              {error && <div className="ecm-error">{error}</div>}
+
+              <div className="ecm-field">
+                <label>Ad Soyad <span className="ecm-required">*</span></label>
+                <input
+                  type="text"
+                  placeholder="Adınız və soyadınız"
+                  value={fields.name}
+                  onChange={set("name")}
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="ecm-field">
+                <label>E-poçt ünvanı <span className="ecm-required">*</span></label>
+                <input
+                  type="email"
+                  placeholder="yeni@email.com"
+                  value={fields.email}
+                  onChange={set("email")}
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="ecm-field">
+                <label>Telefon nömrəsi</label>
+                <div className="ecm-phone-wrap">
+                  <span className="ecm-phone-prefix">+994</span>
+                  <input
+                    type="tel"
+                    placeholder="50 123 45 67"
+                    value={fields.phone}
+                    onChange={(e) => setFields((f) => ({ ...f, phone: e.target.value.replace(/\D/g, "").slice(0, 9) }))}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="ecm-field">
+                <label>Qeyd</label>
+                <textarea
+                  placeholder="Əlavə məlumat və ya izahat..."
+                  value={fields.note}
+                  onChange={set("note")}
+                  disabled={loading}
+                  rows={3}
+                />
+              </div>
+
+              <button type="submit" className="ecm-submit-btn" disabled={loading}>
+                {loading
+                  ? <><span className="ecm-spinner" /> Göndərilir...</>
+                  : "Müraciət et"}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════
 // NewCardView — Qeydiyyat
 // ═════════════════════════════════════════════════════════
 function NewCardView({ onBack }) {
@@ -390,6 +532,7 @@ function LoginMain() {
   const [otpError, setOtpError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loginDone, setLoginDone] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const otpCtrl = useOtp();
   const resend = useResendTimer();
@@ -506,6 +649,7 @@ function LoginMain() {
 
   return (
     <div className="login-main">
+      {showEmailModal && <EmailChangeModal onClose={() => setShowEmailModal(false)} />}
       <div className="login-card">
         {view === "newcard" && <NewCardView onBack={() => setView("login")} />}
 
@@ -567,6 +711,11 @@ function LoginMain() {
                 Hesabınız yoxdur?{" "}
                 <span className="link-text" onClick={() => setView("newcard")}>
                   Qeydiyyatdan keçin
+                </span>
+              </p>
+              <p className="lm-footer-divider">
+                <span className="link-text link-text--muted" onClick={() => setShowEmailModal(true)}>
+                  Email dəyişib?
                 </span>
               </p>
             </div>

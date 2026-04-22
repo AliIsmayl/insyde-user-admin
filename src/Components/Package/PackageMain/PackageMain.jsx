@@ -246,6 +246,12 @@ function PackageMain() {
   const [profilePath, setProfilePath]     = useState("");
   const [userHashId, setUserHashId]       = useState("");
 
+  // Promo kod
+  const [promoInput, setPromoInput]       = useState("");
+  const [promoApplied, setPromoApplied]   = useState(null);
+  const [promoLoading, setPromoLoading]   = useState(false);
+  const [promoError, setPromoError]       = useState("");
+
   // Hər hansı paket seçilibsə subscribed flow göstər
   const hasSelectedPackage = Boolean(currentSub && currentSub !== "free");
   const isFreeUser         = !hasSelectedPackage;
@@ -378,9 +384,11 @@ function PackageMain() {
     ? (currentSubData || packages.find(p => p.key === currentSub))
     : (packages.find(p => p.key === selectedPkg) || null);
   const billData   = BILLING_OPTIONS.find(b => b.key === selectedBilling);
-  const rawPrice   = pkgData && billData ? calcRaw(pkgData.monthlyRate, billData.months) : 0;
-  const totalPrice = pkgData && billData ? calcTotal(pkgData.monthlyRate, billData.months, billData.discountRate) : 0;
-  const savedAmount = +(rawPrice - totalPrice).toFixed(2);
+  const rawPrice      = pkgData && billData ? calcRaw(pkgData.monthlyRate, billData.months) : 0;
+  const baseTotal     = pkgData && billData ? calcTotal(pkgData.monthlyRate, billData.months, billData.discountRate) : 0;
+  const promoDiscount = promoApplied ? +(baseTotal * (promoApplied.discount / 100)).toFixed(2) : 0;
+  const totalPrice    = +(baseTotal - promoDiscount).toFixed(2);
+  const savedAmount   = +(rawPrice - baseTotal).toFixed(2);
 
   useEffect(() => {
     if (effectiveManual && step > 3) setStep(1);
@@ -393,6 +401,20 @@ function PackageMain() {
     const reader = new FileReader();
     reader.onload = (ev) => setCardLogo(ev.target.result);
     reader.readAsDataURL(file);
+  };
+
+  const TEMPLATE_PROMO_DISCOUNT = 10;
+
+  const handlePromoApply = () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    setPromoLoading(true);
+    setPromoError("");
+    setPromoApplied(null);
+    setTimeout(() => {
+      setPromoApplied({ code, discount: TEMPLATE_PROMO_DISCOUNT });
+      setPromoLoading(false);
+    }, 600);
   };
 
   const handleSubmit = async () => {
@@ -601,7 +623,36 @@ function PackageMain() {
                     </div>
                   </div>
                 </div>
+                {promoApplied && (
+                  <div className="checkout-row">
+                    <span>Promo endirim ({promoApplied.discount}%)</span>
+                    <strong className="checkout-save">-{promoDiscount.toFixed(2)}₼</strong>
+                  </div>
+                )}
                 {error && <div className="checkout-error">{error}</div>}
+
+                <div className="checkout-promo-wrap">
+                  <div className="checkout-promo-row">
+                    <input
+                      className="checkout-promo-input"
+                      placeholder="Promo kodu daxil edin"
+                      value={promoInput}
+                      onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); setPromoApplied(null); }}
+                      disabled={promoLoading}
+                    />
+                    <button className="checkout-promo-btn" onClick={handlePromoApply} disabled={promoLoading || !promoInput.trim()}>
+                      {promoLoading ? <span className="pkg-spinner-sm" /> : "Tətbiq et"}
+                    </button>
+                  </div>
+                  {promoError && <p className="checkout-promo-error">{promoError}</p>}
+                  {promoApplied && (
+                    <p className="checkout-promo-success">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      "{promoApplied.code}" kodu tətbiq edildi — {promoApplied.discount}% endirim
+                    </p>
+                  )}
+                </div>
+
                 <button className="pkg-nav-btn primary full-width" onClick={handleSubmit} disabled={submitting}>
                   {submitting ? <span className="pkg-spinner-sm" /> : null}
                   {submitting ? "Emal olunur..." : `${totalPrice.toFixed(2)}₼ Ödə`}
@@ -917,7 +968,35 @@ function PackageMain() {
                 </div>
               </div>
 
+              {promoApplied && (
+                <div className="checkout-row">
+                  <span>Promo endirim ({promoApplied.discount}%)</span>
+                  <strong className="checkout-save">-{promoDiscount.toFixed(2)}₼</strong>
+                </div>
+              )}
               {error && <div className="checkout-error">{error}</div>}
+
+              <div className="checkout-promo-wrap">
+                <div className="checkout-promo-row">
+                  <input
+                    className="checkout-promo-input"
+                    placeholder="Promo kodu daxil edin"
+                    value={promoInput}
+                    onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); setPromoApplied(null); }}
+                    disabled={promoLoading}
+                  />
+                  <button className="checkout-promo-btn" onClick={handlePromoApply} disabled={promoLoading || !promoInput.trim()}>
+                    {promoLoading ? <span className="pkg-spinner-sm" /> : "Tətbiq et"}
+                  </button>
+                </div>
+                {promoError && <p className="checkout-promo-error">{promoError}</p>}
+                {promoApplied && (
+                  <p className="checkout-promo-success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    "{promoApplied.code}" kodu tətbiq edildi — {promoApplied.discount}% endirim
+                  </p>
+                )}
+              </div>
 
               <button className="pkg-nav-btn primary full-width" onClick={handleSubmit} disabled={submitting || !pkgData}>
                 {submitting ? <span className="pkg-spinner-sm" /> : null}

@@ -5,6 +5,7 @@ import { HiOutlineHome } from "react-icons/hi2";
 import { FaRegMessage } from "react-icons/fa6";
 import { PiPackage } from "react-icons/pi";
 import { TbBrandGoogleAnalytics, TbTruckDelivery } from "react-icons/tb";
+import { MdOutlineLocalOffer } from "react-icons/md";
 import { MdOutlineMenuBook } from "react-icons/md";
 import "./Sidebar.scss";
 import { clearSession } from "../../Utils/authUtils";
@@ -57,6 +58,12 @@ function Sidebar({
       name: "Bələdçi",
       path: "/guide",
       icon: <MdOutlineMenuBook />,
+      freeVisible: true,
+    },
+    {
+      name: "Promo",
+      path: "/promo",
+      icon: <MdOutlineLocalOffer />,
       freeVisible: true,
     },
     {
