@@ -1129,6 +1129,14 @@
   padding: 20px;
 }
 
+.weekend-delivery-note {
+  font-size: 11px;
+  color: var(--text-muted, #64748b);
+  margin-top: 10px;
+  margin-bottom: 0;
+  text-align: center;
+}
+
 .detail-row {
   display: flex;
   justify-content: space-between;

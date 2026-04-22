@@ -19,8 +19,8 @@ function fmtDateTime(d) {
   const m = String(dt.getMinutes()).padStart(2, "0");
   return `${dt.getDate()} ${MONTHS_AZ[dt.getMonth()]}, ${h}:${m}`;
 }
-function getNextWeekend() {
-  const d = new Date();
+function getNextWeekend(fromDate) {
+  const d = fromDate ? (fromDate instanceof Date ? fromDate : new Date(fromDate)) : new Date();
   const day = d.getDay();
   const daysToSat = day === 6 ? 7 : day === 0 ? 6 : 6 - day;
   const sat = new Date(d); sat.setDate(d.getDate() + daysToSat);
@@ -555,7 +555,7 @@ function OrderMain() {
 
   const displayOrderNum = uniqueId || effectiveDelivery?.order_number || "—";
   const paymentDate = effectiveDelivery?.created_at || null;
-  const hasPayment = overallTotal != null || !!orderInfo?.payment_status;
+  const hasPayment = orderInfo !== null && !!orderInfo?.payment_status;
   const paymentCount = hasPayment ? 1 : 0;
   const paymentStatusLabel = getPaymentStatusLabel(orderInfo?.payment_status);
 
@@ -575,13 +575,13 @@ function OrderMain() {
               className={`orders-section-btn ${activeSection === "payments" ? "active" : ""}`}
               onClick={() => setActiveSection("payments")}
             >
-              Ödənişlərim
+              Abunəliklərim
             </button>
           </div>
           <div className="orders-header">
-            <h2 className="orders-title">{activeSection === "orders" ? "Sifarişlərim" : "Ödənişlərim"}</h2>
+            <h2 className="orders-title">{activeSection === "orders" ? "Sifarişlərim" : "Abunəliklərim"}</h2>
             <p className="orders-subtitle">
-              {activeSection === "orders" ? `${orderCount} sifariş` : `${paymentCount} ödəniş`}
+              {activeSection === "orders" ? `${orderCount} sifariş` : `${paymentCount} abunəlik`}
             </p>
           </div>
 
@@ -644,8 +644,8 @@ function OrderMain() {
                 <div className="orders-empty-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="36" height="36"><path d="M3 7h18M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M16 14h.01"/></svg>
                 </div>
-                <p>Ödəniş yoxdur</p>
-                <span className="orders-empty-hint">Aktiv paket seçdikdən sonra ödəniş burada görünəcək</span>
+                <p>Abunəlik yoxdur</p>
+                <span className="orders-empty-hint">Aktiv paket seçdikdən sonra abunəlik burada görünəcək</span>
               </div>
             )}
           </div>
@@ -704,6 +704,26 @@ function OrderMain() {
 
                 {/* Info cards */}
                 <div className="order-info-col">
+                  {/* Həftə sonu çatdırılma */}
+                  {(() => {
+                    const { sat: estSat, sun: estSun } = getNextWeekend(effectiveDelivery?.created_at);
+                    const DAY_AZ = ["Bazar","Bazar ertəsi","Çərşənbə axşamı","Çərşənbə","Cümə axşamı","Cümə","Şənbə"];
+                    return (
+                      <div className="order-info-card">
+                        <p className="detail-section-label">Təxmini çatdırılma</p>
+                        <div className="detail-row">
+                          <span>Şənbə</span>
+                          <strong>{fmtDate(estSat)}, {DAY_AZ[estSat.getDay()]}</strong>
+                        </div>
+                        <div className="detail-row">
+                          <span>Bazar</span>
+                          <strong>{fmtDate(estSun)}, {DAY_AZ[estSun.getDay()]}</strong>
+                        </div>
+                        <p className="weekend-delivery-note">Sifarişiniz ən yaxın həftə sonu çatdırılacaq</p>
+                      </div>
+                    );
+                  })()}
+
                   {/* Sifariş məlumatları */}
                   <div className="order-info-card">
                     <p className="detail-section-label">Sifariş məlumatları</p>
@@ -851,7 +871,7 @@ function OrderMain() {
               <p>
                 {activeSection === "orders"
                   ? (orderCount === 0 ? "Sifariş yoxdur" : "Sifariş seçin")
-                  : (paymentCount === 0 ? "Ödəniş yoxdur" : "Ödəniş seçin")}
+                  : (paymentCount === 0 ? "Abunəlik yoxdur" : "Abunəlik seçin")}
               </p>
             </div>
           )}

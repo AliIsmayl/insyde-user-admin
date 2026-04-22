@@ -285,7 +285,15 @@ function PackageMain() {
           const arr  = Array.isArray(json) ? json : json.results ?? json.plans ?? null;
           if (arr?.length) {
             const PLAN_ORDER = { basic: 0, pro: 1 };
-            const mapped = arr.map((p, i) => mapPlan(p, i)).filter(p => ALLOWED_PLANS.includes(p.key));
+            const seen = new Set();
+            const mapped = arr
+              .map((p, i) => mapPlan(p, i))
+              .filter(p => {
+                if (!ALLOWED_PLANS.includes(p.key)) return false;
+                if (seen.has(p.key)) return false;
+                seen.add(p.key);
+                return true;
+              });
             mapped.sort((a, b) => (PLAN_ORDER[a.key] ?? 99) - (PLAN_ORDER[b.key] ?? 99));
             resolvedPackages = mapped;
             setPackages(mapped);
