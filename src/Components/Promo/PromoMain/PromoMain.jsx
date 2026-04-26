@@ -35,20 +35,29 @@ function PromoMain() {
           authFetch(`${API_BASE}/api/v1/promo/my/`),
         ]);
 
-        // Admin təsdiqi yoxlaması
+        // Profile datasını bir dəfə oxu
+        let profileData = {};
         if (profileRes.status === "fulfilled" && profileRes.value?.ok) {
-          const pd = await profileRes.value.clone().json().catch(() => ({}));
-          if (!(pd?.card?.is_admin_active ?? true)) {
-            setPendingAdmin(true);
-            setLoading(false);
-            return;
-          }
+          profileData = await profileRes.value.json().catch(() => ({}));
+        }
+
+        const sub = profileData?.subscription || {};
+        const hasPlan = !!(profileData?.card?.id) && !!(sub.plan);
+        const isAdminActive = profileData?.card?.is_admin_active ?? true;
+
+        // Plan var, amma admin hələ təsdiqləməyib
+        if (hasPlan && !isAdminActive) {
+          setPendingAdmin(true);
+          setLoading(false);
+          return;
         }
 
         // Plan yoxlaması — profile + order hər ikisindən
-        let resolvedPlan = "free";
+        let resolvedPlan = normalizePlan(
+          sub.version_type || sub.packet_type || sub.plan?.name || ""
+        );
 
-        if (orderRes.status === "fulfilled" && orderRes.value?.ok) {
+        if (resolvedPlan === "free" && orderRes.status === "fulfilled" && orderRes.value?.ok) {
           const od = await orderRes.value.json().catch(() => ({}));
           const fromOrder = normalizePlan(
             od?.payment_info?.plan_type ||
@@ -57,16 +66,6 @@ function PromoMain() {
             ""
           );
           if (fromOrder !== "free") resolvedPlan = fromOrder;
-        }
-
-        if (resolvedPlan === "free" && profileRes.status === "fulfilled" && profileRes.value?.ok) {
-          const pd = await profileRes.value.json().catch(() => ({}));
-          const d = pd?.data || pd;
-          const sub = d?.subscription || {};
-          const fromProfile = normalizePlan(
-            sub.version_type || sub.packet_type || sub.plan?.name || ""
-          );
-          if (fromProfile !== "free") resolvedPlan = fromProfile;
         }
 
         setIsPro(resolvedPlan === "pro");
@@ -173,12 +172,21 @@ function PromoMain() {
 
   if (pendingAdmin) {
     return (
-      <div className="promo-main">
-        <div className="pending-admin-banner">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-          </svg>
-          <p>Sizin hesab admin tərəfindən təsdiqlənməyi gözləyir.</p>
+      <div className="promo-main pending-admin-page">
+        <div className="pending-admin-card">
+          <div className="pending-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div className="pending-admin-text">
+            <h3>Hesabınız gözləmədədir</h3>
+            <p>Promo proqramına qoşulmaq üçün hesabınızın admin tərəfindən təsdiqlənməsi tələb olunur. Təsdiqləndikdən sonra bu bölmə avtomatik aktiv olacaq.</p>
+          </div>
+          <div className="pending-admin-badge">
+            <span className="badge-dot" />
+            Təsdiq gözlənilir
+          </div>
         </div>
       </div>
     );

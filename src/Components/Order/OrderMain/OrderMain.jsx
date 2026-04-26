@@ -89,6 +89,8 @@ function OrderMain() {
   const [showPastDetail, setShowPastDetail] = useState(false);
   const [pendingMode, setPendingMode]       = useState(false);
   const [activeSection, setActiveSection]   = useState("orders");
+  const [subscriptions, setSubscriptions]   = useState([]);
+  const [selectedSubId, setSelectedSubId]   = useState(null);
 
   // delivery form
   const [deliveryTab, setDeliveryTab]         = useState("metro");
@@ -153,6 +155,14 @@ function OrderMain() {
             setDelivery(data);
             setShowPastDetail(true);
           }
+        }
+
+        const subRes = await authFetch(`${API_BASE}/api/v1/subscriptions/`);
+        if (subRes?.ok) {
+          const subData = await subRes.json();
+          const subs = subData.subscriptions || [];
+          setSubscriptions(subs);
+          if (subs.length > 0) setSelectedSubId(subs[0].id);
         }
       } catch { /* ignore */ } finally {
         setLoading(false);
@@ -555,9 +565,26 @@ function OrderMain() {
 
   const displayOrderNum = uniqueId || effectiveDelivery?.order_number || "—";
   const paymentDate = effectiveDelivery?.created_at || null;
-  const hasPayment = orderInfo !== null && !!orderInfo?.payment_status;
-  const paymentCount = hasPayment ? 1 : 0;
   const paymentStatusLabel = getPaymentStatusLabel(orderInfo?.payment_status);
+  const selectedSub = subscriptions.find(s => s.id === selectedSubId) || null;
+
+  function subStatusLabel(sub) {
+    if (sub.is_expired)  return { label: "Bitib",       cls: "expired"  };
+    if (sub.is_active)   return { label: "Aktiv",       cls: "accepted" };
+    return               { label: "Gözlənilir",         cls: "ordered"  };
+  }
+  function subDurationLabel(m) {
+    if (m === 1)  return "1 aylıq";
+    if (m === 12) return "İllik";
+    return `${m} aylıq`;
+  }
+  function fmtDateShort(raw) {
+    if (!raw) return "—";
+    try {
+      const d = new Date(raw);
+      return `${d.getDate()} ${MONTHS_AZ[d.getMonth()]} ${d.getFullYear()}`;
+    } catch { return "—"; }
+  }
 
   return (
     <div className="orders-wrap">
@@ -581,7 +608,7 @@ function OrderMain() {
           <div className="orders-header">
             <h2 className="orders-title">{activeSection === "orders" ? "Sifarişlərim" : "Abunəliklərim"}</h2>
             <p className="orders-subtitle">
-              {activeSection === "orders" ? `${orderCount} sifariş` : `${paymentCount} abunəlik`}
+              {activeSection === "orders" ? `${orderCount} sifariş` : `${subscriptions.length} abunəlik`}
             </p>
           </div>
 
@@ -610,24 +637,33 @@ function OrderMain() {
               </div>
             )}
 
-            {activeSection === "payments" && hasPayment && (
-              <div className="order-card active" onClick={() => setShowPastDetail(true)}>
-                <div className="order-card-top">
-                  <span className="order-card-num">Ödəniş</span>
-                  <span className={`order-badge status-${String(orderInfo?.payment_status || "").toLowerCase() || "accepted"}`}>
-                    {paymentStatusLabel}
-                  </span>
+            {activeSection === "payments" && subscriptions.map((sub, idx) => {
+              const st = subStatusLabel(sub);
+              const isFirst = idx === 0;
+              return (
+                <div
+                  key={sub.id}
+                  className={`order-card ${selectedSubId === sub.id ? "active" : ""}`}
+                  onClick={() => setSelectedSubId(sub.id)}
+                >
+                  <div className="order-card-top">
+                    <span className="order-card-num">
+                      {isFirst ? "Son abunəlik" : `Abunəlik #${subscriptions.length - idx}`}
+                    </span>
+                    <span className={`order-badge status-${st.cls}`}>{st.label}</span>
+                  </div>
+                  <div className="order-card-pkg" style={{ color: "#d4af37" }}>
+                    {sub.plan?.name || "—"} · {subDurationLabel(sub.duration_months)}
+                  </div>
+                  <div className="order-card-meta">
+                    {sub.plan?.monthly_price && (
+                      <span>{parseFloat(sub.plan.monthly_price).toFixed(2)}₼/ay</span>
+                    )}
+                    <span>{fmtDateShort(sub.created_at)}</span>
+                  </div>
                 </div>
-                <div className="order-card-pkg" style={{ color: orderInfo?.package_color }}>
-                  {orderInfo?.package_name} paketi
-                </div>
-                <div className="order-card-meta">
-                  {overallTotal != null && <span>{overallTotal.toFixed(2)}€</span>}
-                  {orderInfo?.billing_label && <span>{orderInfo.billing_label}</span>}
-                  {paymentDate && <span>{fmtDate(paymentDate)}</span>}
-                </div>
-              </div>
-            )}
+              );
+            })}
 
             {activeSection === "orders" && orderCount === 0 && (
               <div className="orders-empty">
@@ -639,7 +675,7 @@ function OrderMain() {
               </div>
             )}
 
-            {activeSection === "payments" && paymentCount === 0 && (
+            {activeSection === "payments" && subscriptions.length === 0 && (
               <div className="orders-empty">
                 <div className="orders-empty-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="36" height="36"><path d="M3 7h18M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M16 14h.01"/></svg>
@@ -669,47 +705,44 @@ function OrderMain() {
               </div>
 
               <div className="order-detail-body">
-                {/* Timeline */}
+                {/* Timeline + Təxmini çatdırılma */}
                 <div className="order-timeline-card">
                   <p className="detail-section-label">Sifariş statusu</p>
                   <div className="order-timeline">
-                    {timeline.map((stage, idx) => {
-                      const isDone   = stage.is_done && !stage.is_current;
-                      const isActive = stage.is_current;
-                      return (
-                        <React.Fragment key={stage.status}>
-                          <div className={`stage-row ${isDone ? "done" : ""} ${isActive ? "active" : ""}`}>
-                            <div className={`stage-circle ${isDone ? "done" : isActive ? "active" : "pending"}`}>
-                              {isDone
-                                ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg>
-                                : <StageIcon stageKey={stage.status} />}
+                    {(() => {
+                      const activeIdx = timeline.findIndex(s => s.is_current);
+                      return timeline.map((stage, idx) => {
+                        const isDelivered = stage.status === "delivered" && stage.is_current;
+                        const isDone   = isDelivered || (activeIdx === -1 ? stage.is_done : idx < activeIdx);
+                        const isActive = stage.is_current && !isDelivered;
+                        return (
+                          <React.Fragment key={stage.status}>
+                            <div className={`stage-row ${isDone ? "done" : ""} ${isActive ? "active" : ""}`}>
+                              <div className={`stage-circle ${isDone ? "done" : isActive ? "active" : "pending"}`}>
+                                {isDone
+                                  ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg>
+                                  : <StageIcon stageKey={stage.status} />}
+                              </div>
+                              <div className="stage-info">
+                                <span className="stage-label">{stage.label}</span>
+                              </div>
                             </div>
-                            <div className="stage-info">
-                              <span className="stage-label">{stage.label}</span>
-                              {stage.changed_at && (
-                                <span className={`stage-time ${stage.is_done ? "actual" : "estimated"}`}>
-                                  {fmtDateTime(stage.changed_at)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          {idx < timeline.length - 1 && (
-                            <div className={`stage-connector ${isDone ? "done" : ""}`} />
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
+                            {idx < timeline.length - 1 && (
+                              <div className={`stage-connector ${isDone ? "done" : ""}`} />
+                            )}
+                          </React.Fragment>
+                        );
+                      });
+                    })()}
                   </div>
-                </div>
 
-                {/* Info cards */}
-                <div className="order-info-col">
-                  {/* Həftə sonu çatdırılma */}
-                  {(() => {
+                  {/* Təxmini çatdırılma — yalnız çatdırılmamışdırsa göstər */}
+                  {currentStatus !== "delivered" && (() => {
                     const { sat: estSat, sun: estSun } = getNextWeekend(effectiveDelivery?.created_at);
                     const DAY_AZ = ["Bazar","Bazar ertəsi","Çərşənbə axşamı","Çərşənbə","Cümə axşamı","Cümə","Şənbə"];
                     return (
-                      <div className="order-info-card">
+                      <>
+                        <div className="detail-divider" style={{ margin: "16px 0" }} />
                         <p className="detail-section-label">Təxmini çatdırılma</p>
                         <div className="detail-row">
                           <span>Şənbə</span>
@@ -720,10 +753,13 @@ function OrderMain() {
                           <strong>{fmtDate(estSun)}, {DAY_AZ[estSun.getDay()]}</strong>
                         </div>
                         <p className="weekend-delivery-note">Sifarişiniz ən yaxın həftə sonu çatdırılacaq</p>
-                      </div>
+                      </>
                     );
                   })()}
+                </div>
 
+                {/* Info cards */}
+                <div className="order-info-col">
                   {/* Sifariş məlumatları */}
                   <div className="order-info-card">
                     <p className="detail-section-label">Sifariş məlumatları</p>
@@ -804,58 +840,56 @@ function OrderMain() {
                 </div>
               </div>
             </>
-          ) : activeSection === "payments" && hasPayment ? (
+          ) : activeSection === "payments" && selectedSub ? (
             <>
               <div className="order-detail-header">
                 <div>
-                  <h3 className="order-detail-title">Ödəniş detalları</h3>
-                  <p className="order-detail-sub">
-                    {paymentDate ? fmtDateTime(paymentDate) : "Tarix yoxdur"}
-                  </p>
+                  <h3 className="order-detail-title">Abunəlik detalları</h3>
+                  <p className="order-detail-sub">{fmtDateShort(selectedSub.created_at)}</p>
                 </div>
-                <span className={`order-badge status-${String(orderInfo?.payment_status || "").toLowerCase() || "accepted"}`}>
-                  {paymentStatusLabel}
+                <span className={`order-badge status-${subStatusLabel(selectedSub).cls}`}>
+                  {subStatusLabel(selectedSub).label}
                 </span>
               </div>
 
               <div className="order-detail-body single-col">
                 <div className="order-info-col">
                   <div className="order-info-card">
-                    <p className="detail-section-label">Ödəniş məlumatları</p>
+                    <p className="detail-section-label">Abunəlik məlumatları</p>
                     <div className="detail-row">
                       <span>Paket</span>
-                      <strong style={{ color: orderInfo?.package_color }}>{orderInfo?.package_name}</strong>
+                      <strong style={{ color: "#d4af37" }}>{selectedSub.plan?.name || "—"}</strong>
                     </div>
-                    {paymentDate && (
+                    <div className="detail-row">
+                      <span>Müddət</span>
+                      <strong>{subDurationLabel(selectedSub.duration_months)}</strong>
+                    </div>
+                    {selectedSub.plan?.monthly_price && (
                       <div className="detail-row">
-                        <span>Tarix</span>
-                        <strong>{fmtDateTime(paymentDate)}</strong>
+                        <span>Aylıq qiymət</span>
+                        <strong>{parseFloat(selectedSub.plan.monthly_price).toFixed(2)}₼/ay</strong>
                       </div>
                     )}
-                    {orderInfo?.billing_label && (
+                    {selectedSub.created_at && (
                       <div className="detail-row">
-                        <span>Müddət</span>
-                        <strong>{orderInfo.billing_label}</strong>
+                        <span>Başlama tarixi</span>
+                        <strong>{fmtDateShort(selectedSub.created_at)}</strong>
                       </div>
                     )}
-                    {cardTotal != null && (
+                    {(selectedSub.end_date || selectedSub.expires_at) && (
                       <div className="detail-row">
-                        <span>Kart ödənişi</span>
-                        <strong>{cardTotal.toFixed(2)}€</strong>
+                        <span>Bitmə tarixi</span>
+                        <strong>{fmtDateShort(selectedSub.end_date || selectedSub.expires_at)}</strong>
                       </div>
                     )}
-                    {monthlyTotal != null && (
-                      <div className="detail-row">
-                        <span>Abunəlik ödənişi</span>
-                        <strong>{monthlyTotal.toFixed(2)}€</strong>
-                      </div>
-                    )}
-                    {overallTotal != null && (
+                    {selectedSub.plan?.monthly_price && selectedSub.duration_months && (
                       <>
                         <div className="detail-divider" />
                         <div className="detail-row total">
                           <span>Cəmi</span>
-                          <strong>{overallTotal.toFixed(2)}€</strong>
+                          <strong>
+                            {(parseFloat(selectedSub.plan.monthly_price) * selectedSub.duration_months).toFixed(2)}₼
+                          </strong>
                         </div>
                       </>
                     )}
@@ -871,7 +905,7 @@ function OrderMain() {
               <p>
                 {activeSection === "orders"
                   ? (orderCount === 0 ? "Sifariş yoxdur" : "Sifariş seçin")
-                  : (paymentCount === 0 ? "Abunəlik yoxdur" : "Abunəlik seçin")}
+                  : (subscriptions.length === 0 ? "Abunəlik yoxdur" : "Abunəlik seçin")}
               </p>
             </div>
           )}

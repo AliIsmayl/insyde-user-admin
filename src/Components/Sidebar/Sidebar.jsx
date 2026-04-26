@@ -66,12 +66,12 @@ function Sidebar({
       icon: <MdOutlineLocalOffer />,
       freeVisible: true,
     },
-    {
-      name: "Müraciətlər",
-      path: "/applications",
-      icon: <FaRegMessage />,
-      freeVisible: false,
-    },
+    // {
+    //   name: "Müraciətlər",
+    //   path: "/applications",
+    //   icon: <FaRegMessage />,
+    //   freeVisible: false,
+    // },
   ];
 
   const menuItems = ALL_MENU_ITEMS.filter((item) => {

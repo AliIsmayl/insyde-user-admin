@@ -226,26 +226,30 @@ function AnalysMain() {
     setLoading(true);
     setError("");
 
-    // Admin təsdiqi yoxlaması
-    try {
-      const profileRes = await authFetch(`${API_BASE}/api/v1/profile/me/`);
-      if (profileRes?.ok) {
-        const pd = await profileRes.json().catch(() => ({}));
-        const isAdminActive = pd?.card?.is_admin_active ?? true;
-        if (!isAdminActive) {
-          setPendingAdmin(true);
-          setLoading(false);
-          return;
-        }
-      }
-    } catch { /* profile check uğursuz olsa davam et */ }
-
     const params = month ? `?month=${month}` : "";
     const url = `${API_BASE}/api/v1/profile/me/analytics/${hashId}/${params}`;
 
     try {
       const res = await authFetch(url, { method: "GET" });
       if (!res) { setError("Sessiya bitib."); return; }
+
+      // 403: plan yoxdur və ya admin hələ təsdiqləməyib
+      if (res.status === 403) {
+        try {
+          const profileRes = await authFetch(`${API_BASE}/api/v1/profile/me/`);
+          if (profileRes?.ok) {
+            const pd = await profileRes.json().catch(() => ({}));
+            if (!(pd?.card?.is_admin_active ?? true)) {
+              setPendingAdmin(true);
+              return;
+            }
+          }
+        } catch { /* ignored */ }
+        const body = await res.json().catch(() => ({}));
+        setError(body?.error || body?.detail || "Bu xüsusiyyət üçün Pro və ya Premium paket tələb olunur.");
+        return;
+      }
+
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         setError(body?.detail || body?.error || `Server xətası: ${res.status}`);
@@ -288,10 +292,19 @@ function AnalysMain() {
 
   if (pendingAdmin) {
     return (
-      <div className="analys-main-modern">
-        <div className="pending-admin-banner">
-          <FaIconsAll.FaHourglassHalf className="pending-icon" />
-          <p>Sizin hesab admin tərəfindən təsdiqlənməyi gözləyir.</p>
+      <div className="analys-main-modern pending-admin-page">
+        <div className="pending-admin-card">
+          <div className="pending-icon-wrap">
+            <FaIconsAll.FaHourglassHalf />
+          </div>
+          <div className="pending-admin-text">
+            <h3>Hesabınız gözləmədədir</h3>
+            <p>Analitika bölməsinə giriş üçün hesabınızın admin tərəfindən təsdiqlənməsi tələb olunur. Təsdiqləndikdən sonra bu bölmə avtomatik aktiv olacaq.</p>
+          </div>
+          <div className="pending-admin-badge">
+            <span className="badge-dot" />
+            Təsdiq gözlənilir
+          </div>
         </div>
       </div>
     );

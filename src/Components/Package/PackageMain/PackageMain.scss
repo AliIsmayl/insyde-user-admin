@@ -1913,3 +1913,71 @@ $radius-card: 18px;
     margin: 0 0 10px;
   }
 }
+
+// ── Downgrade uyarı modalı ────────────────────────────────────
+.pkg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.pkg-modal {
+  background: var(--card-bg, #1a1a1a);
+  border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  border-radius: 16px;
+  padding: 28px 32px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+
+  .pkg-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 12px;
+  }
+
+  .pkg-modal-body {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 24px;
+
+    strong {
+      color: var(--text-primary);
+    }
+  }
+
+  .pkg-modal-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .pkg-modal-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.85; }
+
+    &.ghost {
+      background: var(--bg-secondary, rgba(255,255,255,0.07));
+      color: var(--text-secondary);
+    }
+
+    &.primary {
+      background: #d4af37;
+      color: #000;
+    }
+  }
+}

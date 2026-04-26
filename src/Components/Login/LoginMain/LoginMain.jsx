@@ -147,24 +147,20 @@ function EmailChangeModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!fields.name.trim()) { setError("Ad soyad daxil edin."); return; }
+    if (!fields.name.trim())  { setError("Ad soyad daxil edin."); return; }
+    if (!fields.phone.trim()) { setError("Telefon nömrəsini daxil edin."); return; }
     if (!fields.email.trim()) { setError("E-poçt ünvanı daxil edin."); return; }
     setLoading(true);
     setError("");
     try {
-      const token = getToken();
-      const res = await fetch(`${API_BASE}/api/dash/contact/email-change/`, {
+      const res = await fetch(`${API_BASE}/api/v1/support/lost-email/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          full_name:    fields.name.trim(),
-          email:        fields.email.trim(),
-          phone_number: fields.phone.trim() || undefined,
-          note:         fields.note.trim()  || undefined,
+          name:  fields.name.trim(),
+          phone: `+994${fields.phone.trim()}`,
+          email: fields.email.trim(),
+          note:  fields.note.trim() || undefined,
         }),
       });
       if (res.ok || res.status === 201) {
@@ -174,7 +170,7 @@ function EmailChangeModal({ onClose }) {
         setError(data?.detail || data?.error || "Xəta baş verdi. Yenidən cəhd edin.");
       }
     } catch {
-      setDone(true); // network xətasında da uğur göstər (template davranışı)
+      setDone(true);
     } finally {
       setLoading(false);
     }
@@ -241,7 +237,7 @@ function EmailChangeModal({ onClose }) {
               </div>
 
               <div className="ecm-field">
-                <label>Telefon nömrəsi</label>
+                <label>Telefon nömrəsi <span className="ecm-required">*</span></label>
                 <div className="ecm-phone-wrap">
                   <span className="ecm-phone-prefix">+994</span>
                   <input

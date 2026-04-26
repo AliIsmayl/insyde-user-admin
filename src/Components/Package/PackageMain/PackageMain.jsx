@@ -236,6 +236,7 @@ function PackageMain() {
   const [packages, setPackages]           = useState(FALLBACK_PACKAGES.filter(p => ALLOWED_PLANS.includes(p.key)));
   const [currentSubData, setCurrentSubData] = useState(null);
   const [currentSub, setCurrentSub]       = useState(null);
+  const [hasExistingOrder, setHasExistingOrder] = useState(false);
   const [isPaid, setIsPaid]               = useState(false);
   const [lastPayDate, setLastPayDate]     = useState(null);
   const [nextRenewDate, setNextRenewDate] = useState(null);
@@ -252,10 +253,14 @@ function PackageMain() {
   const [promoLoading, setPromoLoading]   = useState(false);
   const [promoError, setPromoError]       = useState("");
 
-  // Hər hansı paket seçilibsə subscribed flow göstər
-  const hasSelectedPackage = Boolean(currentSub && currentSub !== "free");
-  const isFreeUser         = !hasSelectedPackage;
-  const effectiveManual    = hasSelectedPackage;
+  // Downgrade modal
+  const [rawExpirationDate, setRawExpirationDate]       = useState(null);
+  const [showDowngradeModal, setShowDowngradeModal]     = useState(false);
+  const [remainingMonthsModal, setRemainingMonthsModal] = useState(0);
+
+  // Sifariş mövcuddursa → 3-addımlı uzatma axını; yoxdursa → 4-addımlı ilk alış axını
+  const isFreeUser      = !hasExistingOrder;
+  const effectiveManual = hasExistingOrder;
   const isBasic         = selectedPkg === "basic";
   const freeStepLabels  = isBasic ? FREE_STEP_LABELS_BASIC : FREE_STEP_LABELS_PRO;
 
@@ -312,9 +317,11 @@ function PackageMain() {
       let orderDerivedPlanKey = "free";
       let orderPaidAt = null;
       let orderDurationMonths = null;
+      let orderExpirationDate = null;
       if (orderRes.status === "fulfilled" && orderRes.value?.ok) {
         try {
           const orderData = await orderRes.value.json();
+          setHasExistingOrder(true);
           paid = orderData?.payment_info?.payment_status === "paid";
           setIsPaid(paid);
           orderPaidAt =
@@ -323,7 +330,10 @@ function PackageMain() {
             orderData?.update_time ||
             orderData?.create_time ||
             null;
+          orderExpirationDate = orderData?.payment_info?.expiration_date ?? null;
+          if (orderExpirationDate) setRawExpirationDate(orderExpirationDate);
           orderDerivedPlanKey = normalizePlanKey(
+            orderData?.payment_info?.plan_name ||
             orderData?.payment_info?.plan_type ||
             orderData?.package_info?.package_type ||
             "free"
@@ -340,6 +350,7 @@ function PackageMain() {
           orderDurationMonths = orderData?.payment_info?.duration_months ?? null;
           setCurrentDurationMonths(orderDurationMonths);
           if (orderPaidAt) setLastPayDate(fmtDate(orderPaidAt));
+          if (orderExpirationDate) setNextRenewDate(fmtDate(orderExpirationDate));
         } catch { }
       }
 
@@ -361,11 +372,14 @@ function PackageMain() {
           setCurrentSub(resolvedSubKey);
           const fallbackPaidAt = sub.update_time || sub.create_time || orderPaidAt || null;
           const durationMonths = orderDurationMonths ?? currentDurationMonths;
-          setLastPayDate(fmtDate(fallbackPaidAt));
-          setNextRenewDate(
-            fmtDate(sub.end_time || sub.end_date || sub.expires_at || null) ||
-            addMonthsToDate(fallbackPaidAt, durationMonths)
-          );
+          if (fallbackPaidAt) setLastPayDate(fmtDate(fallbackPaidAt));
+          // Növbəti ödəniş: order expiration_date prioritetlidir
+          if (!orderExpirationDate) {
+            setNextRenewDate(
+              fmtDate(sub.end_time || sub.end_date || sub.expires_at || null) ||
+              addMonthsToDate(fallbackPaidAt, durationMonths)
+            );
+          }
 
           if (resolvedSubKey && resolvedSubKey !== "free") {
             const source = resolvedPackages.length ? resolvedPackages : FALLBACK_PACKAGES;
@@ -380,9 +394,9 @@ function PackageMain() {
     }).finally(() => setLoading(false));
   }, []);
 
-  const pkgData    = effectiveManual
-    ? (currentSubData || packages.find(p => p.key === currentSub))
-    : (packages.find(p => p.key === selectedPkg) || null);
+  const pkgData    = packages.find(p => p.key === selectedPkg)
+    || (effectiveManual ? currentSubData : null)
+    || null;
   const billData   = BILLING_OPTIONS.find(b => b.key === selectedBilling);
   const rawPrice      = pkgData && billData ? calcRaw(pkgData.monthlyRate, billData.months) : 0;
   const baseTotal     = pkgData && billData ? calcTotal(pkgData.monthlyRate, billData.months, billData.discountRate) : 0;
@@ -403,18 +417,29 @@ function PackageMain() {
     reader.readAsDataURL(file);
   };
 
-  const TEMPLATE_PROMO_DISCOUNT = 10;
-
-  const handlePromoApply = () => {
+  const handlePromoApply = async () => {
     const code = promoInput.trim().toUpperCase();
     if (!code) return;
     setPromoLoading(true);
     setPromoError("");
     setPromoApplied(null);
-    setTimeout(() => {
-      setPromoApplied({ code, discount: TEMPLATE_PROMO_DISCOUNT });
+    try {
+      const res = await authFetch(`${API_BASE}/api/v1/promo/check/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const body = await res?.json().catch(() => ({}));
+      if (res?.ok && body?.valid) {
+        setPromoApplied({ code: body.code, discount: 10 });
+      } else {
+        setPromoError(body?.detail || "Bu promo kod mövcud deyil.");
+      }
+    } catch {
+      setPromoError("Serverə qoşulmaq mümkün olmadı.");
+    } finally {
       setPromoLoading(false);
-    }, 600);
+    }
   };
 
   const handleSubmit = async () => {
@@ -480,6 +505,23 @@ function PackageMain() {
     }
   };
 
+  const handleCheckAndSubmit = () => {
+    if (rawExpirationDate && billData) {
+      const now = new Date();
+      const expiry = new Date(rawExpirationDate);
+      const diffMs = expiry - now;
+      if (diffMs > 0) {
+        const remaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24 * 30));
+        if (billData.months < remaining) {
+          setRemainingMonthsModal(remaining);
+          setShowDowngradeModal(true);
+          return;
+        }
+      }
+    }
+    handleSubmit();
+  };
+
   if (loading) return <div className="pkg-loading"><div className="pkg-spinner" /></div>;
 
   // ─────────────────────────────────────────────────────────────
@@ -488,6 +530,21 @@ function PackageMain() {
   if (effectiveManual) {
     return (
       <div className="package-main-modern">
+        {showDowngradeModal && (
+          <div className="pkg-modal-overlay" onClick={() => setShowDowngradeModal(false)}>
+            <div className="pkg-modal" onClick={e => e.stopPropagation()}>
+              <h4 className="pkg-modal-title">Diqqət!</h4>
+              <p className="pkg-modal-body">
+                Sizin hal-hazırda <strong>{remainingMonthsModal} aylıq</strong> abunəliyiniz qalıb.
+                Daha qısa müddətli abunəlik almaq istədiyinizə əminsiniz?
+              </p>
+              <div className="pkg-modal-btns">
+                <button className="pkg-modal-btn ghost" onClick={() => setShowDowngradeModal(false)}>Bağla</button>
+                <button className="pkg-modal-btn primary" onClick={() => { setShowDowngradeModal(false); handleSubmit(); }}>Davam et</button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="pkg-top-header">
           <div>
             <h2 className="pkg-page-title">Ödəniş Planı</h2>
@@ -592,7 +649,7 @@ function PackageMain() {
           </div>
         )}
 
-        {/* ADDIM 3 — Ödəniş */}
+        {/* ADDIM 3 — Ödəniş (abunəlik yeniləmə — promo kod yoxdur) */}
         {step === 3 && (
           <div className="pkg-step-content">
             <h3 className="pkg-step-title">Ödənişi təsdiqləyin</h3>
@@ -623,37 +680,9 @@ function PackageMain() {
                     </div>
                   </div>
                 </div>
-                {promoApplied && (
-                  <div className="checkout-row">
-                    <span>Promo endirim ({promoApplied.discount}%)</span>
-                    <strong className="checkout-save">-{promoDiscount.toFixed(2)}₼</strong>
-                  </div>
-                )}
                 {error && <div className="checkout-error">{error}</div>}
 
-                <div className="checkout-promo-wrap">
-                  <div className="checkout-promo-row">
-                    <input
-                      className="checkout-promo-input"
-                      placeholder="Promo kodu daxil edin"
-                      value={promoInput}
-                      onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); setPromoApplied(null); }}
-                      disabled={promoLoading}
-                    />
-                    <button className="checkout-promo-btn" onClick={handlePromoApply} disabled={promoLoading || !promoInput.trim()}>
-                      {promoLoading ? <span className="pkg-spinner-sm" /> : "Tətbiq et"}
-                    </button>
-                  </div>
-                  {promoError && <p className="checkout-promo-error">{promoError}</p>}
-                  {promoApplied && (
-                    <p className="checkout-promo-success">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      "{promoApplied.code}" kodu tətbiq edildi — {promoApplied.discount}% endirim
-                    </p>
-                  )}
-                </div>
-
-                <button className="pkg-nav-btn primary full-width" onClick={handleSubmit} disabled={submitting}>
+                <button className="pkg-nav-btn primary full-width" onClick={handleCheckAndSubmit} disabled={submitting}>
                   {submitting ? <span className="pkg-spinner-sm" /> : null}
                   {submitting ? "Emal olunur..." : `${totalPrice.toFixed(2)}₼ Ödə`}
                 </button>
