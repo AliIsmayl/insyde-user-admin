@@ -29,17 +29,27 @@ export const CK = {
 export const LS = { set: CK.set, get: CK.get, del: CK.del };
 
 export function getToken() {
+  const invalid = new Set(["", "null", "undefined"]);
   const fromCookie = CK.get("access_token");
-  if (fromCookie) return fromCookie;
+  if (fromCookie && !invalid.has(fromCookie)) return fromCookie.trim();
   try {
     const fromLS = localStorage.getItem("access_token");
-    if (fromLS) return fromLS;
+    if (fromLS && !invalid.has(fromLS)) return fromLS.trim();
   } catch {}
   return "";
 }
 
 export function isAuthenticated() {
   return !!getToken();
+}
+
+export function getBearerHeaders(extraHeaders = {}) {
+  const token = getToken();
+  if (!token) return { ...extraHeaders };
+  return {
+    Authorization: `Bearer ${token}`,
+    ...extraHeaders,
+  };
 }
 
 export function clearSession(navigate) {
@@ -65,9 +75,11 @@ export function clearSession(navigate) {
 }
 
 export function saveTokens(access) {
-  CK.set("access_token", access, 1);
+  if (!access || typeof access !== "string" || !access.trim()) return;
+  const token = access.trim();
+  CK.set("access_token", token, 1);
   try {
-    localStorage.setItem("access_token", access);
+    localStorage.setItem("access_token", token);
   } catch {}
 }
 
@@ -89,10 +101,9 @@ export async function authFetch(url, options = {}, navigate) {
   const method = (options.method || "GET").toUpperCase();
   const needsCsrf = !["GET", "HEAD", "OPTIONS", "TRACE"].includes(method);
 
-  const headers = {
+  const headers = getBearerHeaders({
     Accept: "application/json",
-    Authorization: `Bearer ${token}`,
-  };
+  });
 
   if (!isFormData) headers["Content-Type"] = "application/json";
 
@@ -110,9 +121,17 @@ export async function authFetch(url, options = {}, navigate) {
 
   const { headers: _ignoredHeaders, ...restOptions } = options;
 
-  return fetch(url, {
+  const response = await fetch(url, {
     ...restOptions,
-    credentials: "include",
+    credentials: options.credentials || "include",
     headers,
   });
+
+  if (response.status === 401) {
+    clearSession();
+    if (!navigate) window.location.replace("/login");
+    return null;
+  }
+
+  return response;
 }

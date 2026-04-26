@@ -6,7 +6,7 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import "./LoginMain.scss";
-import { CK, API_BASE, saveTokens } from "../../../Utils/authUtils";
+import { CK, API_BASE, saveTokens, getToken } from "../../../Utils/authUtils";
 
 const URL_REGISTER = `${API_BASE}/api/dash/auth/register/`;
 const URL_LOGIN = `${API_BASE}/api/dash/auth/login/`;
@@ -152,9 +152,14 @@ function EmailChangeModal({ onClose }) {
     setLoading(true);
     setError("");
     try {
+      const token = getToken();
       const res = await fetch(`${API_BASE}/api/dash/contact/email-change/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
         body: JSON.stringify({
           full_name:    fields.name.trim(),
           email:        fields.email.trim(),

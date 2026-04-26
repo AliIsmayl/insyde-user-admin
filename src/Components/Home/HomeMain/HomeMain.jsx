@@ -11,7 +11,7 @@ import Popup from "../../Popup/Popup";
 import { API_BASE, authFetch, getToken, CK } from "../../../Utils/authUtils";
 
 const TRIAL_MODAL_SESSION_KEY = "insyde_trial_modal_seen";
-
+console.log("TOKEN:", getToken());
 // ─── Trial Modal ──────────────────────────────────────────
 function LegacyTrialModal({ onClose, onGuide }) {
   useEffect(() => {
@@ -274,7 +274,28 @@ function parseServices(raw) {
 function extractApiErrorMessage(raw, fallback = "Məlumatlar saxlanılmadı.") {
   if (!raw) return fallback;
   if (typeof raw === "string") {
-    return raw.trim() || fallback;
+    const normalized = raw.trim();
+    if (!normalized || normalized === '""' || normalized === "''") return fallback;
+    const lower = normalized.toLowerCase();
+    if (
+      /^error\s*:\s*["']{0,2}\s*["']{0,2}$/i.test(normalized) ||
+      /^detail\s*:\s*["']{0,2}\s*["']{0,2}$/i.test(normalized) ||
+      lower === '{"error":""}' ||
+      lower === "{'error':''}" ||
+      lower === '{"detail":""}' ||
+      lower === "{'detail':''}"
+    ) {
+      return fallback;
+    }
+    if (
+      (normalized.startsWith("{") && normalized.endsWith("}")) ||
+      (normalized.startsWith("[") && normalized.endsWith("]"))
+    ) {
+      try {
+        return extractApiErrorMessage(JSON.parse(normalized), fallback);
+      } catch { }
+    }
+    return normalized;
   }
   if (Array.isArray(raw)) {
     for (const item of raw) {
@@ -294,6 +315,19 @@ function extractApiErrorMessage(raw, fallback = "Məlumatlar saxlanılmadı.") {
       if (message) return message;
     }
   }
+  return fallback;
+}
+
+async function readApiErrorMessage(response, fallback = "Məlumatlar saxlanılmadı.") {
+  if (!response) return fallback;
+  try {
+    const data = await response.clone().json();
+    return extractApiErrorMessage(data, fallback);
+  } catch { }
+  try {
+    const text = await response.clone().text();
+    return extractApiErrorMessage(text, fallback);
+  } catch { }
   return fallback;
 }
 
@@ -325,6 +359,7 @@ export default function HomeMain() {
 
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
+  const [profileUserId, setProfileUserId] = useState(null);
   const [hash_id, setHashId] = useState("");
   const [profilePath, setProfilePath] = useState(null);
   const [totalViews, setTotalViews] = useState(0);
@@ -455,6 +490,7 @@ export default function HomeMain() {
         profileMode: nextProfileMode,
         phoneTheme: nextTheme,
         phoneColor: nextColor,
+        userId: info.id || null,
       };
 
       setFormData(nextFormData);
@@ -462,6 +498,7 @@ export default function HomeMain() {
       setPhoneColor(nextColor);
 
       setHashId(info.hash_id || "");
+      setProfileUserId(info.id || null);
       setTotalViews(info.look ?? 0);
       if (info.image) setProfileImage(info.image);
       setProfileMode(nextProfileMode);
@@ -515,15 +552,19 @@ export default function HomeMain() {
 
         if (!rProfile.ok) {
           const body = await rProfile.json().catch(() => ({}));
-          setError(body?.detail || `Server xətası: ${rProfile.status}`);
+          setError(
+            extractApiErrorMessage(
+              body,
+              `Server xetasi: ${rProfile.status}`,
+            ),
+          );
           return;
         }
 
-        const d = await rProfile.json();
-        if (!signal.aborted) applyProfileData(d);
-      } catch (err) {
-        if (err?.name === "AbortError" || signal?.aborted) return;
-        setError("Server ilə əlaqə kəsildi.");
+        const profileData = await rProfile.json().catch(() => null);
+        if (profileData) {
+          applyProfileData(profileData);
+        }
       } finally {
         if (!signal?.aborted) setLoading(false);
       }
@@ -636,6 +677,19 @@ export default function HomeMain() {
     setSaving(true);
 
     try {
+      const resolvedUserId = profileUserId || serverDataRef.current?.userId || null;
+      if (!resolvedUserId) {
+        setPopup({
+          isOpen: true,
+          type: "error",
+          title: "Xəta",
+          message: "İstifadəçi məlumatı tapılmadı. Səhifəni yeniləyib yenidən cəhd edin.",
+          confirmText: "Bağla",
+          onConfirm: null,
+        });
+        return;
+      }
+
       const deletedLinks = links.filter((l) => l.isDeleted && l.id && !l.isNew);
       if (deletedLinks.length > 0) {
         await Promise.all(
@@ -652,10 +706,7 @@ export default function HomeMain() {
       const skills = [formData.skill1, formData.skill2, formData.skill3]
         .filter(Boolean);
 
-      const hasCustomDesign = planFeatures.includes("custom_design");
-      const systemData = hasCustomDesign
-        ? { color: phoneColor, mode: phoneTheme }
-        : { mode: phoneTheme };
+      const systemData = { color: phoneColor, mode: phoneTheme };
 
       const activeLinks = links.filter(
         (l) => !l.isDeleted && l.url.trim() !== "",
@@ -668,8 +719,9 @@ export default function HomeMain() {
       const res = await authFetch(
         URL_PROFILE,
         {
-          method: "PATCH",
+          method: "PUT",
           body: JSON.stringify({
+            user: resolvedUserId,
             name: formData.name,
             work: formData.profession,
             company: formData.workplace,
@@ -689,14 +741,7 @@ export default function HomeMain() {
       }
 
       if (!res?.ok) {
-        const text = await res?.text().catch(() => "");
-        let errMsg = "Məlumatlar saxlanılmadı.";
-        try {
-          const err = JSON.parse(text);
-          errMsg = extractApiErrorMessage(err, errMsg);
-        } catch {
-          errMsg = extractApiErrorMessage(text, errMsg);
-        }
+        const errMsg = await readApiErrorMessage(res, "Məlumatlar saxlanılmadı.");
         setPopup({
           isOpen: true,
           type: "error",
@@ -711,7 +756,7 @@ export default function HomeMain() {
       if (profileImageFile) {
         const fd = new FormData();
         fd.append("image", profileImageFile);
-        await authFetch(URL_PROFILE, { method: "PATCH", body: fd }, navigate).catch(() => null);
+        await authFetch(URL_PROFILE, { method: "PUT", body: fd }, navigate).catch(() => null);
       }
 
       const fresh = await res.json().catch(() => null);
@@ -762,6 +807,7 @@ export default function HomeMain() {
     formData,
     links,
     profileImageFile,
+    profileUserId,
     phoneColor,
     phoneTheme,
     hash_id,

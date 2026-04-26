@@ -56,6 +56,13 @@ function Popup({
 }) {
   const cfg = CONFIG[type] ?? CONFIG.success;
   const finalConfirmText = confirmText ?? cfg.defaultConfirm;
+  const normalizedMessage = typeof message === "string" ? message.trim() : "";
+  const shouldHideMessage =
+    !normalizedMessage ||
+    normalizedMessage === '""' ||
+    normalizedMessage === "''" ||
+    /^error\s*:\s*["']{0,2}\s*["']{0,2}$/i.test(normalizedMessage) ||
+    /^detail\s*:\s*["']{0,2}\s*["']{0,2}$/i.test(normalizedMessage);
 
   /* ESC ilə bağla */
   useEffect(() => {
@@ -106,7 +113,7 @@ function Popup({
               {title}
             </h3>
           )}
-          {message && <p className="popup__message">{message}</p>}
+          {!shouldHideMessage && <p className="popup__message">{message}</p>}
         </div>
 
         {/* Düymələr */}
