@@ -450,3 +450,29 @@
     .scan-type-row { grid-template-columns: 1fr; }
   }
 }
+
+.pending-admin-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--text-secondary, #9ca3af);
+
+  svg, .pending-icon {
+    font-size: 2.2rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    opacity: 0.6;
+  }
+
+  p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary, #9ca3af);
+    max-width: 360px;
+    line-height: 1.6;
+  }
+}

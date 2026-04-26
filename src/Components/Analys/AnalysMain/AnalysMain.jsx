@@ -218,12 +218,27 @@ function AnalysMain() {
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
   const [sourcePage, setSourcePage] = useState(1);
+  const [pendingAdmin, setPendingAdmin] = useState(false);
 
   // Ay seçimi dəyişdikdə API-ni yenidən çağır (month param ilə)
   const fetchAnalytics = useCallback(async (month = null) => {
     if (!hashId) { setError("İstifadəçi tapılmadı."); setLoading(false); return; }
     setLoading(true);
     setError("");
+
+    // Admin təsdiqi yoxlaması
+    try {
+      const profileRes = await authFetch(`${API_BASE}/api/v1/profile/me/`);
+      if (profileRes?.ok) {
+        const pd = await profileRes.json().catch(() => ({}));
+        const isAdminActive = pd?.card?.is_admin_active ?? true;
+        if (!isAdminActive) {
+          setPendingAdmin(true);
+          setLoading(false);
+          return;
+        }
+      }
+    } catch { /* profile check uğursuz olsa davam et */ }
 
     const params = month ? `?month=${month}` : "";
     const url = `${API_BASE}/api/v1/profile/me/analytics/${hashId}/${params}`;
@@ -270,6 +285,17 @@ function AnalysMain() {
 
   const activeTrend    = selectedMonth ? trendMap[selectedMonth] : null;
   const selectedMonthName = ALL_MONTHS.find(m => m.num === selectedMonth)?.name || "";
+
+  if (pendingAdmin) {
+    return (
+      <div className="analys-main-modern">
+        <div className="pending-admin-banner">
+          <FaIconsAll.FaHourglassHalf className="pending-icon" />
+          <p>Sizin hesab admin tərəfindən təsdiqlənməyi gözləyir.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="analys-main-modern">

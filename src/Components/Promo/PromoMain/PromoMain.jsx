@@ -23,6 +23,7 @@ function PromoMain() {
   const [shared, setShared] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [isPro, setIsPro] = useState(false);
+  const [pendingAdmin, setPendingAdmin] = useState(false);
   const infoRef = useRef(null);
 
   useEffect(() => {
@@ -33,6 +34,16 @@ function PromoMain() {
           authFetch(`${API_BASE}/api/v1/orders/my/`),
           authFetch(`${API_BASE}/api/v1/promo/my/`),
         ]);
+
+        // Admin təsdiqi yoxlaması
+        if (profileRes.status === "fulfilled" && profileRes.value?.ok) {
+          const pd = await profileRes.value.clone().json().catch(() => ({}));
+          if (!(pd?.card?.is_admin_active ?? true)) {
+            setPendingAdmin(true);
+            setLoading(false);
+            return;
+          }
+        }
 
         // Plan yoxlaması — profile + order hər ikisindən
         let resolvedPlan = "free";
@@ -159,6 +170,19 @@ function PromoMain() {
       desc: "Standart paketdə qazanc sabit faizlə hesablanır. Pro paketdə isə qazanc daha cəlbedici olur. Paylaşdığınız hər müştəridən daha çox gəlir əldə edə bilərsiniz.",
     },
   ];
+
+  if (pendingAdmin) {
+    return (
+      <div className="promo-main">
+        <div className="pending-admin-banner">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <p>Sizin hesab admin tərəfindən təsdiqlənməyi gözləyir.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="promo-main">
